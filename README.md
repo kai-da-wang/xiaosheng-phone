@@ -1,68 +1,45 @@
-# 小圣的手机 · 交互体验版
+# 小圣的手机
 
-按用户 2026-10-24 定稿桌面独立实现的静态网页。无需安装依赖、无后台、移动端优先。
+可直接游玩的手机网页。公开地址：https://xiaosheng-phone-kai.imjusttrying341.chatgpt.site
 
-## 体验
+## 当前交互
 
-- 解锁：上滑或点击解锁，演示密码 **0520**；也可以点“直接进入”。
-- 照片：新增「和小王」（6 张）与「健身」（3 张），支持全屏原比例查看、左右滑动、方向键切换与关闭返回。相簿只展示照片图集，章节收藏从微信打开。
-- 微信：进入小王、木马、魔女、Lucky、薇薇、夕夕的章节。小王有四段可切换场景。
-- 点“打开这段片段”浏览卡片，查看出处、收藏；收藏的卡片从微信的收藏入口打开。
-- 收藏三个不同人物的章节后，在备忘录中打开 `.memories`。
-- 设置中可切换深色模式、减少动态、壁纸亮度、候选文稿审校，或重置体验。
-- 候选文稿默认隐藏，开启审校后明确显示未核实标签。没有已完成原声核验的台词。
+- 锁屏密码 0520；支持直接进入。
+- 微信采用微信、通讯录、发现、我四个页签，联系人列表显示小王未读红点，进入后消除并保存。
+- 小王聊天中可浏览已提供的六张照片，点开后在手机内全屏查看。
+- 聊天支持用户自己的文字输入、表情、选择照片、导入原声音频并点播，不自动生成角色回复。
+- 语音保存于当前浏览器 IndexedDB，播放状态与已听标记保存在本机。没有捏造的小王/小圣配音，没有复制参考手机的声音。
+- 本次上传的 27 秒录屏仅用于理解交互，没有作为声音或人物聊天素材发布。暂未取得可用于还原小圣/小王对话的原声片段。
+- 抖音已删除，原位置加入计算器；支持四则运算、正负号、百分比及 520 彩蛋。
+- Safari 改为手机内的收藏和最近浏览，取消全部出处抽屉与来源外跳。
+- 照片保留和小王、健身两个图集，备忘录补充相簿清单和照片关键词；设置个人卡片有相册彩蛋。
 
-## 本地运行
+## 运行与存档
 
-直接用浏览器打开 `dist/index.html`，或者打开 `portable/xiaosheng-phone.html` 单文件离线版。
-
-如需 HTTP 预览：
+直接打开 `dist/index.html`，或下载 `portable/xiaosheng-phone.html` 离线文件。
 
 ```bash
 python3 -m http.server 8000 --directory dist
-```
-
-访问 `http://localhost:8000`。页面资源使用相对路径，可以部署到静态站点子目录。
-
-```bash
 node --test tests/core.test.cjs
 python3 scripts/build-portable.py
 ```
 
+文字、已读、收藏等保存在当前浏览器 LocalStorage，音频文件保存在 IndexedDB。不跨设备同步，不发送真实微信消息。
+
+## 继续添加原声
+
+进入联系人 → 聊天输入栏的加号 → 导入原声。选择 MP3、M4A、WAV 等浏览器支持的音频文件。语音条的实际秒数由音频元数据读取，未听红点在开始播放后消失。导入只保存在操作这台设备的浏览器中，不会上传给其他访客。
+
+若需要所有访客都能听到同一段人物原声，应先由项目维护者补充对应原视频或原音频，并确认片段与人物的对应关系，再加入正式资源；当前页面没有假装具备这些尚未提供的原声。
+
 ## 文件
 
-- `dist/`：可直接发布的 HTML、CSS、原生 JavaScript 及原创壁纸。
-- `dist/gallery-data.js`：按上传素材清单配置相册、封面、排序和原图路径。
-- `dist/assets/photos/`：9 张用户原始截图，SHA-256 与清单一致。
-- `dist/content.js`：人物与场景数据（JSON 对象赋给 `window.PHONE_DATA`，兼容离线打开）。
-- `dist/core.js`：台词展示规则、收藏去重、存档规则、来源链接协议校验。
-- `dist/app.js`：页面渲染、导航、模拟应用与本地状态。
-- `research/`：用户原始研究数据，仅作编辑参考，不等于已核验内容。
-- `portable/`：生成的离线单文件版本。
-- `docs/`：实测截图。
-- `ATTRIBUTION.md`：视觉素材及内容来源记录。
-- `TEST_REPORT.md`：本轮检查结果及验证边界。
+- `dist/app.js`：手机路由、相册、基础应用。
+- `dist/phone-experience.js`：微信四个页签、聊天输入、原声导入播放、未读状态、Safari、计算器与彩蛋。
+- `dist/core.js`：旧版兼容存档、收藏与台词校验规则。
+- `dist/content.js`：原人物与研究线索，未核实语句不作为聊天消息展示。
+- `dist/gallery-data.js`、`dist/assets/photos/`：用户原始照片及图集清单。
+- `scripts/build-portable.py`：离线单文件生成。
+- `ATTRIBUTION.md`、`TEST_REPORT.md`：素材说明与测试边界。
 
-## 新增人物或片段
-
-编辑 `dist/content.js` 的 `people` 数组。每个人物拥有唯一 `id`、`name`、`initial`、`color`、`subtitle` 和 `scenes`；每个场景有独立 `id`、`title`、原创旁白 `narrative`、`quote`、`speaker`、`timestampSec`、`status`、`sourceUrl`、`rights`。新增人物不需要修改组件。
-
-未经核实使用 `needs_review` 或 `missing`，不要猜测时间戳和发言者。原话正式显示要求 `status: verified`、已确认的 `speaker`、非负 `timestampSec`、来源 URL、`rights: cleared` 同时具备。
-
-更新后运行检查并重新生成离线单文件。
-
-## 数据与模拟范围
-
-阅读、收藏、设置、备忘录、提醒事项和演示短信存于当前浏览器 LocalStorage。不同设备不会同步，清理浏览器会清除进度；秒表仅本次页面会话计时。
-
-相机拍摄的是页面内原创壁纸；电话、短信、天气、地图、日程、闹钟和应用目录都是演示。没有摄像头/通讯录/定位权限调用，没有真实短信、拨号或后台闹铃。
-
-该版本公开访问，无需登录；人物原声资料仍需继续核实。
-
-## GitHub
-
-源码仓库：https://github.com/kai-da-wang/xiaosheng-phone （源码私有）
-
-公开体验地址：https://xiaosheng-phone-kai.imjusttrying341.chatgpt.site
-
-新增照片时修改 `dist/gallery-data.js` 中的相册与资源数组；同一结构可继续新增相册。`photoCount` 仅作资料记录，页面数量由实际资源计算。
+源码：https://github.com/kai-da-wang/xiaosheng-phone （私有仓库）

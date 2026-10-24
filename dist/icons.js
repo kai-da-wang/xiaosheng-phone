@@ -6,6 +6,7 @@ window.icon=function(name,cls=''){
 window.appIcon=function(id){
  const svg=(s)=>`<svg viewBox="0 0 64 64" aria-hidden="true">${s}</svg>`;
  const icons={
+ calculator:svg('<rect x="0" y="0" width="64" height="64" fill="#303333"/><rect x="10" y="8" width="44" height="13" rx="3" fill="#cbd5c5"/>'+[27,39,51].map(y=>[14,28,42].map(x=>`<rect x="${x}" y="${y}" width="8" height="7" rx="2" fill="${x===42?'#f4a13d':'#eee'}"/>`).join('')).join('')),
  messages:svg('<path fill="white" d="M10 29c0-11 10-19 22-19s22 8 22 19-10 19-22 19c-3 0-6-.5-9-1.5L12 52l3-10c-3-3-5-8-5-13Z"/>'),
  calendar:`<span class="cal-day">${new Intl.DateTimeFormat('zh-CN',{weekday:'short'}).format(new Date())}</span><b class="cal-number">${new Date().getDate()}</b>`,
  photos:svg(Array.from({length:8},(_,i)=>`<ellipse cx="32" cy="20" rx="9" ry="14" fill="${['#f4bd2a','#a8c744','#5fb993','#68b5cd','#767cc6','#bd74b5','#ef6e75','#f79842'][i]}" opacity=".82" transform="rotate(${i*45} 32 32)"/>`).join('')),
