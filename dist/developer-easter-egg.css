@@ -18,10 +18,10 @@
 .dev-typing i{width:6px;height:6px;border-radius:100%;background:#8d918e;animation:dev-dot 1.15s infinite alternate}
 .dev-typing i:nth-child(2){animation-delay:.2s}.dev-typing i:nth-child(3){animation-delay:.4s}
 @keyframes dev-dot{from{transform:translateY(0);opacity:.5}to{transform:translateY(-3px);opacity:1}}
-.dev-chat-choices{margin:22px 6px 5px 47px;display:flex;flex-direction:column;gap:9px}
+.dev-chat-choices{margin:16px 6px 5px 47px;display:flex;flex-direction:column;gap:7px}
 .dev-chat-choices button{border-radius:9px;padding:13px 10px;font-weight:550;font-size:14px;min-height:45px}
-.dev-donate-btn{background:#07b75a;color:#fff}.dev-return-btn{background:#fff;color:#344038;border:1px solid #d2d7d4}
-.dev-chat-footer{flex-shrink:0;min-height:64px;padding:9px 13px 20px;background:#f8f8f8;border-top:1px solid #d4d8d5;display:flex;gap:11px;align-items:center;justify-content:space-between;font-size:10px;color:#89908b}
+.dev-donate-btn{background:#07b75a;color:#fff}.dev-return-btn{background:transparent;color:#5a665f;border:0;font-size:13px!important}
+.dev-chat-footer{flex-shrink:0;min-height:50px;padding:10px 8px 19px;background:#f8f8f8;border-top:1px solid #d4d8d5;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#89908b}
 .dev-chat-footer span:first-child,.dev-chat-footer span:last-child{font-size:21px;color:#687369}
 .dev-support-layer{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;background:#f5f5f5;color:#24302a;animation:dev-in .18s}
 .dev-support-header{height:90px;flex-shrink:0;display:flex;align-items:flex-end;padding:13px 16px;gap:13px;font-size:15px;background:#fff;border-bottom:1px solid #ececec}
