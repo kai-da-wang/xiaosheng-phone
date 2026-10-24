@@ -6,7 +6,7 @@
   const screen = document.getElementById('screen');
   if (!phone || !screen) return;
 
-  const support = window.XS_SUPPORT_OPTIONS || { wechat: '', alipay: '' };
+  const wechatQr = 'assets/support/wechat-receive-code.svg';
   const story = [
     '等等！你居然真的在这部手机里发消息了 😂',
     '放心，这是一个可以互动的故事。刚刚那句话只保存在你的浏览器里，不会真的发给小王。',
@@ -23,14 +23,6 @@
   }
   function markSeen() {
     try { localStorage.setItem(STORAGE_KEY, '1'); } catch { /* private mode */ }
-  }
-  function safeUrl(value) {
-    if (typeof value !== 'string' || !value.trim()) return '';
-    try {
-      const url = new URL(value, location.href);
-      if (!['https:', 'http:'].includes(url.protocol)) return '';
-      return url.href;
-    } catch { return ''; }
   }
   function contactMarkup() {
     return `<button type="button" class="wx-contact dev-contact" data-dev-contact aria-label="查看开发者彩蛋">
@@ -64,13 +56,7 @@
     insertContact();
   }
   function donationHtml() {
-    const options = [
-      ['wechat', '微信赞赏', support.wechat],
-      ['alipay', '支付宝', support.alipay]
-    ];
-    const valid = options.map(([kind, label, url]) => ({ kind, label, url: safeUrl(url) })).filter(x => x.url);
-    if (!valid.length) return `<p class="dev-no-payment">赞赏码尚未添加，支持入口准备中。<br>你可以继续免费游玩，所有内容不受影响 ❤️</p>`;
-    return `<p class="dev-support-tip">自愿支持，与任何人物或平台无关。二维码可以长按或保存后使用。</p><div class="dev-payment-options">${valid.map(x=>`<div class="dev-payment-option"><strong>${x.label}</strong><img src="${x.url}" alt="${x.label}收款二维码" loading="lazy" decoding="async"><a href="${x.url}" download>查看 / 保存二维码</a></div>`).join('')}</div>`;
+    return `<div class="dev-payment-options"><div class="dev-payment-option"><strong>微信收款码</strong><span class="dev-wechat-only">仅支持微信支付</span><img class="dev-qr-image" src="${wechatQr}" alt="作者微信个人收款二维码" width="240" height="240" decoding="async"><p class="dev-support-tip">打开微信扫一扫即可自愿支持作者。</p><p class="dev-support-tip">只有一部手机？请截图保存二维码，再打开微信扫一扫，从相册识别。</p><button type="button" class="dev-qr-save" data-dev-save-qr>保存二维码为图片</button></div></div>`;
   }
   function showDonation() {
     if (!overlay || overlay.querySelector('.dev-support-layer')) return;
@@ -140,7 +126,41 @@
       if (document.querySelector('.wx-shell') && !overlay) showChat();
     }, 900));
   }, true);
+  function saveWechatQr() {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 720;
+        canvas.height = 720;
+        const g = canvas.getContext('2d');
+        if (!g) throw Error('Canvas unavailable');
+        g.fillStyle = '#fff';
+        g.fillRect(0, 0, 720, 720);
+        g.imageSmoothingEnabled = false;
+        g.drawImage(img, 0, 0, 720, 720);
+        canvas.toBlob(blob => {
+          if (!blob) { window.open(wechatQr, '_blank', 'noopener'); return; }
+          const objectUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          a.download = '小圣的手机_微信收款码.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+        }, 'image/png');
+      } catch {
+        window.open(wechatQr, '_blank', 'noopener');
+      }
+    };
+    img.onerror = () => window.open(wechatQr, '_blank', 'noopener');
+    img.src = wechatQr;
+  }
   document.addEventListener('click', event => {
+    if (event.target.closest('[data-dev-save-qr]')) {
+      saveWechatQr(); return;
+    }
     if (event.target.closest('[data-dev-contact]')) {
       event.preventDefault(); event.stopImmediatePropagation(); showChat(); return;
     }
