@@ -7,7 +7,7 @@
   if (!phone || !screen) return;
 
   const wechatQr = 'assets/support/wechat-receive-code.svg';
-  const story = '嘿，你发现彩蛋啦！🌶️\n《小圣的手机》制作不易，喜欢的话请作者吃包辣条，支持 2.0 更新～\n完全自愿，谢谢你来玩 ❤️';
+  const story = '嘿，你发现彩蛋啦！🌶️\n《小圣的手机》制作不易，喜欢的话请作者吃包辣条（¥0.99），支持 2.0 更新～\n完全自愿，谢谢你来玩 ❤️';
   let overlay = null;
   let jobs = [];
 
@@ -49,7 +49,7 @@
     insertContact();
   }
   function donationHtml() {
-    return `<div class="dev-payment-options"><div class="dev-payment-option"><strong>微信收款码</strong><span class="dev-wechat-only">仅支持微信支付</span><img class="dev-qr-image" src="${wechatQr}" alt="作者微信个人收款二维码" width="240" height="240" decoding="async"><p class="dev-support-tip">微信扫一扫支持；单手机可以保存后从相册识别。</p><button type="button" class="dev-qr-save" data-dev-save-qr>保存二维码为图片</button></div></div>`;
+    return `<div class="dev-payment-options"><div class="dev-payment-option"><strong>¥0.99 · 一包辣条</strong><span class="dev-wechat-only">仅支持微信支付</span><img class="dev-qr-image" src="${wechatQr}" alt="作者微信个人收款二维码" width="240" height="240" decoding="async"><p class="dev-support-tip">当前为普通微信收款码，扫码后请手动输入 ¥0.99；换成固定金额收款码后可自动带入金额。</p><button type="button" class="dev-qr-save" data-dev-save-qr>保存二维码为图片</button></div></div>`;
   }
   function showDonation() {
     if (!overlay || overlay.querySelector('.dev-support-layer')) return;
@@ -74,7 +74,7 @@
       <div class="dev-chat-scroll"><p class="dev-chat-day">今天</p>
         <div class="dev-message-list"><div class="dev-message-row"><span class="dev-message-avatar" aria-hidden="true">🌶️</span><p class="dev-message-bubble"></p></div></div>
         <div class="dev-chat-choices">
-          <button type="button" class="dev-donate-btn" data-dev-support>🌶️ 请作者吃包辣条</button>
+          <button type="button" class="dev-donate-btn" data-dev-support>🌶️ ¥0.99 请作者吃包辣条</button>
           <button type="button" class="dev-return-btn" data-dev-close>继续玩</button>
         </div>
       </div>
