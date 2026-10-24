@@ -1,0 +1,189 @@
+window.PHOTO_LIBRARY = {
+  "project": "小圣的手机",
+  "packageVersion": "2026-10-24-0520-album-update",
+  "type": "incremental_update_for_existing_first_version",
+  "unlock": {
+    "pin": "0520",
+    "pinFormat": "string_four_digits",
+    "hint": "别再忘了，密码还是 0520 ❤️",
+    "unlockEntry": [
+      "锁屏上滑",
+      "点击密码提示通知（可选）"
+    ],
+    "success": "进入原有手机桌面",
+    "failure": "轻微摇晃、保留锁屏并可重试",
+    "fictionalStatement": "游戏设定的虚构密码，并非小圣真实手机密码"
+  },
+  "albums": [
+    {
+      "id": "xiaowang",
+      "name": "和小王",
+      "coverAssetId": "xiaowang-05",
+      "photoCount": 6,
+      "items": [
+        "xiaowang-01",
+        "xiaowang-02",
+        "xiaowang-03",
+        "xiaowang-04",
+        "xiaowang-05",
+        "xiaowang-06"
+      ]
+    },
+    {
+      "id": "fitness",
+      "name": "健身",
+      "coverAssetId": "fitness-01",
+      "photoCount": 3,
+      "items": [
+        "fitness-01",
+        "fitness-02",
+        "fitness-03"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "xiaowang-01",
+      "albumId": "xiaowang",
+      "sortOrder": 1,
+      "path": "assets/photos/xiaowang/xiaowang_01_street.jpg",
+      "originalFilename": "screenshot_20261024_172840_com.ss.hm.ugc.aweme.jpg",
+      "description": "街头相遇画面",
+      "width": 831,
+      "height": 1536,
+      "fileSizeBytes": 181903,
+      "sha256": "7466b2d68219d52ea3db74b25fc92990ae8805e339a2e8e714e9ad527a0ac6b3",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "xiaowang-02",
+      "albumId": "xiaowang",
+      "sortOrder": 2,
+      "path": "assets/photos/xiaowang/xiaowang_02_conversation.jpg",
+      "originalFilename": "screenshot_20261024_173034_com.ss.hm.ugc.aweme.jpg",
+      "description": "室内互动与对视",
+      "width": 1536,
+      "height": 1117,
+      "fileSizeBytes": 191220,
+      "sha256": "a26c6801b27a202b501933b3629f926cfa77e561cd602f5d83cf1ba49902fa5a",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "xiaowang-03",
+      "albumId": "xiaowang",
+      "sortOrder": 3,
+      "path": "assets/photos/xiaowang/xiaowang_03_evening.jpg",
+      "originalFilename": "screenshot_20261024_172913_com.ss.hm.ugc.aweme.jpg",
+      "description": "夜间街头相处画面",
+      "width": 1536,
+      "height": 1059,
+      "fileSizeBytes": 117166,
+      "sha256": "4163a18b941344c0fe29080e3fc985e55cd3bbf186ce6d89524225ac17ce733d",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "xiaowang-04",
+      "albumId": "xiaowang",
+      "sortOrder": 4,
+      "path": "assets/photos/xiaowang/xiaowang_04_funny_filter.jpg",
+      "originalFilename": "screenshot_20261024_172832_com.ss.hm.ugc.aweme.jpg",
+      "description": "趣味合照",
+      "width": 929,
+      "height": 1536,
+      "fileSizeBytes": 182361,
+      "sha256": "0455ed1e0202d808a868897e943dde0b7cae3c2c0435665a7ab2966f38aa4295",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "xiaowang-05",
+      "albumId": "xiaowang",
+      "sortOrder": 5,
+      "path": "assets/photos/xiaowang/xiaowang_05_snow_mountain.jpg",
+      "originalFilename": "screenshot_20261024_172811_com.ss.hm.ugc.aweme.jpg",
+      "description": "雪山前合照",
+      "width": 1174,
+      "height": 1536,
+      "fileSizeBytes": 245708,
+      "sha256": "4719a98ab982a2253ce70fd8db1fc0d123983e7fc9c70ab856c37fbdf1a36e3f",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "xiaowang-06",
+      "albumId": "xiaowang",
+      "sortOrder": 6,
+      "path": "assets/photos/xiaowang/xiaowang_06_windy_selfie.jpg",
+      "originalFilename": "screenshot_20261024_173703_com.ss.hm.ugc.aweme.jpg",
+      "description": "户外近景自拍",
+      "width": 1536,
+      "height": 1485,
+      "fileSizeBytes": 247555,
+      "sha256": "3e6dbedf1b81e99b36b66506a75fe225f8022eb30ac71119f38cdb0a1cd4facd",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "fitness-01",
+      "albumId": "fitness",
+      "sortOrder": 1,
+      "path": "assets/photos/fitness/fitness_01_black_vest.jpg",
+      "originalFilename": "screenshot_20261024_172702_com.ss.hm.ugc.aweme.jpg",
+      "description": "黑色背心健身照",
+      "width": 1536,
+      "height": 1097,
+      "fileSizeBytes": 97795,
+      "sha256": "fae54a5ecef8657e02c9b1c7116ce6a38e280b101d06e9bd642a427636401a7c",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "fitness-02",
+      "albumId": "fitness",
+      "sortOrder": 2,
+      "path": "assets/photos/fitness/fitness_02_live_frame.jpg",
+      "originalFilename": "screenshot_20261024_173524_com.ss.hm.ugc.aweme.jpg",
+      "description": "健身相关直播截图",
+      "width": 681,
+      "height": 1536,
+      "fileSizeBytes": 123807,
+      "sha256": "fd7e64a23b715386426a038cb322c8fbf0fd7f9348a6bebca0af9665e5665b93",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "fitness-03",
+      "albumId": "fitness",
+      "sortOrder": 3,
+      "path": "assets/photos/fitness/fitness_03_closeup.jpg",
+      "originalFilename": "screenshot_20261024_173512_com.ss.hm.ugc.aweme.jpg",
+      "description": "健身直播特写截图",
+      "width": 681,
+      "height": 1536,
+      "fileSizeBytes": 153346,
+      "sha256": "9b3bcc163eb1b1882a354d5f01671aa015050f7ccf191c1a7c41d01272f18e98",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    }
+  ],
+  "lockScreenReference": {
+    "path": "design/LOCK_SCREEN_0520_REFERENCE.png",
+    "width": 941,
+    "height": 1672,
+    "purpose": "仅为视觉与布局参考，真实站点应由可点击的HTML/CSS/JS组件实现，禁止把整张图当成唯一锁屏界面",
+    "confirmedUnlockCode": "0520"
+  },
+  "note": "不得推定公开影片截图是实际私人手机里的照片；本网页内容是粉丝向公开素材回忆演绎。"
+};

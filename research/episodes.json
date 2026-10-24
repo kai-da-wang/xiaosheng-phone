@@ -1,0 +1,813 @@
+{
+  "meta": {
+    "schemaVersion": "1.0.0",
+    "projectId": "xiaosheng-phone",
+    "contentStatus": "research_seeds_unverified_add_wang_xiaomiao_ai_transcript",
+    "researchedAt": "2026-10-24",
+    "episodeCoverage": "selected leads only, NOT exhaustive",
+    "notice": "非官方粉丝创作，所有人物章节是基于公开视频的叙事展，不代表真实私人手机或私人聊天。",
+    "publishRule": "Only publish confirmed quotations with original source URL, verified speaker, precise timestamp, editorial approval, and valid rights status. Otherwise show a neutral placeholder.",
+    "sourceRepoReference": "https://github.com/pilicat913/seokjin-phone",
+    "sourceRepoReuseAuthorized": false,
+    "newPublicSourceIndex": "public_sources.json",
+    "quotedTranscriptNotice": "发现抖音可检索 AI 文稿与公开视频封面；未经原声逐句核听且非真实微信记录。",
+    "wangXiaomiaoChapterFile": "WANG_XIAOMIAO_EPISODE.md",
+    "pilotLeadIds": [
+      "lead_wang_xiaomiao",
+      "lead_muma",
+      "lead_monv",
+      "lead_lucky",
+      "lead_vivi",
+      "lead_xixi"
+    ],
+    "pilotLeadNames": [
+      "小王",
+      "木马",
+      "魔女",
+      "Lucky",
+      "薇薇",
+      "夕夕"
+    ],
+    "pilotLeadNote": "这些只是首期展示对象，不是角色数量上限。木马/魔女/夕夕目前仅为用户指定的昵称占位，没有核实的公开源内容；严禁自动编造对话。"
+  },
+  "ui": {
+    "defaultTheme": "photoreal_coastal_sunset_no_text",
+    "mobileFirst": true,
+    "quoteCardLabelVerified": "公开视频摘录",
+    "quoteCardLabelUnverified": "台词待核实",
+    "memoFolderUnlockQuoteCount": 3,
+    "showFanworkNotice": true,
+    "sharePrivateChats": false,
+    "homeScreenReference": "visual_reference/HOME_SCREEN_FINAL.png",
+    "homeScreenSpec": "HOME_SCREEN_FINAL_SPEC.md",
+    "dockApps": [
+      "电话",
+      "Safari",
+      "信息",
+      "相机"
+    ],
+    "hiddenApps": [
+      "音乐",
+      "微博",
+      "小红书"
+    ],
+    "useNormalAppLabels": true
+  },
+  "characters": [
+    {
+      "id": "xiaosheng",
+      "displayName": "小圣",
+      "role": "protagonist",
+      "publicDouyinId": "76698967289",
+      "verifiedPersonalContactDetails": null
+    }
+  ],
+  "episodes": [
+    {
+      "id": "ep_wang_xiaomiao_01",
+      "displayOrder": 0,
+      "title": "王小喵（小王 / Miao💤）· 还会再见吗",
+      "lead": {
+        "id": "lead_wang_xiaomiao",
+        "displayName": "王小喵",
+        "publicHandle": "Miao💤",
+        "aliasNotes": "公开视频/二创中常称「小王」「小喵」，是否同一账号及昵称应再核对；不要使用私人身份信息。"
+      },
+      "publicationDate": null,
+      "emotionTag": "洱海初见 · 分别 · 连麦 · 约定",
+      "highlightQuote": {
+        "id": "quote_wang_xiaomiao_meet_again",
+        "text": "有机会的话，还能和你再见",
+        "speakerId": "xiaosheng",
+        "timestampSec": null,
+        "verificationStatus": "needs_review",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": "xiaosheng",
+        "note": "在「小圣终于跟小王连麦」相关公开AI文稿中找到；为精简摘句，原声和人物仍未核听。"
+      },
+      "evidence": {
+        "url": "https://www.douyin.com/video/7624178876201996985",
+        "sourceType": "fan_video_public_clip",
+        "evidenceNote": "可在 https://www.douyin.com/shipin/7625451652657367078 / https://www.douyin.com/shipin/7644752084113360931 的AI转写中定位到候选短句；非原始公开视频逐字核验。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "wang_notice",
+          "type": "system",
+          "text": "以下为公开视频记忆重排，并非两人的真实微信私聊。",
+          "fictional": false
+        },
+        {
+          "id": "wang_chapter_1",
+          "type": "editorial",
+          "text": "洱海初见｜海风很大，名字却记住了。",
+          "fictional": true
+        },
+        {
+          "id": "wang_early",
+          "type": "quote_reference",
+          "quoteId": "wang_meet_name",
+          "text": "你叫什么名字啊？ / 小王。",
+          "fictional": false,
+          "verificationStatus": "needs_review",
+          "sourceUrl": "https://www.douyin.com/video/7625369388968174565"
+        },
+        {
+          "id": "wang_chapter_2",
+          "type": "editorial",
+          "text": "分别之后｜从偶遇变成一次公开连麦。",
+          "fictional": true
+        },
+        {
+          "id": "wang_main",
+          "type": "quote_reference",
+          "quoteId": "wang_meet_again",
+          "text": "有机会的话，还能和你再见",
+          "fictional": false,
+          "verificationStatus": "needs_review",
+          "sourceUrl": "https://www.douyin.com/video/7624178876201996985"
+        },
+        {
+          "id": "wang_chapter_3",
+          "type": "editorial",
+          "text": "直播名场面｜聊天框里的轻松一刻。",
+          "fictional": true
+        },
+        {
+          "id": "wang_reward",
+          "type": "quote_reference",
+          "quoteId": "wang_reward",
+          "text": "你这不是在惩罚我，你这是在奖励我。",
+          "fictional": false,
+          "verificationStatus": "needs_review",
+          "sourceUrl": "https://www.douyin.com/shipin/7644752084113360931"
+        }
+      ],
+      "candidateQuotes": [
+        {
+          "id": "wang_meet_name",
+          "speakerId": "xiaosheng",
+          "text": "你叫什么名字啊",
+          "sourceUrl": "https://www.douyin.com/video/7625369388968174565",
+          "sourceType": "二创片段AI转写",
+          "timestampSec": null,
+          "verificationStatus": "needs_review"
+        },
+        {
+          "id": "wang_reply_name",
+          "speakerId": "lead_wang_xiaomiao",
+          "text": "小王",
+          "sourceUrl": "https://www.douyin.com/video/7625369388968174565",
+          "sourceType": "二创片段AI转写",
+          "timestampSec": null,
+          "verificationStatus": "needs_review"
+        },
+        {
+          "id": "wang_meet_again",
+          "speakerId": "xiaosheng",
+          "text": "有机会的话，还能和你再见",
+          "sourceUrl": "https://www.douyin.com/video/7624178876201996985",
+          "sourceType": "二创连麦录屏AI转写",
+          "timestampSec": null,
+          "verificationStatus": "needs_review"
+        },
+        {
+          "id": "wang_public_hope",
+          "speakerId": "lead_wang_xiaomiao",
+          "text": "希望能再见吧",
+          "sourceUrl": "https://www.douyin.com/shipin/7625451652657367078",
+          "sourceType": "二创直播回顾AI转写（说话人待确认）",
+          "timestampSec": null,
+          "verificationStatus": "needs_review"
+        },
+        {
+          "id": "wang_looks",
+          "speakerId": "xiaosheng",
+          "text": "你嘛，就是长在了我的审美上",
+          "sourceUrl": "https://www.douyin.com/shipin/7644752084113360931",
+          "sourceType": "二创直播惩罚片段AI转写",
+          "timestampSec": null,
+          "verificationStatus": "needs_review"
+        },
+        {
+          "id": "wang_reward",
+          "speakerId": "xiaosheng",
+          "text": "你这不是在惩罚我，你这是在奖励我",
+          "sourceUrl": "https://www.douyin.com/shipin/7644752084113360931",
+          "sourceType": "二创直播惩罚片段AI转写",
+          "timestampSec": null,
+          "verificationStatus": "needs_review"
+        }
+      ],
+      "publicVideoReferences": [
+        "https://www.douyin.com/video/7625369388968174565",
+        "https://www.douyin.com/video/7624178876201996985",
+        "https://www.douyin.com/shipin/7644752084113360931",
+        "https://www.douyin.com/video/7648677004368421978",
+        "https://www.douyin.com/video/7691325921370484570"
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null,
+        "candidateCoverUrl": "https://p3-pc-sign.douyinpic.com/image-cut-tos-priv/0529202d5fd4d546093bb933792eb45c~tplv-dy-resize-origshort-autoq-75%3A330.jpeg?biz_tag=pcweb_cover&from=327834062&l=2026102412331670523E95B971070EA680&lk3s=138a59ce&s=PackSourceEnum_AWEME_DETAIL&sc=cover&se=false&x-expires=2108174400&x-signature=JRb79ExE7M8LQr1VePNDhZFL%2BVk%3D",
+        "candidateCoverPermission": "unknown_do_not_embed_by_default"
+      },
+      "publishable": false,
+      "fanworkDisclaimer": "不提供或推断真实联系方式/真实私信；页面所示为公开视频片段的二次编排。"
+    },
+    {
+      "id": "ep_lucky_01",
+      "displayOrder": 3,
+      "title": "Lucky · 记忆章节",
+      "lead": {
+        "id": "lead_lucky",
+        "displayName": "Lucky",
+        "publicHandle": "Lucky doesn't cry"
+      },
+      "publicationDate": null,
+      "emotionTag": "心动与克制",
+      "highlightQuote": {
+        "id": "quote_lead_lucky",
+        "text": "我肯定是有心动过啊，但他是炸街博主唉",
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "needs_review",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": "lucky"
+      },
+      "evidence": {
+        "url": "https://www.douyin.com/zhuanti/7628794134974777382",
+        "sourceType": "fan_compilation",
+        "evidenceNote": "二创/专题索引可见候选语句；需核查原视频、字幕、发言人与秒数。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_1",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_1",
+          "type": "editorial",
+          "text": "这一章的关键词：心动与克制。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_1",
+          "type": "quote_reference",
+          "text": "查看本章候选台词与公开出处",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_cya_01",
+      "displayOrder": 102,
+      "title": "港姐 · 记忆章节",
+      "lead": {
+        "id": "lead_cya",
+        "displayName": "港姐",
+        "publicHandle": "Itsmecya"
+      },
+      "publicationDate": null,
+      "emotionTag": "直白与心动",
+      "highlightQuote": {
+        "id": "quote_lead_cya",
+        "text": "爱我就够了，其他的不行",
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "needs_review",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": "cya"
+      },
+      "evidence": {
+        "url": "https://www.douyin.com/video/7607332397394535411",
+        "sourceType": "secondary_clip",
+        "evidenceNote": "二创视频标题出现候选语句；需回到原片核对完整上下文及发言者。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_2",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_2",
+          "type": "editorial",
+          "text": "这一章的关键词：直白与心动。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_2",
+          "type": "quote_reference",
+          "text": "查看本章候选台词与公开出处",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_vivi_01",
+      "displayOrder": 4,
+      "title": "薇薇 · 记忆章节",
+      "lead": {
+        "id": "lead_vivi",
+        "displayName": "薇薇",
+        "publicHandle": "all4u"
+      },
+      "publicationDate": null,
+      "emotionTag": "未尽与告别",
+      "highlightQuote": {
+        "id": "quote_lead_vivi",
+        "text": "心里空落落的，好像有什么东西要结束了",
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "needs_review",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": "vivi"
+      },
+      "evidence": {
+        "url": "https://www.douyin.com/zhuanti/7634019662455375922",
+        "sourceType": "fan_compilation",
+        "evidenceNote": "二创/直播聚合内容线索；不能据此确认原话、发言者和时间戳。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_3",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_3",
+          "type": "editorial",
+          "text": "这一章的关键词：未尽与告别。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_3",
+          "type": "quote_reference",
+          "text": "查看本章候选台词与公开出处",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_ayu_01",
+      "displayOrder": 104,
+      "title": "阿雨 · 记忆章节",
+      "lead": {
+        "id": "lead_ayu",
+        "displayName": "阿雨",
+        "publicHandle": "阿雨 yu"
+      },
+      "publicationDate": null,
+      "emotionTag": "重逢与约定",
+      "highlightQuote": {
+        "id": "quote_lead_ayu",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": null
+      },
+      "evidence": {
+        "url": "https://m.douyin.com/zhuanti/7623640876463720499",
+        "sourceType": "fan_compilation",
+        "evidenceNote": "仅确定相关公开片段线索，经典原句待挑选与核对。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_4",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_4",
+          "type": "editorial",
+          "text": "这一章的关键词：重逢与约定。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_4",
+          "type": "quote_reference",
+          "text": "本章名场面待核实",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_cunri_01",
+      "displayOrder": 105,
+      "title": "寸日 · 记忆章节",
+      "lead": {
+        "id": "lead_cunri",
+        "displayName": "寸日",
+        "publicHandle": "寸日"
+      },
+      "publicationDate": null,
+      "emotionTag": "相遇与遗憾",
+      "highlightQuote": {
+        "id": "quote_lead_cunri",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": null
+      },
+      "evidence": {
+        "url": null,
+        "sourceType": "unknown",
+        "evidenceNote": "待检索和核验公开视频。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_5",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_5",
+          "type": "editorial",
+          "text": "这一章的关键词：相遇与遗憾。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_5",
+          "type": "quote_reference",
+          "text": "本章名场面待核实",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_ouni_01",
+      "displayOrder": 106,
+      "title": "欧尼 · 记忆章节",
+      "lead": {
+        "id": "lead_ouni",
+        "displayName": "欧尼",
+        "publicHandle": "欧尼不睡觉"
+      },
+      "publicationDate": null,
+      "emotionTag": "日常与告别",
+      "highlightQuote": {
+        "id": "quote_lead_ouni",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": null
+      },
+      "evidence": {
+        "url": "https://www.douyin.com/video/7694705129803644224",
+        "sourceType": "secondary_clip",
+        "evidenceNote": "二创标题存在相关线索，未确认可用经典原句。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_6",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_6",
+          "type": "editorial",
+          "text": "这一章的关键词：日常与告别。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_6",
+          "type": "quote_reference",
+          "text": "本章名场面待核实",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_zhima_01",
+      "displayOrder": 107,
+      "title": "芝麻胡胡 · 记忆章节",
+      "lead": {
+        "id": "lead_zhima",
+        "displayName": "芝麻胡胡",
+        "publicHandle": "芝麻胡胡"
+      },
+      "publicationDate": null,
+      "emotionTag": "日常与幽默",
+      "highlightQuote": {
+        "id": "quote_lead_zhima",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": null
+      },
+      "evidence": {
+        "url": null,
+        "sourceType": "unknown",
+        "evidenceNote": "待检索和核验公开视频。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_7",
+          "type": "system",
+          "text": "本章为非官方公开视频记忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "context_7",
+          "type": "editorial",
+          "text": "这一章的关键词：日常与幽默。点开记忆卡，看看当时留下了什么。",
+          "fictional": true
+        },
+        {
+          "id": "quote_card_7",
+          "type": "quote_reference",
+          "text": "本章名场面待核实",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_l1ly_01",
+      "displayOrder": 108,
+      "title": "L1ly · 站台告别",
+      "lead": {
+        "id": "lead_l1ly",
+        "displayName": "L1ly",
+        "publicHandle": "L1ly🍐"
+      },
+      "publicationDate": null,
+      "emotionTag": "告别与守候",
+      "highlightQuote": {
+        "id": "quote_lead_l1ly",
+        "text": "那就等你上车再走吧",
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "needs_review",
+        "isPublicVideoQuote": true,
+        "verbatimConfirmed": false,
+        "candidateSpeakerId": "xiaosheng"
+      },
+      "evidence": {
+        "url": "https://www.douyin.com/video/7641217757429865396",
+        "sourceType": "secondary_clip",
+        "evidenceNote": "抖音相关视频的AI文稿可检索到候选短句，尚未核听原声、时间戳及角色；封面见public_sources.json。",
+        "originalAuthorSourceUrl": null
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "preface_l1ly",
+          "type": "system",
+          "text": "本章为非官方公开视频回忆整理，非真实私人聊天记录。",
+          "fictional": false
+        },
+        {
+          "id": "quote_card_l1ly",
+          "type": "quote_reference",
+          "text": "查看候选台词及视频出处；正式展示前请核验",
+          "fictional": false
+        }
+      ],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false
+    },
+    {
+      "id": "ep_muma_placeholder",
+      "displayOrder": 1,
+      "title": "木马 · 待核实的记忆",
+      "lead": {
+        "id": "lead_muma",
+        "displayName": "木马",
+        "publicHandle": null,
+        "aliasNotes": "用户指定的首发昵称；尚未核实账号、视频及人物对应。"
+      },
+      "publicationDate": null,
+      "emotionTag": "待补充",
+      "highlightQuote": {
+        "id": "quote_muma_pending",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": false,
+        "verbatimConfirmed": false
+      },
+      "evidence": {
+        "url": null,
+        "sourceType": "unknown",
+        "evidenceNote": "尚未核实原视频、人物身份、原话和说话者。"
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "notice_muma",
+          "type": "system",
+          "text": "公开片段待核实。此页面为非官方粉丝创作，不是真实私人聊天。",
+          "fictional": false
+        }
+      ],
+      "candidateQuotes": [],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false,
+      "fanworkDisclaimer": "非真实手机或私信记录；不提供私人联系方式。"
+    },
+    {
+      "id": "ep_monv_placeholder",
+      "displayOrder": 2,
+      "title": "魔女 · 待核实的记忆",
+      "lead": {
+        "id": "lead_monv",
+        "displayName": "魔女",
+        "publicHandle": null,
+        "aliasNotes": "用户指定的首发昵称；尚未核实账号、视频及人物对应。"
+      },
+      "publicationDate": null,
+      "emotionTag": "待补充",
+      "highlightQuote": {
+        "id": "quote_monv_pending",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": false,
+        "verbatimConfirmed": false
+      },
+      "evidence": {
+        "url": null,
+        "sourceType": "unknown",
+        "evidenceNote": "尚未核实原视频、人物身份、原话和说话者。"
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "notice_monv",
+          "type": "system",
+          "text": "公开片段待核实。此页面为非官方粉丝创作，不是真实私人聊天。",
+          "fictional": false
+        }
+      ],
+      "candidateQuotes": [],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false,
+      "fanworkDisclaimer": "非真实手机或私信记录；不提供私人联系方式。"
+    },
+    {
+      "id": "ep_xixi_placeholder",
+      "displayOrder": 5,
+      "title": "夕夕 · 待核实的记忆",
+      "lead": {
+        "id": "lead_xixi",
+        "displayName": "夕夕",
+        "publicHandle": null,
+        "aliasNotes": "用户指定的首发昵称；尚未核实账号、视频及人物对应。"
+      },
+      "publicationDate": null,
+      "emotionTag": "待补充",
+      "highlightQuote": {
+        "id": "quote_xixi_pending",
+        "text": null,
+        "speakerId": null,
+        "timestampSec": null,
+        "verificationStatus": "missing",
+        "isPublicVideoQuote": false,
+        "verbatimConfirmed": false
+      },
+      "evidence": {
+        "url": null,
+        "sourceType": "unknown",
+        "evidenceNote": "尚未核实原视频、人物身份、原话和说话者。"
+      },
+      "rights": {
+        "quoteStatus": "unknown",
+        "mediaStatus": "do_not_publish"
+      },
+      "cards": [
+        {
+          "id": "notice_xixi",
+          "type": "system",
+          "text": "公开片段待核实。此页面为非官方粉丝创作，不是真实私人聊天。",
+          "fictional": false
+        }
+      ],
+      "candidateQuotes": [],
+      "assets": {
+        "avatar": null,
+        "memoryPhoto": null
+      },
+      "publishable": false,
+      "fanworkDisclaimer": "非真实手机或私信记录；不提供私人联系方式。"
+    }
+  ]
+}

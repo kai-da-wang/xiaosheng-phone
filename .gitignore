@@ -1,0 +1,4 @@
+dist/qa.html
+*.tar.gz
+*.zip
+.DS_Store

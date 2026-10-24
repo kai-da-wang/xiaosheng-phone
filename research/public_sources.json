@@ -1,0 +1,137 @@
+{
+  "notice": "公开短视频素材索引，非真实聊天/私信；AI转写非逐字核听，引用前须人工复核音频、角色与具体时刻；视频封面链接可能过期，公开使用须核查版权/肖像许可。",
+  "foundAt": "2026-10-24",
+  "items": [
+    {
+      "id": "public_l1ly_2026_clip",
+      "lead": "L1ly",
+      "clipTitle": "小圣更新了“可能这就是不能说的秘密”",
+      "clipUrl": "https://www.douyin.com/video/7641217757429865396",
+      "coverUrl": "https://p3-pc-sign.douyinpic.com/image-cut-tos-priv/b62d682310be9caa5255754d0589c244~tplv-dy-resize-origshort-autoq-75%3A330.jpeg?biz_tag=pcweb_cover&from=327834062&l=20260925223657CAB08923DBFF3D501EEE&lk3s=138a59ce&s=PackSourceEnum_AWEME_DETAIL&sc=cover&se=false&x-expires=2105704800&x-signature=LoL7l7i0M8ITfeYTxuDbTp36qBQ%3D",
+      "sourceAccount": "小圣来了.",
+      "sourceType": "secondary_public_clip",
+      "extractionMethod": "douyin_public_page_AI_transcript",
+      "quotes": [
+        {
+          "text": "那就等你上车再走吧",
+          "speaker": "unknown_candidate_xiaosheng",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        },
+        {
+          "text": "又不是见不到了",
+          "speaker": "unknown_candidate_l1ly",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        }
+      ],
+      "coverDownloadStatus": "not_downloaded_signed_link_may_expire",
+      "permissionStatus": "unconfirmed"
+    },
+    {
+      "id": "public_cunri_2026_clip",
+      "lead": "寸日",
+      "clipTitle": "不炸街无法遇见你 炸街无法与你",
+      "clipUrl": "https://www.douyin.com/video/7652412225823635328",
+      "coverUrl": "https://p3-pc-sign.douyinpic.com/image-cut-tos-priv/5d695d21e313065012aa97b53db4a855~tplv-dy-resize-origshort-autoq-75%3A330.jpeg?biz_tag=pcweb_cover&from=327834062&l=20260925223657CAB08923DBFF3D501EEE&lk3s=138a59ce&s=PackSourceEnum_AWEME_DETAIL&sc=cover&se=false&x-expires=2105704800&x-signature=7TzX4omc6nNz7rFf2T6VFClzzyA%3D",
+      "sourceAccount": "二创切片",
+      "sourceType": "secondary_public_clip",
+      "extractionMethod": "douyin_public_page_AI_transcript",
+      "quotes": [
+        {
+          "text": "二十分钟情侣关系",
+          "speaker": "unknown",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        }
+      ],
+      "coverDownloadStatus": "not_downloaded_signed_link_may_expire",
+      "permissionStatus": "unconfirmed"
+    },
+    {
+      "id": "public_vivi_2026_clip",
+      "lead": "薇薇 all4u",
+      "clipTitle": "小圣愣住的那一瞬间又在想什么呢",
+      "clipUrl": "https://www.douyin.com/video/7644855939367442895",
+      "coverUrl": null,
+      "sourceAccount": "二创切片",
+      "sourceType": "secondary_public_clip",
+      "extractionMethod": "public_video_title_and_comments_only",
+      "quotes": [],
+      "coverDownloadStatus": "not_extracted",
+      "permissionStatus": "unconfirmed"
+    },
+    {
+      "id": "public_wang_xiaomiao_2026",
+      "lead": "王小喵 / 小王 / Miao💤",
+      "clipTitle": "洱海初遇、再连麦、直播惩罚表白、二创回顾",
+      "clipUrl": "https://www.douyin.com/video/7625369388968174565",
+      "relatedClips": [
+        {
+          "kind": "初遇",
+          "url": "https://www.douyin.com/video/7625369388968174565"
+        },
+        {
+          "kind": "公开连麦",
+          "url": "https://www.douyin.com/video/7624178876201996985"
+        },
+        {
+          "kind": "直播惩罚表白转写索引",
+          "url": "https://www.douyin.com/shipin/7644752084113360931"
+        },
+        {
+          "kind": "其他高甜连线",
+          "url": "https://www.douyin.com/video/7648677004368421978"
+        },
+        {
+          "kind": "粉丝剪辑再会主题",
+          "url": "https://www.douyin.com/video/7691325921370484570"
+        }
+      ],
+      "coverUrl": "https://p3-pc-sign.douyinpic.com/image-cut-tos-priv/0529202d5fd4d546093bb933792eb45c~tplv-dy-resize-origshort-autoq-75%3A330.jpeg?biz_tag=pcweb_cover&from=327834062&l=2026102412331670523E95B971070EA680&lk3s=138a59ce&s=PackSourceEnum_AWEME_DETAIL&sc=cover&se=false&x-expires=2108174400&x-signature=JRb79ExE7M8LQr1VePNDhZFL%2BVk%3D",
+      "coverSource": "抖音公开视频二创封面；有时效/授权未确认；仅用于定位视觉参考，不能自动当成可复用素材",
+      "sourceType": "fan_public_videos_index",
+      "extractionMethod": "douyin_public_page_AI_transcript_not_manual_audio_review",
+      "quotes": [
+        {
+          "text": "你叫什么名字啊",
+          "speaker": "xiaosheng_candidate",
+          "sourceUrl": "https://www.douyin.com/video/7625369388968174565",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        },
+        {
+          "text": "小王",
+          "speaker": "wang_xiaomiao_candidate",
+          "sourceUrl": "https://www.douyin.com/video/7625369388968174565",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        },
+        {
+          "text": "有机会的话，还能和你再见",
+          "speaker": "xiaosheng_candidate",
+          "sourceUrl": "https://www.douyin.com/video/7624178876201996985",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        },
+        {
+          "text": "你嘛，就是长在了我的审美上",
+          "speaker": "xiaosheng_candidate",
+          "sourceUrl": "https://www.douyin.com/shipin/7644752084113360931",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        },
+        {
+          "text": "你这不是在惩罚我，你这是在奖励我",
+          "speaker": "xiaosheng_candidate",
+          "sourceUrl": "https://www.douyin.com/shipin/7644752084113360931",
+          "timestampSec": null,
+          "status": "ai_transcript_needs_manual_audio_review"
+        }
+      ],
+      "coverDownloadStatus": "url_only_signed_link_may_expire",
+      "permissionStatus": "unconfirmed",
+      "identityNote": "王小喵/小王/Miao💤昵称对应关系根据公开评论与标题推断；发布前核对，不认定现实亲密关系。"
+    }
+  ]
+}
