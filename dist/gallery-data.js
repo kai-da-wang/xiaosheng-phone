@@ -1,6 +1,6 @@
 window.PHOTO_LIBRARY = {
   "project": "小圣的手机",
-  "packageVersion": "2026-10-24-0520-album-update",
+  "packageVersion": "2026-10-24-seaside-chat-update",
   "type": "incremental_update_for_existing_first_version",
   "unlock": {
     "pin": "0520",
@@ -18,9 +18,10 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang",
       "name": "和小王",
-      "coverAssetId": "xiaowang-05",
-      "photoCount": 6,
+      "coverAssetId": "xiaowang-07",
+      "photoCount": 7,
       "items": [
+        "xiaowang-07",
         "xiaowang-01",
         "xiaowang-02",
         "xiaowang-03",
@@ -45,7 +46,7 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang-01",
       "albumId": "xiaowang",
-      "sortOrder": 1,
+      "sortOrder": 2,
       "path": "assets/photos/xiaowang/xiaowang_01_street.jpg",
       "originalFilename": "screenshot_20261024_172840_com.ss.hm.ugc.aweme.jpg",
       "description": "街头相遇画面",
@@ -60,7 +61,7 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang-02",
       "albumId": "xiaowang",
-      "sortOrder": 2,
+      "sortOrder": 3,
       "path": "assets/photos/xiaowang/xiaowang_02_conversation.jpg",
       "originalFilename": "screenshot_20261024_173034_com.ss.hm.ugc.aweme.jpg",
       "description": "室内互动与对视",
@@ -75,7 +76,7 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang-03",
       "albumId": "xiaowang",
-      "sortOrder": 3,
+      "sortOrder": 4,
       "path": "assets/photos/xiaowang/xiaowang_03_evening.jpg",
       "originalFilename": "screenshot_20261024_172913_com.ss.hm.ugc.aweme.jpg",
       "description": "夜间街头相处画面",
@@ -90,7 +91,7 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang-04",
       "albumId": "xiaowang",
-      "sortOrder": 4,
+      "sortOrder": 5,
       "path": "assets/photos/xiaowang/xiaowang_04_funny_filter.jpg",
       "originalFilename": "screenshot_20261024_172832_com.ss.hm.ugc.aweme.jpg",
       "description": "趣味合照",
@@ -105,7 +106,7 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang-05",
       "albumId": "xiaowang",
-      "sortOrder": 5,
+      "sortOrder": 6,
       "path": "assets/photos/xiaowang/xiaowang_05_snow_mountain.jpg",
       "originalFilename": "screenshot_20261024_172811_com.ss.hm.ugc.aweme.jpg",
       "description": "雪山前合照",
@@ -120,7 +121,7 @@ window.PHOTO_LIBRARY = {
     {
       "id": "xiaowang-06",
       "albumId": "xiaowang",
-      "sortOrder": 6,
+      "sortOrder": 7,
       "path": "assets/photos/xiaowang/xiaowang_06_windy_selfie.jpg",
       "originalFilename": "screenshot_20261024_173703_com.ss.hm.ugc.aweme.jpg",
       "description": "户外近景自拍",
@@ -176,6 +177,20 @@ window.PHOTO_LIBRARY = {
       "sourceType": "user_provided_public_video_screenshot",
       "quoteLinkId": null,
       "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "xiaowang-07",
+      "albumId": "xiaowang",
+      "sortOrder": 1,
+      "path": "assets/photos/xiaowang/xiaowang_07_seaside_hat.jpg",
+      "originalFilename": "screenshot_20261024_212133_com.ss.hm.ugc.aweme.jpg",
+      "description": "戴草帽的海边照片",
+      "width": 878,
+      "height": 1536,
+      "fileSizeBytes": 191112,
+      "sha256": "019b167267defe4f7ee785c375750ea31d66cce4ba90271a097d720dd7753466",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
     }
   ],
   "lockScreenReference": {
