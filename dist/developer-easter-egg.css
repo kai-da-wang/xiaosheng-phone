@@ -44,3 +44,18 @@
 .dev-qr-save{display:block;width:100%;max-width:244px;background:#08b65b;color:white;border-radius:9px;padding:12px 10px;font-size:14px;font-weight:600;min-height:45px}
 .dev-payment-option .dev-support-tip{font-size:12px;line-height:1.65;color:#666e68;max-width:275px}
 @media(max-height:640px){.dev-support-content{padding:15px 18px;gap:9px}.dev-qr-image{max-width:195px}}
+
+/* v2 compact WeChat-only 0.99 supporter sheet. Keep all previous screens untouched. */
+.dev-support-layer{background:#f5f7f6}
+.dev-support-header{height:68px;padding:10px 14px;align-items:flex-end;gap:8px}
+.dev-support-header strong{font-size:14px;line-height:24px}
+.dev-support-content{padding:13px 14px 20px;gap:9px;align-items:center}
+.dev-payment-figure{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0;width:100%}
+.dev-payment-poster{display:block;width:auto;height:auto;max-width:100%;max-height:min(61dvh,565px);border-radius:12px;box-shadow:0 2px 12px #113b2420;background:#00c16c;object-fit:contain;cursor:zoom-in}
+.dev-payment-figure figcaption{font-size:12px;font-weight:600;color:#0b8d51;text-align:center}
+.dev-payment-help{font-size:11px;line-height:1.5;color:#718078;text-align:center}
+.dev-qr-save,.dev-support-return{display:block;width:100%;max-width:300px;min-height:42px;border-radius:10px;font-size:13px;font-weight:600;padding:10px}
+.dev-qr-save{background:#07b65b;color:white}
+.dev-support-return{background:#fff;color:#53615a;border:1px solid #e2e8e5}
+.dev-support-foot{font-size:10px;line-height:1.45;color:#8c988e;text-align:center;margin:0}
+@media (max-height:650px){.dev-support-content{padding:7px 12px 12px;gap:6px}.dev-payment-poster{max-height:49dvh}.dev-support-header{height:57px}.dev-support-foot{font-size:9px}}

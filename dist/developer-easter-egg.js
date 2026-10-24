@@ -6,7 +6,7 @@
   const screen = document.getElementById('screen');
   if (!phone || !screen) return;
 
-  const wechatQr = 'assets/support/wechat-receive-code.svg';
+  const wechatQr = 'assets/support/wechat-099.png';
   const story = '嘿，你发现彩蛋啦！🌶️\n《小圣的手机》制作不易，喜欢的话请作者吃包辣条（¥0.99），支持 2.0 更新～\n完全自愿，谢谢你来玩 ❤️';
   let overlay = null;
   let jobs = [];
@@ -49,15 +49,24 @@
     insertContact();
   }
   function donationHtml() {
-    return `<div class="dev-payment-options"><div class="dev-payment-option"><strong>¥0.99 · 一包辣条</strong><span class="dev-wechat-only">仅支持微信支付</span><img class="dev-qr-image" src="${wechatQr}" alt="作者微信个人收款二维码" width="240" height="240" decoding="async"><p class="dev-support-tip">当前为普通微信收款码，扫码后请手动输入 ¥0.99；换成固定金额收款码后可自动带入金额。</p><button type="button" class="dev-qr-save" data-dev-save-qr>保存二维码为图片</button></div></div>`;
+    return `<figure class="dev-payment-figure">
+      <img class="dev-payment-poster" src="${wechatQr}" alt="用户提供的微信0.99元固定金额收款码：仅支持微信支付" width="900" height="1143" decoding="async" loading="eager" data-dev-expand-qr>
+      <figcaption>微信扫码支付 ¥0.99 · 完全自愿</figcaption>
+    </figure>
+    <p class="dev-support-tip dev-payment-help">只有一部手机？保存收款图，再打开微信扫一扫从相册识别。</p>
+    <button type="button" class="dev-qr-save" data-dev-save-qr>保存微信收款图</button>`;
   }
   function showDonation() {
     if (!overlay || overlay.querySelector('.dev-support-layer')) return;
     const layer = document.createElement('section');
     layer.className = 'dev-support-layer';
     layer.setAttribute('role', 'dialog');
-    layer.setAttribute('aria-label', '自愿支持作者');
-    layer.innerHTML = `<div class="dev-support-header"><button type="button" data-dev-dismiss-support aria-label="返回聊天">‹</button><strong>给作者投喂一点灵感 🌶️</strong></div><div class="dev-support-content"><div class="dev-support-emoji" aria-hidden="true">🌶️</div>${donationHtml()}<p class="dev-support-foot">支持完全自愿，2.0 的实际更新时间不与支付挂钩。</p><button type="button" class="dev-support-return" data-dev-dismiss-support>返回聊天</button></div>`;
+    layer.setAttribute('aria-label', '微信自愿支持作者零点九九元');
+    layer.innerHTML = `<header class="dev-support-header"><button type="button" data-dev-dismiss-support aria-label="返回开发者聊天">‹</button><strong>🌶️ 请作者吃包辣条 · ¥0.99</strong></header>
+      <div class="dev-support-content">${donationHtml()}
+        <button type="button" class="dev-support-return" data-dev-finish-support>继续玩</button>
+        <p class="dev-support-foot">支持完全自愿，不影响游戏内容，也不会自动扣款。</p>
+      </div>`;
     overlay.appendChild(layer);
     layer.querySelector('[data-dev-dismiss-support]')?.focus({ preventScroll: true });
   }
@@ -92,40 +101,21 @@
     }, 900));
   }, true);
   function saveWechatQr() {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 720;
-        canvas.height = 720;
-        const g = canvas.getContext('2d');
-        if (!g) throw Error('Canvas unavailable');
-        g.fillStyle = '#fff';
-        g.fillRect(0, 0, 720, 720);
-        g.imageSmoothingEnabled = false;
-        g.drawImage(img, 0, 0, 720, 720);
-        canvas.toBlob(blob => {
-          if (!blob) { window.open(wechatQr, '_blank', 'noopener'); return; }
-          const objectUrl = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = objectUrl;
-          a.download = '小圣的手机_微信收款码.png';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
-        }, 'image/png');
-      } catch {
-        window.open(wechatQr, '_blank', 'noopener');
-      }
-    };
-    img.onerror = () => window.open(wechatQr, '_blank', 'noopener');
-    img.src = wechatQr;
+    const a = document.createElement('a');
+    a.href = wechatQr;
+    a.download = 'xiaosheng-wechat-099.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Some mobile browsers and WeChat WebViews open the image rather than downloading it.
+    // The original non-distorted image also supports long-press-to-save.
   }
   document.addEventListener('click', event => {
     if (event.target.closest('[data-dev-save-qr]')) {
       saveWechatQr(); return;
     }
+    if (event.target.closest('[data-dev-finish-support]')) { closeChat(); return; }
+    if (event.target.closest('[data-dev-expand-qr]')) { saveWechatQr(); return; }
     if (event.target.closest('[data-dev-contact]')) {
       event.preventDefault(); event.stopImmediatePropagation(); showChat(); return;
     }
