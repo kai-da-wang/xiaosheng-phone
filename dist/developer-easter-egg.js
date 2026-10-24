@@ -40,6 +40,7 @@
     </button>`;
   }
   function insertContact() {
+    if (!seen()) return; // Keep the initial developer cameo a surprise until a user sends a message.
     const list = screen.querySelector('#wx-contact-list');
     if (!list || list.querySelector('[data-dev-contact]')) return;
     const input = screen.querySelector('#wx-contact-search');
@@ -77,7 +78,7 @@
     layer.className = 'dev-support-layer';
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-label', '自愿支持作者');
-    layer.innerHTML = `<div class="dev-support-header"><button type="button" data-dev-dismiss-support aria-label="返回聊天">‹</button><strong>给作者投喂一点灵感 🌶️</strong></div><div class="dev-support-content"><div class="dev-support-emoji" aria-hidden="true">🌶️</div>${donationHtml()}<p class="dev-support-foot">支持完全自愿，2.0 的实际更新时间不与支付挂钩。</p><button type="button" class="dev-support-return" data-dev-dismiss-support>继续探索手机</button></div>`;
+    layer.innerHTML = `<div class="dev-support-header"><button type="button" data-dev-dismiss-support aria-label="返回聊天">‹</button><strong>给作者投喂一点灵感 🌶️</strong></div><div class="dev-support-content"><div class="dev-support-emoji" aria-hidden="true">🌶️</div>${donationHtml()}<p class="dev-support-foot">支持完全自愿，2.0 的实际更新时间不与支付挂钩。</p><button type="button" class="dev-support-return" data-dev-dismiss-support>返回聊天</button></div>`;
     overlay.appendChild(layer);
     layer.querySelector('[data-dev-dismiss-support]')?.focus({ preventScroll: true });
   }
