@@ -1,0 +1,39 @@
+.dev-chat-overlay{position:absolute;inset:0;z-index:160;background:#ededed;color:#1e241f;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;animation:dev-in .17s ease-out}
+@keyframes dev-in{from{opacity:.3;transform:translateY(15px)}to{opacity:1;transform:none}}
+.dev-contact-avatar,.dev-message-avatar{background:#fbe1ad!important;color:#482d17!important}
+.dev-chat-status{flex-shrink:0;height:50px;padding:17px 25px 5px;font-size:11px;font-weight:650;display:flex;align-items:center;justify-content:space-between;background:#f6f6f6;color:#3e463e}
+.dev-chat-header{height:51px;flex-shrink:0;background:#f6f6f6;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d4d5d0;color:#202520}
+.dev-chat-header strong{font-size:16px;font-weight:600}.dev-chat-header button{height:100%;width:56px;font-size:34px;line-height:1;color:#222;text-align:left;padding-left:19px}
+.dev-chat-header>span{display:block;width:56px;text-align:center;font-size:15px;letter-spacing:2px}
+.dev-chat-scroll{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:15px 13px 30px;scrollbar-width:none}
+.dev-chat-day{font-size:11px;text-align:center;color:#919791;margin:3px auto 21px}
+.dev-message-list{display:flex;flex-direction:column;gap:18px}
+.dev-message-row{display:flex;align-items:flex-start;gap:9px;animation:dev-bubble-in .23s both}
+@keyframes dev-bubble-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.dev-message-avatar{flex:0 0 37px;width:37px;height:37px;border-radius:6px;display:grid;place-items:center;font-size:22px}
+.dev-message-bubble{font-size:14px;line-height:1.65;padding:10px 12px;background:#fff;border-radius:6px;max-width:calc(100% - 53px);white-space:pre-wrap;box-shadow:0 1px 2px #00000009;position:relative;margin:0}
+.dev-message-bubble:before{content:'';position:absolute;left:-5px;top:13px;width:11px;height:11px;background:#fff;transform:rotate(45deg)}
+.dev-typing{margin:16px 0 0 47px;width:64px;height:34px;display:flex;align-items:center;justify-content:space-evenly;background:#fff;border-radius:6px}
+.dev-typing[hidden],.dev-chat-choices[hidden]{display:none!important}
+.dev-typing i{width:6px;height:6px;border-radius:100%;background:#8d918e;animation:dev-dot 1.15s infinite alternate}
+.dev-typing i:nth-child(2){animation-delay:.2s}.dev-typing i:nth-child(3){animation-delay:.4s}
+@keyframes dev-dot{from{transform:translateY(0);opacity:.5}to{transform:translateY(-3px);opacity:1}}
+.dev-chat-choices{margin:22px 6px 5px 47px;display:flex;flex-direction:column;gap:9px}
+.dev-chat-choices button{border-radius:9px;padding:13px 10px;font-weight:550;font-size:14px;min-height:45px}
+.dev-donate-btn{background:#07b75a;color:#fff}.dev-return-btn{background:#fff;color:#344038;border:1px solid #d2d7d4}
+.dev-chat-footer{flex-shrink:0;min-height:64px;padding:9px 13px 20px;background:#f8f8f8;border-top:1px solid #d4d8d5;display:flex;gap:11px;align-items:center;justify-content:space-between;font-size:10px;color:#89908b}
+.dev-chat-footer span:first-child,.dev-chat-footer span:last-child{font-size:21px;color:#687369}
+.dev-support-layer{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;background:#f5f5f5;color:#24302a;animation:dev-in .18s}
+.dev-support-header{height:90px;flex-shrink:0;display:flex;align-items:flex-end;padding:13px 16px;gap:13px;font-size:15px;background:#fff;border-bottom:1px solid #ececec}
+.dev-support-header button{font-size:32px;line-height:26px;min-width:29px;text-align:left}
+.dev-support-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:27px 22px;gap:14px;text-align:center}
+.dev-support-emoji{font-size:54px;line-height:1.3}
+.dev-no-payment{font-size:14px;line-height:2;color:#616d65;margin:15px 0}
+.dev-support-tip{font-size:12px;line-height:1.7;color:#6d746d}
+.dev-payment-options{display:flex;flex-direction:column;gap:14px;width:100%}
+.dev-payment-option{background:#fff;border-radius:12px;padding:15px;display:flex;align-items:center;flex-direction:column;gap:12px}
+.dev-payment-option img{max-width:220px;width:100%;height:auto;object-fit:contain}
+.dev-payment-option a{font-size:13px;color:#087d4f}
+.dev-support-foot{font-size:11px;line-height:1.7;color:#909791;margin-top:auto}
+.dev-support-return{background:#08b65b;color:white;border-radius:9px;padding:12px 22px;font-weight:600;min-height:44px;width:100%}
+@media(prefers-reduced-motion:reduce){.dev-chat-overlay,.dev-support-layer,.dev-message-row,.dev-typing i{animation:none!important}}
