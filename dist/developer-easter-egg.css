@@ -37,3 +37,10 @@
 .dev-support-foot{font-size:11px;line-height:1.7;color:#909791;margin-top:auto}
 .dev-support-return{background:#08b65b;color:white;border-radius:9px;padding:12px 22px;font-weight:600;min-height:44px;width:100%}
 @media(prefers-reduced-motion:reduce){.dev-chat-overlay,.dev-support-layer,.dev-message-row,.dev-typing i{animation:none!important}}
+
+/* WeChat-only voluntary creator support card */
+.dev-wechat-only{display:inline-flex;align-items:center;justify-content:center;color:#087f42;background:#e7f8ef;border:1px solid #c9efd9;font-size:12px;font-weight:550;padding:5px 12px;border-radius:999px}
+.dev-qr-image{width:min(240px,100%);height:auto;aspect-ratio:1;object-fit:contain;image-rendering:auto;display:block;border:1px solid #f3f3f3;background:#fff;padding:3px;border-radius:10px}
+.dev-qr-save{display:block;width:100%;max-width:244px;background:#08b65b;color:white;border-radius:9px;padding:12px 10px;font-size:14px;font-weight:600;min-height:45px}
+.dev-payment-option .dev-support-tip{font-size:12px;line-height:1.65;color:#666e68;max-width:275px}
+@media(max-height:640px){.dev-support-content{padding:15px 18px;gap:9px}.dev-qr-image{max-width:195px}}
