@@ -33,11 +33,11 @@
     } catch { return ''; }
   }
   function contactMarkup() {
-    return \`<button type="button" class="wx-contact dev-contact" data-dev-contact aria-label="查看开发者彩蛋">
-      <span class="wx-avatar-wrap"><span class="wx-avatar dev-contact-avatar" aria-hidden="true">🌶️</span>\${seen() ? '' : '<b class="wx-unread" aria-label="新消息">1</b>'}</span>
+    return `<button type="button" class="wx-contact dev-contact" data-dev-contact aria-label="查看开发者彩蛋">
+      <span class="wx-avatar-wrap"><span class="wx-avatar dev-contact-avatar" aria-hidden="true">🌶️</span>${seen() ? '' : '<b class="wx-unread" aria-label="新消息">1</b>'}</span>
       <span class="wx-contact-copy"><strong>开发者</strong><small>有句话想对玩到这里的你说……</small></span>
       <span class="wx-contact-end">彩蛋</span>
-    </button>\`;
+    </button>`;
   }
   function insertContact() {
     const list = screen.querySelector('#wx-contact-list');
@@ -68,8 +68,8 @@
       ['alipay', '支付宝', support.alipay]
     ];
     const valid = options.map(([kind, label, url]) => ({ kind, label, url: safeUrl(url) })).filter(x => x.url);
-    if (!valid.length) return \`<p class="dev-no-payment">赞赏码尚未添加，支持入口准备中。<br>你可以继续免费游玩，所有内容不受影响 ❤️</p>\`;
-    return \`<p class="dev-support-tip">自愿支持，与任何人物或平台无关。二维码可以长按或保存后使用。</p><div class="dev-payment-options">\${valid.map(x=>\`<div class="dev-payment-option"><strong>\${x.label}</strong><img src="\${x.url}" alt="\${x.label}收款二维码" loading="lazy" decoding="async"><a href="\${x.url}" download>查看 / 保存二维码</a></div>\`).join('')}</div>\`;
+    if (!valid.length) return `<p class="dev-no-payment">赞赏码尚未添加，支持入口准备中。<br>你可以继续免费游玩，所有内容不受影响 ❤️</p>`;
+    return `<p class="dev-support-tip">自愿支持，与任何人物或平台无关。二维码可以长按或保存后使用。</p><div class="dev-payment-options">${valid.map(x=>`<div class="dev-payment-option"><strong>${x.label}</strong><img src="${x.url}" alt="${x.label}收款二维码" loading="lazy" decoding="async"><a href="${x.url}" download>查看 / 保存二维码</a></div>`).join('')}</div>`;
   }
   function showDonation() {
     if (!overlay || overlay.querySelector('.dev-support-layer')) return;
@@ -77,7 +77,7 @@
     layer.className = 'dev-support-layer';
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-label', '自愿支持作者');
-    layer.innerHTML = \`<div class="dev-support-header"><button type="button" data-dev-dismiss-support aria-label="返回聊天">‹</button><strong>给作者投喂一点灵感 🌶️</strong></div><div class="dev-support-content"><div class="dev-support-emoji" aria-hidden="true">🌶️</div>\${donationHtml()}<p class="dev-support-foot">支持完全自愿，2.0 的实际更新时间不与支付挂钩。</p><button type="button" class="dev-support-return" data-dev-dismiss-support>继续探索手机</button></div>\`;
+    layer.innerHTML = `<div class="dev-support-header"><button type="button" data-dev-dismiss-support aria-label="返回聊天">‹</button><strong>给作者投喂一点灵感 🌶️</strong></div><div class="dev-support-content"><div class="dev-support-emoji" aria-hidden="true">🌶️</div>${donationHtml()}<p class="dev-support-foot">支持完全自愿，2.0 的实际更新时间不与支付挂钩。</p><button type="button" class="dev-support-return" data-dev-dismiss-support>继续探索手机</button></div>`;
     overlay.appendChild(layer);
     layer.querySelector('[data-dev-dismiss-support]')?.focus({ preventScroll: true });
   }
@@ -122,11 +122,11 @@
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-label', '与开发者的聊天彩蛋');
-    overlay.innerHTML = \`<div class="dev-chat-status"><span>微信 · 彩蛋</span><span>●●● ▰</span></div>
+    overlay.innerHTML = `<div class="dev-chat-status"><span>微信 · 彩蛋</span><span>●●● ▰</span></div>
       <header class="dev-chat-header"><button type="button" data-dev-close aria-label="返回微信">‹</button><strong>开发者</strong><span aria-hidden="true">•••</span></header>
       <div class="dev-chat-scroll"><p class="dev-chat-day">今天</p><div class="dev-message-list" aria-live="polite"></div><div class="dev-typing" aria-label="开发者正在输入"><i></i><i></i><i></i></div>
       <div class="dev-chat-choices" hidden><button type="button" class="dev-donate-btn" data-dev-support>🌶️ 请作者吃包辣条</button><button type="button" class="dev-return-btn" data-dev-close>继续探索手机</button></div></div>
-      <footer class="dev-chat-footer"><span>📎</span><span>这是作者留言，不会发送真实微信消息</span><span>☺</span></footer>\`;
+      <footer class="dev-chat-footer"><span>📎</span><span>这是作者留言，不会发送真实微信消息</span><span>☺</span></footer>`;
     phone.appendChild(overlay);
     overlay.querySelector('[data-dev-close]')?.focus({ preventScroll: true });
     revealMessages();
