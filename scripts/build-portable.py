@@ -11,7 +11,7 @@ css = ':root{--coast:url("' + wallpaper + '")}\n' + css.replace("url('./assets/c
 html = html.replace('<link rel="stylesheet" href="styles.css">', '<style>' + css + '</style>')
 favicon = 'data:image/svg+xml;base64,' + base64.b64encode((dist / 'assets/favicon.svg').read_bytes()).decode()
 html = html.replace('assets/favicon.svg', favicon)
-for name in ['content.js', 'gallery-data.js', 'icons.js', 'core.js', 'phone-experience.js', 'app.js']:
+for name in ['content.js', 'gallery-data.js', 'icons.js', 'core.js', 'phone-experience.js', 'dali-map-data.js', 'dali-experience.js', 'app.js']:
     js = (dist / name).read_text().replace('</script', '<\\/script')
     if name in ['gallery-data.js', 'phone-experience.js']:
         import json
