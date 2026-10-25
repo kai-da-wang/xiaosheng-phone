@@ -13,6 +13,7 @@ test('volunteered facts correct and recall independently, without mining static/
   a=run(id,'你记得我的名字吗？',a.memory);assert.match(a.text,/小凯/);assert.equal(a.memory.facts.name,'小凯');
   a=run(id,'不是小凯了，叫我阿凯。我不喜欢草莓了，我现在喜欢吃苹果。',a.memory);assert.equal(a.memory.facts.name,'阿凯');assert.equal(a.memory.facts.favoriteFood,'苹果');
   assert.match(run(id,'你还记得我喜欢什么吗？',a.memory).text,/苹果/);
+  const both=run(id,'你还记得我的名字和喜欢吃什么吗？',a.memory).text;assert.match(both,/阿凯/);assert.match(both,/苹果/);assert.doesNotMatch(both,/是称呼是|是你叫/);
   for(const other of ids.filter(x=>x!==id))assert.doesNotMatch(run(other,'你还记得我喜欢什么吗？').text,/草莓|苹果/);
  }
  assert.deepEqual(run('lead_vivi','我还记得我喜欢吃草莓吗？').memory.facts,{});
