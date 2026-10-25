@@ -1,13 +1,15 @@
 # 小圣的手机
 
-可直接游玩的手机网页。公开地址：https://xiaosheng-phone-kai.imjusttrying341.chatgpt.site
+可直接游玩的手机网页。公开地址：https://kai-da-wang.github.io/xiaosheng-phone/
+
+原游玩地址同步更新：https://xiaosheng-phone-kai.imjusttrying341.chatgpt.site/
 
 ## 当前交互
 
 - 锁屏密码 0520；支持直接进入。
 - 微信采用微信、通讯录、发现、我四个页签，联系人列表显示小王未读红点，进入后消除并保存。
 - 小王聊天中可浏览已提供的七张照片，点开后在手机内全屏查看。
-- 聊天支持用户自己的文字输入、表情、选择照片、导入原声音频并点播，不自动生成角色回复。按用户本轮要求，预置围绕海边照片、吃饭和牵手的原创甜蜜打趣对白；这是游戏创作，并非真实聊天记录或核实台词。
+- 聊天支持用户自己的文字输入、表情、选择照片、导入原声音频并点播，向小王发送文字后，自动生成简短的本地情景回复，支持名字、饮食偏好和部分上下文记忆、输入中提示及新回复未读红点；聊天详情可暂停/恢复。当前不使用大语言模型，复杂自由聊天能力有限。按用户本轮要求，预置围绕海边照片、吃饭和牵手的原创甜蜜打趣对白；这是游戏创作，并非真实聊天记录或核实台词。
 - 语音保存于当前浏览器 IndexedDB，播放状态与已听标记保存在本机。没有捏造的小王/小圣配音，没有复制参考手机的声音。
 - 本次上传的 27 秒录屏仅用于理解交互，没有作为声音或人物聊天素材发布。暂未取得可用于还原小圣/小王对话的原声片段。
 - 抖音已删除，原位置加入计算器；支持四则运算、正负号、百分比及 520 彩蛋。按键只更新数字显示，不再重建应用界面或重新触发入场动画。
@@ -27,7 +29,7 @@
 
 ```bash
 python3 -m http.server 8000 --directory dist
-node --test tests/core.test.cjs
+node --test tests/*.test.cjs
 python3 scripts/build-portable.py
 ```
 
@@ -43,13 +45,15 @@ python3 scripts/build-portable.py
 
 - `dist/app.js`：手机路由、相册、基础应用。
 - `dist/phone-experience.js`：微信四个页签、聊天输入、原声导入播放、未读状态、Safari、计算器与彩蛋。
+- `dist/wang-dialogue.js`、`dist/wang-chat-runtime.js`：原创小王情景对话、记忆和回复调度。
+- `server/wang-chat.mjs`：可选模型后端；未部署、未配置模型。详见 `docs/WANG_REPLY_SETUP.md`。
 - `dist/core.js`：旧版兼容存档、收藏与台词校验规则。
 - `dist/content.js`：原人物与研究线索，未核实语句不作为聊天消息展示。
 - `dist/gallery-data.js`、`dist/assets/photos/`：用户原始照片及图集清单。
 - `scripts/build-portable.py`：离线单文件生成。
 - `ATTRIBUTION.md`、`TEST_REPORT.md`：素材说明与测试边界。
 
-源码：https://github.com/kai-da-wang/xiaosheng-phone （私有仓库）
+源码：https://github.com/kai-da-wang/xiaosheng-phone （公开仓库）
 
 ## 开发者留言与微信支持（2026-10-25）
 
