@@ -63,7 +63,7 @@ window.PHONE_DATA = {
     {
       "id": "lead_muma",
       "name": "木马",
-      "alias": null,
+      "alias": "一根洋葱",
       "initial": "木",
       "color": "#a58e6b",
       "subtitle": "公开片段待补充",

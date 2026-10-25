@@ -1,6 +1,6 @@
 window.PHOTO_LIBRARY = {
   "project": "小圣的手机",
-  "packageVersion": "2026-10-24-seaside-chat-update",
+  "packageVersion": "2026-10-25-muma-dogtail-chat",
   "type": "incremental_update_for_existing_first_version",
   "unlock": {
     "pin": "0520",
@@ -39,6 +39,18 @@ window.PHOTO_LIBRARY = {
         "fitness-01",
         "fitness-02",
         "fitness-03"
+      ]
+    },
+    {
+      "id": "muma",
+      "name": "和木马",
+      "coverAssetId": "muma-01",
+      "photoCount": 4,
+      "items": [
+        "muma-01",
+        "muma-02",
+        "muma-03",
+        "muma-04"
       ]
     }
   ],
@@ -189,6 +201,62 @@ window.PHOTO_LIBRARY = {
       "height": 1536,
       "fileSizeBytes": 191112,
       "sha256": "019b167267defe4f7ee785c375750ea31d66cce4ba90271a097d720dd7753466",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "muma-01",
+      "albumId": "muma",
+      "sortOrder": 1,
+      "path": "assets/photos/muma/muma_01_blue_scarves.jpg",
+      "originalFilename": "screenshot_20261025_160712_com.ss.hm.ugc.aweme.jpg",
+      "description": "蓝色围巾合照",
+      "width": 814,
+      "height": 1536,
+      "fileSizeBytes": 166374,
+      "sha256": "c62f8ff8d5978fc3cb7a870a3a52de52174334720d7402ad9c6db14f7aef7795",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "muma-02",
+      "albumId": "muma",
+      "sortOrder": 2,
+      "path": "assets/photos/muma/muma_02_flower_crown.jpg",
+      "originalFilename": "screenshot_20261025_160808_com.ss.hm.ugc.aweme.jpg",
+      "description": "花环手势照",
+      "width": 1536,
+      "height": 822,
+      "fileSizeBytes": 345366,
+      "sha256": "1f540d547f8dc7134a67a2739072a03c74bc8696b5dd9f6d68e72aea2e56d96c",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "muma-03",
+      "albumId": "muma",
+      "sortOrder": 3,
+      "path": "assets/photos/muma/muma_03_museum_selfie.jpg",
+      "originalFilename": "screenshot_20261025_160741_com.ss.hm.ugc.aweme.jpg",
+      "description": "展厅近景照",
+      "width": 1172,
+      "height": 1536,
+      "fileSizeBytes": 224385,
+      "sha256": "e0833f14b79a29f3cb2830dbf51f14c1a0b1d5632ac7c87c2d8e6c46e8e803b7",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "muma-04",
+      "albumId": "muma",
+      "sortOrder": 4,
+      "path": "assets/photos/muma/muma_04_photo_booth.jpg",
+      "originalFilename": "screenshot_20261024_175021_com.ss.hm.ugc.aweme.jpg",
+      "description": "相纸合照",
+      "width": 1162,
+      "height": 1536,
+      "fileSizeBytes": 116941,
+      "sha256": "2eb76e50714d34542e26962381a448f06f1324e51c4d40d0e7ff996ce75fbe84",
       "sourceType": "user_provided_public_video_screenshot",
       "quoteLinkId": null
     }
