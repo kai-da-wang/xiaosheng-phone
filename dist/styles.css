@@ -14,4 +14,4 @@
 /* Small usability refinements within the existing phone layout. */
 .wx-support-copy{flex:1;line-height:1.4}.wx-support-copy small{display:block;font-size:10px;color:var(--muted);margin-top:4px}.wx-search-empty{text-align:center;padding:34px 18px;color:var(--muted);font-size:13px;line-height:1.8}
 
-.wx-avatar img.monv-avatar{transform:scale(2);transform-origin:20% 40%}
+.wx-avatar img.monv-avatar{object-position:50% 70%}
