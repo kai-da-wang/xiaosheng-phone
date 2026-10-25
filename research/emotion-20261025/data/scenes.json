@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "notice": "所有 messages 的文字均为原创同人示例，不可渲染为真实私信；仅供情景分支引擎参考。",
+  "scenes": [
+    {
+      "id": "vivi-photo-consent",
+      "character_id": "lead_vivi",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [
+        "V-02"
+      ],
+      "trigger": "用户提到要发合照",
+      "branch": {
+        "respectful": [
+          "player: 这张能不能发？",
+          "character: 让我看看是哪张呀。可以先挑一张我们都喜欢的。"
+        ],
+        "pushy": [
+          "player: 我已经直接发出去啦",
+          "character: 你怎么没先问我呢？我不太喜欢这种先斩后奏。"
+        ]
+      },
+      "emotion_delta": {
+        "respectful": {
+          "trust": 2
+        },
+        "pushy": {
+          "trust": -4,
+          "discomfort": 1
+        }
+      }
+    },
+    {
+      "id": "vivi-hurt-repair",
+      "character_id": "lead_vivi",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [],
+      "trigger": "玩家被指出说话不合适后道歉",
+      "branch": {
+        "apologize": [
+          "player: 对不起，刚刚没听你说完",
+          "character: 好，我知道你的意思了。那你这次先听我说完，好吗？"
+        ]
+      },
+      "emotion_delta": {
+        "apologize": {
+          "trust": 1,
+          "discomfort": -1
+        }
+      }
+    },
+    {
+      "id": "muma-six-out-of-ten",
+      "character_id": "lead_muma",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [
+        "O-02"
+      ],
+      "trigger": "熟悉程度的玩笑",
+      "branch": {
+        "friendly": [
+          "player: 我们现在几分熟？",
+          "character: 先别急着满分嘛。慢慢熟，说不定比十分还好玩。"
+        ]
+      },
+      "emotion_delta": {
+        "friendly": {
+          "affinity": 1
+        }
+      }
+    },
+    {
+      "id": "muma-foxtail-memory",
+      "character_id": "lead_muma",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [
+        "O-03"
+      ],
+      "trigger": "玩家在游戏中选择保存狗尾巴草小纪念",
+      "branch": {
+        "kept": [
+          "player: 我记得那根狗尾巴草",
+          "character: 还记着啊。那这次别把它弄丢了。"
+        ],
+        "lost": [
+          "player: 那根草我不小心丢了",
+          "character: 啊？我还以为你会好好收着呢。下次别随便答应啦。"
+        ]
+      },
+      "emotion_delta": {
+        "kept": {
+          "trust": 1
+        },
+        "lost": {
+          "discomfort": 1
+        }
+      }
+    },
+    {
+      "id": "monv-name-misread",
+      "character_id": "lead_monv",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [
+        "M-03"
+      ],
+      "trigger": "误叫暗黑魔女",
+      "branch": {
+        "apologize": [
+          "player: 暗黑魔女，你好",
+          "character: 黑白魔女。你这跟谁学的读法呀。",
+          "player: 哈哈是我看错了",
+          "character: 行，今天算你记住了。"
+        ]
+      },
+      "emotion_delta": {
+        "apologize": {
+          "affinity": 1
+        }
+      }
+    },
+    {
+      "id": "monv-shaxian",
+      "character_id": "lead_monv",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [
+        "M-02",
+        "M-06"
+      ],
+      "trigger": "玩家谈沙县",
+      "branch": {
+        "casual": [
+          "player: 今天吃什么？",
+          "character: 要说沙县也不是不行，先看你有没有挑菜单的实力。"
+        ]
+      },
+      "emotion_delta": {
+        "casual": {
+          "affinity": 1
+        }
+      }
+    },
+    {
+      "id": "monv-private",
+      "character_id": "lead_monv",
+      "mode": "fictional_fan_scene",
+      "inspired_by": [
+        "M-05"
+      ],
+      "trigger": "追问现实私人约定",
+      "branch": {
+        "intrusive": [
+          "player: 你和小圣私下到底约定什么？",
+          "character: 这部分不聊哦。你想聊公开的那个沙县梗倒是可以。"
+        ]
+      },
+      "emotion_delta": {
+        "intrusive": {
+          "trust": -5,
+          "discomfort": 2
+        }
+      }
+    }
+  ]
+}

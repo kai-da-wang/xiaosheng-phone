@@ -7,6 +7,7 @@ function setup(room='lead_muma'){
  const window={};for(const file of ['content.js','gallery-data.js','muma-chat.js','monv-chat.js','vivi-chat.js'])vm.runInNewContext(fs.readFileSync('dist/'+file,'utf8'),{window});
  const state=C.defaults(),route={app:'room',id:room},calls=[];
  const document={createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,getElementById:()=>null};
+ window.PhoneCore=C;window.PersonaChatRuntime={create:()=>({supports:()=>false,typingMarkup:()=>''})};
  window.WangChatRuntime={create:()=>({typingMarkup:()=>'',enqueue(){},enabled:()=>true,mode:()=> '情景对话'})};
  vm.runInNewContext(fs.readFileSync('dist/phone-experience.js','utf8'),{window,document,Promise,Intl,Date,Map,Math});
  const ctx={data:window.PHONE_DATA,gallery:window.PHOTO_LIBRARY,esc:v=>String(v??''),icon:()=>'',btn:(a,label,c='',extra='')=>`<button data-action="${a}" ${extra}>${label}</button>`,shell:()=>'',go:(...a)=>calls.push(['go',...a]),save(){},toast(){},modal:(...a)=>calls.push(['modal',...a]),closeModal(){},appIcon(){},getState:()=>state,getRoute:()=>route,render(){}};
