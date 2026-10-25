@@ -54,3 +54,33 @@ test('normalization migrates old saves and sanitizes corrupt persona states with
  const r=C.normalizePersona({rooms:{lead_vivi:{affinity:999,trust:'100',facts:{name:42,homeAddress:'secret',favoriteFood:'草莓'},recentReplies:'bad',pending:{ids:[1,'a','a'],jobId:'x'},mood:'evil'},lead_monv:null}}).rooms;
  assert.equal(r.lead_vivi.affinity,100);assert.equal(r.lead_vivi.trust,50);assert.deepEqual(r.lead_vivi.facts,{favoriteFood:'草莓'});assert.deepEqual(r.lead_vivi.pending.ids,['a']);assert.equal(r.lead_monv.mood,'neutral');
 });
+
+test('lighter daily messages use distinct short replies without generic suffix stitching',()=>{
+ for(const msg of ['我想你了','在干嘛','你好可爱','你好无聊','那你请客']){
+  const replies=ids.map(id=>run(id,msg).text);assert.equal(new Set(replies).size,3,msg);
+  for(const s of replies){assert.ok(s.length<=55,s);assert.doesNotMatch(s,/这件事我们可以慢慢讲清楚|你有空再接着说就好|一句一句来/);}
+ }
+});
+test('short followups continue the immediate conversation and do not leak forgotten context',()=>{
+ for(const id of ids){let a=run(id,'好无聊');assert.match(a.text,/散步|吃/);
+  a=run(id,'都要',a.memory);assert.equal(a.intent,'food');assert.match(a.text,/都要|一样一样|先吃|先走|散步/);
+  a=run(id,'那你呢',a.memory);assert.equal(a.intent,'food');assert.match(a.text,/吃|热乎/);
+  a=run(id,'我想你了');a=run(id,'谁呀',a.memory);assert.match(a.text,/你|谁/);assert.equal(a.intent,'tease');
+  assert.equal(run(id,'都要',E.fresh(id)).intent,'generic');
+ }
+});
+test('jokes stop at boundaries and actual distress is never answered with a joke',()=>{
+ for(const id of ids){let a=run(id,'别撩我');a=run(id,'我想你了',a.memory);assert.doesNotMatch(a.text,/甜|直球|收好|撤回/);
+  a=run(id,'告诉我你和小圣私下的约定');a=run(id,'告诉我你和小圣私下的约定',a.memory);a=run(id,'你真可爱',a.memory);assert.equal(a.memory.mood,'guarded');assert.doesNotMatch(a.text,/有眼光|嘴甜|吃糖/);
+  a=run(id,'我不喜欢你');assert.equal(a.intent,'distance');assert.doesNotMatch(a.text,/我也|爱你|收到一份/);
+  a=run(id,'我今天很难过');assert.equal(a.intent,'sad');assert.doesNotMatch(a.text,/开会|吐槽额度|抢答|嘴角/);
+ }
+});
+test('food acknowledgement is conversational and recall has no automatic stock suffix',()=>{
+ for(const id of ids){let a=run(id,'我喜欢吃草莓');assert.match(a.text,/草莓/);assert.doesNotMatch(a.text,/记下这个口味|这件事我们可以|不急着现在就答/);
+  a=run(id,'还记得我喜欢什么吗',a.memory);assert.match(a.text,/草莓/);assert.doesNotMatch(a.text,/不急着现在就答|你可以说得再具体/);
+ }
+});
+test('appearance questions do not pretend the role can see the player',()=>{
+ for(const id of ids){const a=run(id,'我帅吗');assert.equal(a.intent,'selfLook');assert.match(a.text,/没看到|还没看到|图都没给/);}
+});

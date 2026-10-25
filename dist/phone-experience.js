@@ -8,7 +8,7 @@ window.PhoneExperience={create(ctx){
  let tab='chats',playing=null,audio=null,activeUrl=null,mediaMenu=false,emojiMenu=false,voiceMode=false,calcValue='0',calcStored=null,calcOp=null,calcFresh=false;
  const chatViews=new Map();let nextCaret=null,forceChatEnd=null;
  const wangPortrait='assets/photos/xiaowang/xiaowang_06_windy_selfie.jpg';
- const selfPortrait='assets/photos/fitness/fitness_01_black_vest.jpg';
+ const selfPortrait=G.assets.find(a=>a.id==='fitness-02')?.path||'';
  const upload=document.createElement('input');upload.type='file';upload.accept='audio/*,.mp3,.m4a,.wav,.ogg';upload.id='chat-audio-file';upload.hidden=true;document.body.appendChild(upload);
  const person=id=>people.find(p=>p.id===id)||people[0];
  const photoList=albumId=>{const a=G.albums.find(x=>x.id===albumId);return (a?.items||[]).map(id=>G.assets.find(x=>x.id===id)).filter(Boolean);};

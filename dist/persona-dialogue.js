@@ -61,6 +61,7 @@
    identity:'这是《小圣的手机》的魔女同人角色，不是真人或真实私聊。'
   }
  };
+ const Voice=typeof module!=='undefined'&&module.exports?require('./persona-voice.js'):root.PersonaVoice;
  const C=typeof module!=='undefined'&&module.exports?require('./core.js'):root.PhoneCore;
  const cards=typeof module!=='undefined'&&module.exports?require('./persona-data.js'):root.PERSONA_DATA;
  const clean=v=>String(v??'').trim().replace(/\s+/g,' ').slice(0,1000);
@@ -76,13 +77,13 @@
  };
  // Give each topic a small but varied set of original sentences, never the same pool renamed.
  for(const id of ids)for(const [k,v] of Object.entries(extra[id]))styles[id][k]=[...(styles[id][k]||[]),...v];
- const tails={lead_vivi:['你可以说得再具体一点。','我想先听听你的想法。','这件事我们可以慢慢讲清楚。'],lead_muma:['不急着现在就答。','你有空再接着说就好。','我们慢慢聊。'],lead_monv:['先说清楚就行。','这事不用靠猜。','一句一句来。']};
+ // Fully authored replies: do not append unrelated filler to make variants.
+ for(const id of ids)Object.assign(styles[id],Voice.pools[id]);
  function choose(id,kind,m,options){
-  const list=options||styles[id][kind]||styles[id].generic;
-  const expanded=[...list,...list.flatMap(s=>tails[id].map(t=>s.length+t.length<=65?s+t:s.split(/[。？]/)[0]+'。'+t))];
-  const pool=[...new Set(expanded)];
-  const unused=pool.filter(s=>!m.recentReplies.includes(s));
-  const available=unused.length?unused:pool;
+  const pool=[...new Set(options||styles[id][kind]||styles[id].generic)];
+  let available=pool.filter(s=>!m.recentReplies.includes(s));
+  if(!available.length)available=pool;
+  if(m.recentReplies.slice(-2).length===2&&m.recentReplies.slice(-2).every(s=>/[？?]/.test(s))){const statements=available.filter(s=>!/[？?]/.test(s));if(statements.length)available=statements;}
   return available[(m.conversationTurns-1)%available.length];
  }
  function kindOf(t){
@@ -102,6 +103,15 @@
   if(/记得|记不记得|还记着/.test(t)&&/喜欢|爱吃|吃什么|偏好/.test(t))return 'recallFood';
   if(/记得|记不记得|还记着/.test(t)&&/去哪|哪里|旅行|想去/.test(t))return 'recallTravel';
   if(/记得|记不记得|还记着/.test(t)&&/约定|答应/.test(t))return 'recallAgreement';
+  if(/不喜欢你|不爱你|不想你了|别自作多情/.test(t))return 'distance';
+  if(/你.*(?:像|太像).*(?:机器人|客服)|官腔|套话|复读|念稿|聊天说明书|说话.*生硬|别.*问.*问题/.test(t))return 'feedback';
+  if(/(?:在干嘛|干什么呢|干嘛呢|在做什么|你在忙什么|怎么不回我)/.test(t))return 'status';
+  if(/想你|想不想我|想我了吗/.test(t))return 'missing';
+  if(/无聊|陪我聊|聊点什么|不知道聊什么/.test(t))return 'bored';
+  if(/请客|你请|你买单/.test(t))return 'treat';
+  if(/我帅吗|我好看吗|我漂亮吗/.test(t))return 'selfLook';
+  if(/好看|漂亮|可爱|温柔|有趣|你真好|夸你/.test(t))return 'compliment';
+  if(/笨蛋|傻瓜|木头|嘴硬|逗你|贫嘴|你才|你猜/.test(t))return 'tease';
   if(/生气|不高兴|不开心/.test(t)&&!/我(?:今天|有点|很)?不开心/.test(t))return 'angry';
   if(/喜欢我|爱我|喜欢你|爱你|想你|想亲|抱抱|亲亲|当我女友/.test(t))return 'love';
   if(/(?:我叫|叫我|我的昵称是|我的名字是)/.test(t))return 'stateName';
@@ -110,7 +120,7 @@
   if(/狗尾巴草|六分熟|几分熟|那根草/.test(t))return 'onionAnchor';
   if(/暗黑魔女|黑白魔女|沙县|猪蹄|电影/.test(t))return 'witchAnchor';
   if(/照片|合照|原图|发朋友圈/.test(t))return 'photo';
-  if(/累了|好累|熬夜|疲惫/.test(t))return 'tired';
+  if(/累了|好累|累死|累坏|熬夜|疲惫/.test(t))return 'tired';
   if(/难过|失落|不开心|委屈|想哭/.test(t))return 'sad';
   if(/学习|考试|考研|作业|数学|做题|背单词/.test(t))return 'study';
   if(/睡觉|晚安|困了|要睡/.test(t))return 'sleep';
@@ -160,15 +170,16 @@
   else if(intent==='insult')text=select('hurt');
   else if(intent==='sorry')text=select('sorry');
   else if(intent==='angry')text=select(['hurt','guarded'].includes(m.mood)?m.mood:'calm');
-  else if(/^recall/.test(intent)){
-   const combined=[f.name?'你叫'+f.name:'',f.favoriteFood?'喜欢吃'+f.favoriteFood:''].filter(Boolean).join('，');
-   const key={recallAll:'combined',recallName:'name',recallFood:'favoriteFood',recallTravel:'travelPlace',recallAgreement:'agreement'}[intent];const v=key==='combined'?combined:f[key];
-   text=intent==='recallAll'&&combined?select('generic',voice([[`记得呀，${combined}。我有认真听。`,`你告诉过我，${combined}。没记错吧？`],[`记得，${combined}。慢慢说过的事，我会留心。`,`${combined}，对吧？不是只有大事才会记着。`],[`${combined}。记性还行。`,`记得，${combined}。这回不用猜。`]])):v?select('generic',voice([[`你说过${v}，我记着呢。`,`记得呀，是${v}。这次没记错吧？`,`你自己告诉我的是${v}。我有认真听。`],[`记得呀，${v}。你说过的，我没忘。`,`${v}嘛。上次说的小事，也会记着。`,`是${v}吧，你告诉我的。`],[`你说过${v}。我记性还行。`,`${v}。不用让我猜第二遍。`,`记得，${v}。是你自己说的。`]])):select('generic',voice([['你还没告诉我这件事，我不想乱猜。','这件事我没有记着。你愿意的话可以重新告诉我。'],['这件事我还不知道呢。想说的时候再说也行。','我这里没留着这个，你要再告诉我一次吗？'],['这条没记着。别让我猜。','我不知道这件事，你还没告诉我。']]));
-  }else if(Object.keys(learned).length&&/^state/.test(intent)){
-   const [k,v]=Object.entries(learned).at(-1),label=k==='name'?'称呼':k==='favoriteFood'?'口味':k==='travelPlace'?'想去的地方':'小约定';
-   text=select('generic',voice([[`${v}呀，我记下这个${label}。`,`好，${v}。下次聊到这件事，我就不用猜啦。`,`收到，是${v}。你想改的时候直接告诉我。`],[`${v}，我记下啦。别问我为什么记这么细。`,`嗯，${v}。慢慢熟悉，就从这种小事开始。`,`好，${v}，不急着一次说太多。`],[`${v}。行，记住了。`,`收到，${v}。这回不用我猜了。`,`好，${v}。想换了再说。`]]));
+  else if(/^recall/.test(intent))text=select('generic',Voice.recall(roomId,intent,f));
+  else if(Object.keys(learned).length&&/^state/.test(intent)){
+   const [k,v]=Object.entries(learned).at(-1);text=select('generic',Voice.ack(roomId,k,v));
   }else if(/^state/.test(intent)&&!m.memoryAllowed)text=voice(['听到了。记忆已关，我只接着这一句聊，不保存这个偏好。','嗯，我听着呢。不过记忆关着，不会把这件事另存下来。','收到。记忆关着，这个偏好不存。']);
-  else if(intent==='love'&&!m.flirtAllowed)text=p.afterBoundary;
+  else if(['love','missing'].includes(intent)&&!m.flirtAllowed)text=p.afterBoundary;
+  else if(intent==='distance')text=voice(['好嘛，不替你决定怎么想，咱们正常聊。','嗯，我听见了，那就按舒服的距离来。','行，知道了，不替你加戏。']);
+  else if(intent==='selfLook')text=voice(['还没看到你今天的样子呢，你先这么有信心地问，我都有点好奇了。','我又没看到你今天的样子，不过你这开场挺有自信。','图都没给，就让我批卷啊。你倒是挺自信。']);
+  else if(['hurt','guarded'].includes(m.mood)&&['missing','tease','compliment','bored','status','treat','feedback'].includes(intent))text=select(m.mood);
+  else if(intent==='generic'&&Voice.flow(roomId,t,m)){const flow=Voice.flow(roomId,t,m);intent=flow.intent;text=select('generic',flow.pool);}
+
   else if(intent==='onionAnchor'&&roomId==='lead_muma'){
    if(/丢了|弄丢|不见/.test(t)){intent='insult';text='啊，我还以为会好好留着呢。下次先想好，再答应收下。';}
    else text=select('generic',/狗尾巴草|那根草/.test(t)?['你还记得那根草呀。小小一根，也可以好好收着。','游戏里的那份小纪念，留着就好，不用拿它证明什么。','那根草不值钱，不过答应留着这件事，我会认真对待。']:['先六分熟吧，慢慢来，不着急。','熟悉又不是打分，聊得舒服就挺好。','别急着凑满分嘛，慢慢熟也有意思。']);
@@ -186,7 +197,7 @@
    m.positiveTurns++;if(m.growthCount<6&&m.conversationTurns-m.lastGrowthTurn>=3){m.affinity=clamp(m.affinity+1,0,100);m.trust=clamp(m.trust+1,0,100);m.growthCount++;m.lastGrowthTurn=m.conversationTurns;}
    if(m.discomfort>0)m.discomfort--;if(['hurt','guarded'].includes(m.mood)){m.repairTurns++;if(m.discomfort===0&&m.repairTurns>=2)m.mood='neutral';}
    else if(m.positiveTurns>=2)m.mood='warm';
-  }else if(!['hurt','guarded'].includes(m.mood))m.mood=['laugh','onionAnchor','witchAnchor'].includes(intent)?'playful':m.positiveTurns>=2?'warm':'neutral';
+  }else if(!['hurt','guarded'].includes(m.mood))m.mood=['laugh','tease','compliment','onionAnchor','witchAnchor'].includes(intent)?'playful':m.positiveTurns>=2?'warm':'neutral';
   m.lastTopic=intent;m.lastReplyAt=now;m.recentReplies=[...m.recentReplies,text].slice(-6);m.recentInputs=[...m.recentInputs,t].slice(-6);
   return {text,memory:m,intent,safety:intent==='safety',pause,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
  }
