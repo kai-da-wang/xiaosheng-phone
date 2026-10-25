@@ -86,7 +86,7 @@ window.PHONE_DATA = {
     {
       "id": "lead_monv",
       "name": "魔女",
-      "alias": null,
+      "alias": "黑白魔女",
       "initial": "魔",
       "color": "#8c789c",
       "subtitle": "公开片段待补充",

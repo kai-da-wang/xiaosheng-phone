@@ -1,6 +1,6 @@
 window.PHOTO_LIBRARY = {
   "project": "小圣的手机",
-  "packageVersion": "2026-10-25-muma-dogtail-chat",
+  "packageVersion": "2026-10-25-monv-shaxian-chat",
   "type": "incremental_update_for_existing_first_version",
   "unlock": {
     "pin": "0520",
@@ -51,6 +51,18 @@ window.PHOTO_LIBRARY = {
         "muma-02",
         "muma-03",
         "muma-04"
+      ]
+    },
+    {
+      "id": "monv",
+      "name": "和魔女",
+      "coverAssetId": "monv-01",
+      "photoCount": 4,
+      "items": [
+        "monv-01",
+        "monv-02",
+        "monv-03",
+        "monv-04"
       ]
     }
   ],
@@ -257,6 +269,62 @@ window.PHOTO_LIBRARY = {
       "height": 1536,
       "fileSizeBytes": 116941,
       "sha256": "2eb76e50714d34542e26962381a448f06f1324e51c4d40d0e7ff996ce75fbe84",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "monv-01",
+      "albumId": "monv",
+      "sortOrder": 1,
+      "path": "assets/photos/monv/monv_01_shopping_selfie.jpg",
+      "originalFilename": "screenshot_20261025_161557_com.ss.hm.ugc.aweme.jpg",
+      "description": "逛街合照",
+      "width": 832,
+      "height": 1536,
+      "fileSizeBytes": 280895,
+      "sha256": "1bd35f50bf07d1126e08d278d2a9e941d7ee1f34a39979911700bbfd976f37ae",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "monv-02",
+      "albumId": "monv",
+      "sortOrder": 2,
+      "path": "assets/photos/monv/monv_02_shaxian_meal.jpg",
+      "originalFilename": "screenshot_20261025_161449_com.ss.hm.ugc.aweme.jpg",
+      "description": "沙县吃饭画面",
+      "width": 802,
+      "height": 1536,
+      "fileSizeBytes": 194947,
+      "sha256": "0546dda788044035b3d561a0f2e4e4c68cd7e60d30dcc8117aae9e0496aa75e3",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "monv-03",
+      "albumId": "monv",
+      "sortOrder": 3,
+      "path": "assets/photos/monv/monv_03_selfie_pair.jpg",
+      "originalFilename": "screenshot_20261025_161441_com.ss.hm.ugc.aweme.jpg",
+      "description": "双格合照",
+      "width": 1536,
+      "height": 1506,
+      "fileSizeBytes": 342011,
+      "sha256": "db38f3f2f17b2dbe4164018d6d699bf00c5e9d8c54fcd08aa36338eae2098e01",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "monv-04",
+      "albumId": "monv",
+      "sortOrder": 4,
+      "path": "assets/photos/monv/monv_04_shaxian_walk.jpg",
+      "originalFilename": "screenshot_20261025_161425_com.ss.hm.ugc.aweme.jpg",
+      "description": "去吃沙县的合照",
+      "width": 806,
+      "height": 1536,
+      "fileSizeBytes": 133080,
+      "sha256": "b986d7e826abd325d95f6123de87ba83744de09abf2d1746c4a415b4ec8b19d9",
       "sourceType": "user_provided_public_video_screenshot",
       "quoteLinkId": null
     }

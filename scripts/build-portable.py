@@ -14,7 +14,7 @@ for name in ['developer-easter-egg.css','lock-screen.css']:
     html = re.sub(r'<link rel="stylesheet" href="'+re.escape(name)+r'(?:\?[^"]*)?">', lambda _: '<style>'+(dist/name).read_text()+'</style>', html)
 favicon = 'data:image/svg+xml;base64,' + base64.b64encode((dist / 'assets/favicon.svg').read_bytes()).decode()
 html = html.replace('assets/favicon.svg', favicon)
-for name in ['content.js', 'gallery-data.js', 'icons.js', 'core.js', 'wang-dialogue.js', 'wang-chat-runtime.js', 'muma-chat.js', 'phone-experience.js', 'dali-map-data.js', 'dali-experience.js', 'app.js', 'developer-easter-egg.js']:
+for name in ['content.js', 'gallery-data.js', 'icons.js', 'core.js', 'wang-dialogue.js', 'wang-chat-runtime.js', 'muma-chat.js', 'monv-chat.js', 'phone-experience.js', 'dali-map-data.js', 'dali-experience.js', 'app.js', 'developer-easter-egg.js']:
     js = (dist / name).read_text().replace('</script', '<\\/script')
     if name in ['gallery-data.js', 'phone-experience.js']:
         import json

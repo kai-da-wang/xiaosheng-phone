@@ -2,6 +2,7 @@
 window.MUMA_CHAT = {
   "roomId": "lead_muma",
   "albumId": "muma",
+  "portraitAssetId": "muma-03",
   "storyId": "muma-dogtail-20261025",
   "messages": [
     {

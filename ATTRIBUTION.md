@@ -53,3 +53,9 @@
 用户明确说明木马为「一根洋葱」，并提供「你留狗尾巴草给我当纪念」这句话及四张照片。本轮按用户分组添加昵称别名与相册；没有另行以人脸识别确定人物身份。该句前后对白为原创场景续写，不是现实私人聊天记录、独立核实的原片台词或语音转写。没有生成或克隆声音。
 
 四张JPG分别来自 screenshot_20261025_160712_com.ss.hm.ugc.aweme.jpg、screenshot_20261025_160808_com.ss.hm.ugc.aweme.jpg、screenshot_20261025_160741_com.ss.hm.ugc.aweme.jpg、screenshot_20261024_175021_com.ss.hm.ugc.aweme.jpg；原样复制，没有裁切、修复模糊或改动人物。尺寸及SHA-256见 `research/ASSET_MANIFEST_0520.json`。
+
+## 黑白魔女素材（2026-10-25）
+
+用户明确将四张新照片归为黑白魔女，本轮据此填充原有魔女联系人、昵称别名及「和魔女」相册。素材分别为 screenshot_20261025_161557_com.ss.hm.ugc.aweme.jpg、screenshot_20261025_161449_com.ss.hm.ugc.aweme.jpg、screenshot_20261025_161441_com.ss.hm.ugc.aweme.jpg、screenshot_20261025_161425_com.ss.hm.ugc.aweme.jpg。全部原样复制，包含原图中的字幕及拼接形式；未换脸、修图或去除原字幕。头像仅用CSS显示原图局部。尺寸和SHA-256见素材清单。
+
+「去吃沙县」字样可在用户提供的图片中看到，但未独立核听其发言者、上下文或原视频时间。前后微信对话为本项目基于照片情境的原创创作，不作为真实私人聊天、逐字台词或真实行程发布。没有配音或声音克隆。
