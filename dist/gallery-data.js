@@ -1,6 +1,6 @@
 window.PHOTO_LIBRARY = {
   "project": "小圣的手机",
-  "packageVersion": "2026-10-25-monv-shaxian-chat",
+  "packageVersion": "2026-10-25-vivi-photos-chat",
   "type": "incremental_update_for_existing_first_version",
   "unlock": {
     "pin": "0520",
@@ -63,6 +63,17 @@ window.PHOTO_LIBRARY = {
         "monv-02",
         "monv-03",
         "monv-04"
+      ]
+    },
+    {
+      "id": "vivi",
+      "name": "和薇薇",
+      "coverAssetId": "vivi-02",
+      "photoCount": 3,
+      "items": [
+        "vivi-01",
+        "vivi-02",
+        "vivi-03"
       ]
     }
   ],
@@ -327,6 +338,49 @@ window.PHOTO_LIBRARY = {
       "sha256": "b986d7e826abd325d95f6123de87ba83744de09abf2d1746c4a415b4ec8b19d9",
       "sourceType": "user_provided_public_video_screenshot",
       "quoteLinkId": null
+    },
+    {
+      "id": "vivi-01",
+      "albumId": "vivi",
+      "sortOrder": 1,
+      "path": "assets/photos/vivi/vivi_01_car_selfie.jpg",
+      "originalFilename": "screenshot_20261025_162637_com.ss.hm.ugc.aweme.jpg",
+      "description": "车内合照",
+      "width": 876,
+      "height": 1536,
+      "fileSizeBytes": 67296,
+      "sha256": "62b4e5a6225eefcdce40283b4a777979b9541a40e0eebc8ee8ab24ce7bdee94e",
+      "sourceType": "user_provided_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "vivi-02",
+      "albumId": "vivi",
+      "sortOrder": 2,
+      "path": "assets/photos/vivi/vivi_02_cat_ears.jpg",
+      "originalFilename": "screenshot_20261025_162545_com.ss.hm.ugc.aweme.jpg",
+      "description": "猫耳滤镜合照",
+      "width": 1536,
+      "height": 839,
+      "fileSizeBytes": 155800,
+      "sha256": "80fd3b0ab22a61a927ed6b523e9f6ce6e1ed291f70cf0a6d1d16f1c30d340f0f",
+      "sourceType": "user_provided_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "vivi-03",
+      "albumId": "vivi",
+      "sortOrder": 3,
+      "path": "assets/photos/vivi/vivi_03_lakeside_bouquet.jpg",
+      "originalFilename": "screenshot_20261025_162531_com.ss.hm.ugc.aweme.jpg",
+      "description": "湖边捧花画面",
+      "width": 1536,
+      "height": 1090,
+      "fileSizeBytes": 267611,
+      "sha256": "ca4387550f9079f88b8b39fab2a18e51b8941a370393528f76dda1125963778d",
+      "sourceType": "user_provided_video_screenshot",
+      "quoteLinkId": null,
+      "containsAiGenerationLabel": true
     }
   ],
   "lockScreenReference": {

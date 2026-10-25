@@ -1,7 +1,7 @@
 window.PhoneExperience={create(ctx){
  'use strict';
  const {data:D,gallery:G,esc,icon,btn,shell,go,save,toast,modal,appIcon}=ctx;
- const S=()=>ctx.getState(),people=D.people,wang=people[0].id,scenes=[window.MUMA_CHAT,window.MONV_CHAT].filter(Boolean);
+ const S=()=>ctx.getState(),people=D.people,wang=people[0].id,scenes=[window.MUMA_CHAT,window.MONV_CHAT,window.VIVI_CHAT].filter(Boolean);
  const storyFor=id=>scenes.find(s=>s.roomId===id);
  S().chatReadStories||=[];
  const albumForPerson=id=>id===wang?'xiaowang':storyFor(id)?.albumId||null;
