@@ -1479,9 +1479,9 @@ window.VIVI_CHAT = {
   else if(intent==='sorry')text=select('sorry');
   else if(intent==='angry')text=select(['hurt','guarded'].includes(m.mood)?m.mood:'calm');
   else if(/^recall/.test(intent)){
-   const combined=[f.name?'称呼是'+f.name:'',f.favoriteFood?'喜欢吃'+f.favoriteFood:''].filter(Boolean).join('，');
+   const combined=[f.name?'你叫'+f.name:'',f.favoriteFood?'喜欢吃'+f.favoriteFood:''].filter(Boolean).join('，');
    const key={recallAll:'combined',recallName:'name',recallFood:'favoriteFood',recallTravel:'travelPlace',recallAgreement:'agreement'}[intent];const v=key==='combined'?combined:f[key];
-   text=v?select('generic',voice([[`你说过${v}，我记着呢。`,`记得呀，是${v}。这次没记错吧？`,`你自己告诉我的是${v}。我有认真听。`],[`记得呀，${v}。你说过的，我没忘。`,`${v}嘛。上次说的小事，也会记着。`,`是${v}吧，你告诉我的。`],[`你说过${v}。我记性还行。`,`${v}。不用让我猜第二遍。`,`记得，${v}。是你自己说的。`]])):select('generic',voice([['你还没告诉我这件事，我不想乱猜。','这件事我没有记着。你愿意的话可以重新告诉我。'],['这件事我还不知道呢。想说的时候再说也行。','我这里没留着这个，你要再告诉我一次吗？'],['这条没记着。别让我猜。','我不知道这件事，你还没告诉我。']]));
+   text=intent==='recallAll'&&combined?select('generic',voice([[`记得呀，${combined}。我有认真听。`,`你告诉过我，${combined}。没记错吧？`],[`记得，${combined}。慢慢说过的事，我会留心。`,`${combined}，对吧？不是只有大事才会记着。`],[`${combined}。记性还行。`,`记得，${combined}。这回不用猜。`]])):v?select('generic',voice([[`你说过${v}，我记着呢。`,`记得呀，是${v}。这次没记错吧？`,`你自己告诉我的是${v}。我有认真听。`],[`记得呀，${v}。你说过的，我没忘。`,`${v}嘛。上次说的小事，也会记着。`,`是${v}吧，你告诉我的。`],[`你说过${v}。我记性还行。`,`${v}。不用让我猜第二遍。`,`记得，${v}。是你自己说的。`]])):select('generic',voice([['你还没告诉我这件事，我不想乱猜。','这件事我没有记着。你愿意的话可以重新告诉我。'],['这件事我还不知道呢。想说的时候再说也行。','我这里没留着这个，你要再告诉我一次吗？'],['这条没记着。别让我猜。','我不知道这件事，你还没告诉我。']]));
   }else if(Object.keys(learned).length&&/^state/.test(intent)){
    const [k,v]=Object.entries(learned).at(-1),label=k==='name'?'称呼':k==='favoriteFood'?'口味':k==='travelPlace'?'想去的地方':'小约定';
    text=select('generic',voice([[`${v}呀，我记下这个${label}。`,`好，${v}。下次聊到这件事，我就不用猜啦。`,`收到，是${v}。你想改的时候直接告诉我。`],[`${v}，我记下啦。别问我为什么记这么细。`,`嗯，${v}。慢慢熟悉，就从这种小事开始。`,`好，${v}，不急着一次说太多。`],[`${v}。行，记住了。`,`收到，${v}。这回不用我猜了。`,`好，${v}。想换了再说。`]]));
