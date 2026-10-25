@@ -22,7 +22,7 @@ test('Muma scene contains the supplied line from Muma and all photo IDs resolve'
 });
 test('Muma story unread is independent of an older contact read mark',()=>{
  const {x,state,window}=setup();state.chatReadRooms.push('lead_muma');assert.equal(x.unreadCount(),4);
- const html=x.room();assert.match(html,/你留狗尾巴草给我当纪念/);assert.match(html,/data-album="muma"/);
+ const html=x.room();assert.match(html,/你留狗尾巴草给我当纪念/);assert.match(html,/data-album="muma"/);assert.doesNotMatch(html,/wx-shared-album|wx-shared-grid|查看全部/);
  assert.ok(state.chatReadStories.includes(window.MUMA_CHAT.storyId));assert.equal(x.unreadCount(),3);
  assert.match(x.avatar(window.PHONE_DATA.people.find(p=>p.id==='lead_muma')),/muma_03_museum_selfie/);
 });
@@ -65,6 +65,6 @@ test('Vivi picker, outgoing photo, viewer and album return use the Vivi album',(
  const {x,state,calls}=setup('lead_vivi');x.action('wx-pick-photo',{dataset:{}});
  assert.equal(calls.at(-1)[2].albumId,'vivi');assert.equal(calls.at(-1)[2].photos.length,3);
  x.action('wx-send-photo',{dataset:{album:'vivi',index:'2'}});assert.equal(state.chatMessages.lead_vivi[0].assetId,'vivi-03');
- x.action('wx-photo',{dataset:{album:'vivi',index:'2'}});assert.equal(calls.at(-1)[2].albumId,'vivi');
+ x.action('wx-photo',{dataset:{album:'vivi',index:'2'}});assert.equal(calls.at(-1)[2].albumId,'vivi');assert.equal(calls.at(-1)[2].assetId,'vivi-03');
  x.action('wx-album',{dataset:{}});assert.equal(calls.at(-1)[2].id,'vivi');assert.equal(calls.at(-1)[2].returnRoom,'lead_vivi');
 });
