@@ -8,7 +8,7 @@ window.WangChatRuntime={create(ctx){
  const enabled=()=>S().wangAutoReply!==false;
  function pending(){return enabled()&&Array.isArray(S().wangPending?.ids)&&S().wangPending.ids.length>0;}
  function typingMarkup(avatar){return pending()?`<div class="wx-message incoming wx-typing-message" role="status" aria-label="小王正在输入">${avatar}<div class="wx-text-bubble wx-typing-dots"><i></i><i></i><i></i></div></div>`:'';}
- function removeTyping(){document.querySelector('.wx-typing-message')?.remove();}
+ function removeTyping(){if(activeRoom())document.querySelector('.wx-typing-message')?.remove();}
  function stop(){clearTimeout(timer);timer=null;request?.abort();request=null;}
  function updateVisible(reply){
   if(activeRoom()){
@@ -44,7 +44,7 @@ window.WangChatRuntime={create(ctx){
   S().chatMessages[wang].push(reply);S().wangMemory=local.memory;S().wangPending=null;S().wangLastMode=origin;
   if(local.pause)S().wangAutoReply=false;
   if(!activeRoom())S().chatReadRooms=S().chatReadRooms.filter(id=>id!==wang);
-  save();updateVisible(reply);
+  save();updateVisible(reply);ctx.onIncoming?.(wang,reply);
  }
  function schedule(delay){clearTimeout(timer);const job=S().wangPending;if(job)timer=setTimeout(()=>{timer=null;complete(job.jobId);},delay);}
  function enqueue(message){

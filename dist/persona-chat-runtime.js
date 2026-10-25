@@ -28,7 +28,7 @@ window.PersonaChatRuntime={create(ctx){
   const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',from:'other',text:output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
   history.push(reply);S().personaV2.rooms[id]={...output.memory,pending:null,autoReply:!output.pause};
   if(!active(id))S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);
-  save();showReply(id,reply);
+  save();showReply(id,reply);ctx.onIncoming?.(id,reply);
  }
  function schedule(id,delay){stop(id);const job=room(id).pending;if(job)timers.set(id,setTimeout(()=>{timers.delete(id);complete(id,job.jobId);},delay));}
  function enqueue(id,message){
