@@ -1,6 +1,6 @@
 {
   "project": "小圣的手机",
-  "packageVersion": "2026-10-25-natural-chat-fitness",
+  "packageVersion": "2026-10-25-fitness-portrait",
   "type": "incremental_update_for_existing_first_version",
   "unlock": {
     "pin": "0520",
@@ -34,10 +34,11 @@
       "id": "fitness",
       "name": "健身",
       "coverAssetId": "fitness-02",
-      "photoCount": 2,
+      "photoCount": 3,
       "items": [
         "fitness-02",
-        "fitness-03"
+        "fitness-03",
+        "fitness-04"
       ]
     },
     {
@@ -193,6 +194,21 @@
       "height": 1536,
       "fileSizeBytes": 277459,
       "sha256": "411039ffee5b4409ee16f57fec328156a23f6f973a6d3208c65d02d713e42aa8",
+      "sourceType": "user_provided_public_video_screenshot",
+      "quoteLinkId": null,
+      "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"
+    },
+    {
+      "id": "fitness-04",
+      "albumId": "fitness",
+      "sortOrder": 3,
+      "path": "assets/photos/fitness/fitness_04_black_vest_20261025.jpg",
+      "originalFilename": "screenshot_20261024_172702_com.ss.hm.ugc.aweme(1).jpg",
+      "description": "黑色背心健身照",
+      "width": 1536,
+      "height": 1097,
+      "fileSizeBytes": 97795,
+      "sha256": "fae54a5ecef8657e02c9b1c7116ce6a38e280b101d06e9bd642a427636401a7c",
       "sourceType": "user_provided_public_video_screenshot",
       "quoteLinkId": null,
       "rightsReview": "待发布者确认展示、再传播及第三方人物肖像/平台素材使用边界"

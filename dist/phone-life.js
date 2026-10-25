@@ -24,7 +24,7 @@
  }
  function create(ctx){
   const S=ctx.getState,L=()=>S().phoneLife,active=id=>ctx.getRoute().app==='room'&&ctx.getRoute().id===id;
-  let callTimer=null,endTimer=null,followTimer=null,groupTimer=null,introTimer=null,serial=0,started=false,previousState=S();
+  let callTimer=null,endTimer=null,followTimer=null,groupTimer=null,introTimer=null,started=false,previousState=S();
   const time=()=>new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
   const eligible=()=>S().unlocked&&!['lock','pin'].includes(ctx.getRoute().app)&&!ctx.hidden?.()&&ctx.available()!==false;
   function incoming(id,m,{quiet=false}={}){const history=S().chatMessages[id]||=[];if(history.some(x=>x.id===m.id))return false;history.push({...m,sceneMode:'fictional_fan_scene',time:m.time||time()});if(!active(id))S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);ctx.save();ctx.onIncoming(id,history.at(-1),quiet);return true;}
@@ -46,7 +46,7 @@
    if(/[?？]|怎么|什么|哪|谁/.test(text))return {speaker:'wind',text:'这个问题我先举手围观。你心里是不是已经有个答案了？'};
    return [{speaker:'youzi',text:'好好好，话题递到你这里了。展开讲讲，我的瓜子还没嗑完。'},{speaker:'rice',text:'我刚想潜水，看到你这句又冒出来了 😂'},{speaker:'wind',text:'这句先留在群里。等大家回来，又有话可以接着聊了。'}][turn%3];
   }
-  function completeGroup(){groupTimer=null;const pending=L().groupPending;if(!pending)return;const history=S().chatMessages[groupId]||[],answered=new Set(history.flatMap(m=>m.replyTo||[])),inputs=history.filter(m=>pending.ids.includes(m.id)&&m.from==='self'&&!answered.has(m.id));L().groupPending=null;if(!inputs.length){ctx.save();return;}const reply=groupReply(inputs.at(-1).text,history.filter(m=>m.replyOrigin==='local-fan-group').length);incoming(groupId,{id:'fans_'+Date.now()+'_'+serial++,type:'text',from:'other',...reply,replyOrigin:'local-fan-group',replyTo:inputs.map(m=>m.id)});ctx.save();}
+  function completeGroup(){groupTimer=null;const pending=L().groupPending;if(!pending)return;const history=S().chatMessages[groupId]||[],answered=new Set(history.flatMap(m=>m.replyTo||[])),inputs=history.filter(m=>pending.ids.includes(m.id)&&m.from==='self'&&!answered.has(m.id));L().groupPending=null;if(!inputs.length){ctx.save();return;}const reply=groupReply(inputs.at(-1).text,history.filter(m=>m.replyOrigin==='local-fan-group').length);incoming(groupId,{id:'fans_'+inputs.at(-1).id,type:'text',from:'other',...reply,replyOrigin:'local-fan-group',replyTo:inputs.map(m=>m.id)});ctx.save();}
   function enqueueGroup(m){if(m.type!=='text'||m.from!=='self')return;const history=S().chatMessages[groupId]||[];if(history.some(x=>x.replyTo?.includes(m.id)))return;L().groupPending={ids:[...new Set([...(L().groupPending?.ids||[]),m.id])].slice(-20)};ctx.save();clearTimeout(groupTimer);groupTimer=setTimeout(completeGroup,1250+Math.min(m.text.length*8,450));}
   function clearTimers(){for(const t of [callTimer,endTimer,followTimer,groupTimer,introTimer])clearTimeout(t);callTimer=endTimer=followTimer=groupTimer=introTimer=null;ctx.sound.stop();}
   function sync(){
