@@ -9,7 +9,7 @@ html = (dist / 'index.html').read_text()
 css = (dist / 'styles.css').read_text()
 wallpaper = 'data:image/png;base64,' + base64.b64encode((dist / 'assets/coast.png').read_bytes()).decode()
 css = ':root{--coast:url("' + wallpaper + '")}\n' + css.replace("url('./assets/coast.png')", 'var(--coast)')
-html = html.replace('<link rel="stylesheet" href="styles.css">', '<style>' + css + '</style>')
+html = re.sub(r'<link rel="stylesheet" href="styles\.css(?:\?[^"]*)?">', lambda _: '<style>'+css+'</style>', html)
 for name in ['developer-easter-egg.css','lock-screen.css']:
     html = re.sub(r'<link rel="stylesheet" href="'+re.escape(name)+r'(?:\?[^"]*)?">', lambda _: '<style>'+(dist/name).read_text()+'</style>', html)
 favicon = 'data:image/svg+xml;base64,' + base64.b64encode((dist / 'assets/favicon.svg').read_bytes()).decode()
