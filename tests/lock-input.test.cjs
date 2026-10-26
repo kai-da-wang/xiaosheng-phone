@@ -81,9 +81,9 @@ test('native home swipes update page controls and inactive accessibility without
  assert.equal(h.pageButtons[1].getAttribute('aria-pressed'),'true');assert.equal(h.pages[0].hasAttribute('inert'),true);assert.equal(h.pages[1].hasAttribute('inert'),false);
  h.scrollHome(0);assert.equal(h.pageButtons[0].getAttribute('aria-pressed'),'true');assert.equal(h.renderCount(),count);
 });
-test('the six empty apps return to the second page, and its file app keeps a separate route',()=>{
+test('all fourteen empty apps return to the second page, and its file app keeps a separate route',()=>{
  const h=harness();h.click('unlock');h.scrollHome(1);
- for(const [app,name] of [['alipay','支付宝'],['music','音乐'],['file-manager','文件'],['douyin','抖音'],['contacts','通讯录'],['health','健康']]){
+ for(const [app,name] of [['alipay','支付宝'],['music','音乐'],['file-manager','文件'],['douyin','抖音'],['contacts','通讯录'],['health','健康'],['qq','QQ'],['weibo','微博'],['xiaohongshu','小红书'],['bilibili','哔哩哔哩'],['taobao','淘宝'],['jd','京东'],['meituan','美团'],['amap','高德地图']]){
   h.click('app',{app});assert.equal(h.ctx.getRoute().app,app);assert.ok(h.screen.innerHTML.includes('<h1>'+name+'</h1>'));assert.match(h.screen.innerHTML,/<div class="app-scroll "><\/div>/);
   h.click('back');assert.equal(h.ctx.getRoute().app,'home');assert.equal(h.pager.scrollLeft,h.pager.clientWidth);
  }
