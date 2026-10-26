@@ -79,3 +79,7 @@ persona-voice.js的口吻、玩笑、记忆回话及上下文短句均为项目�
 ### 2026-10-26 用户指定的港姐素材
 
 `screenshot_20261026_102849_com.ss.hm.ugc.aweme.jpg`、`screenshot_20261026_102814_com.ss.hm.ugc.aweme.jpg`、`screenshot_20261026_103028_com.ss.hm.ugc.aweme.jpg` 为用户提供并要求加入本项目的图片。原字节保存在 `dist/assets/photos/gangjie/`，校验和及尺寸见 `gallery-data.js`。港姐为用户指定的游戏昵称；没有根据图片识别人名、断言身份或推断现实私人关系。聊天为原创同人剧情，不作为真实私聊、原声或原话展示。
+
+## 第二页官方应用图标（2026-10-26）
+
+14张图标由对应开发者的Apple App Store条目和iTunes Lookup接口取得，原始512×512 JPEG字节保持不变，商标及图形权利归各应用权利人。逐项App Store链接、发布者、原始图片URL和SHA-256见 `dist/assets/app-icons/manifest.json`。本项目仅用于网页手机界面中的应用识别，不代表官方应用、合作或实际服务。通讯录新增条目明确标注“剧情记录”。

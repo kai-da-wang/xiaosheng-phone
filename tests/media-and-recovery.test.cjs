@@ -9,6 +9,16 @@ test('all displayed photo variants exist, save bandwidth, and retain the exact o
  }
  assert.ok(thumb<original*.12,'thumbnail budget');assert.ok(full<original*.45,'large image budget');
 });
+test('second-page icons retain official store artwork bytes and work in the offline build',()=>{
+ const manifest=JSON.parse(fs.readFileSync('dist/assets/app-icons/manifest.json','utf8')),scope={window:{},Intl,Date};
+ vm.runInNewContext(fs.readFileSync('dist/icons.js','utf8'),scope);assert.equal(Object.keys(manifest).length,14);
+ for(const [id,asset] of Object.entries(manifest)){
+  const bytes=fs.readFileSync('dist/'+asset.path);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),asset.sha256);
+  assert.match(asset.artworkUrl,/^https:\/\/is\d-ssl\.mzstatic\.com\//);assert.match(asset.sourcePage,/^https:\/\/apps\.apple\.com\//);
+  const live=scope.window.appIcon(id);assert.ok(live.includes('src="'+asset.path+'"'));assert.ok(!live.includes('<svg'));
+  scope.window.PHONE_EMBEDDED_ASSETS={[asset.path]:'data:image/jpeg;base64,'+bytes.toString('base64')};assert.ok(scope.window.appIcon(id).includes(scope.window.PHONE_EMBEDDED_ASSETS[asset.path]));
+ }
+});
 test('embedded offline images and unknown legacy paths resolve without breaking original access',()=>{
  const media=Media.create({'a.jpg':{thumb:{path:'a.webp',width:120,height:180}}},{'a.webp':'data:image/webp;base64,AAA','a.jpg':'data:image/jpeg;base64,BBB'});
  assert.equal(media.src('a.jpg'),'data:image/webp;base64,AAA');assert.equal(media.original('a.jpg'),'data:image/jpeg;base64,BBB');assert.equal(media.src('legacy.jpg'),'legacy.jpg');assert.match(media.attrs('a.jpg'),/width="120" height="180"/);
