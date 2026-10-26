@@ -44,7 +44,7 @@ window.PersonaChatRuntime={create(ctx){
   const output=E.createReply({roomId:id,message:inputs,memory:r,now:Date.now()});
   // Sensitive actions, explicit boundaries and pause are always answered locally.
   const localOnly=['safety','identity','privacy','pause','forget','boundary','money','insult'].includes(output.intent);
-  const remote=localOnly?null:await cloudReply(id,history);
+  const remote=(localOnly||!aiEndpoint())?null:await cloudReply(id,history);
   if(!enabled(id)||room(id).pending?.jobId!==jobId)return;
   const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',from:'other',text:remote||output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:remote?'deepseek-gateway':'local-persona',sceneMode:'fictional_fan_scene'};
   history.push(reply);S().personaV2.rooms[id]={...output.memory,pending:null,autoReply:!output.pause};
