@@ -62,26 +62,26 @@ window.PHONE_DATA = {
     },
     {
       "id": "lead_muma",
-      "name": "木马",
-      "alias": "一根洋葱",
-      "initial": "木",
+      "name": "一根洋葱",
+      "alias": "洋葱",
+      "initial": "葱",
       "color": "#a58e6b",
-      "subtitle": "公开片段待补充",
+      "subtitle": "蓝色围巾与小小的纪念",
       "scenes": [
         {
           "id": "lead_muma_1",
-          "title": "等待重逢的片段",
-          "narrative": "这一页先留白，等那段熟悉的声音。",
+          "title": "狗尾巴草与蓝色围巾",
+          "narrative": "她收下狗尾巴草，也把蓝色围巾留给了他。",
           "quote": null,
           "speaker": null,
           "timestampSec": null,
-          "status": "missing",
+          "status": "editorial",
           "sourceUrl": null,
-          "sourceType": "unknown",
+          "sourceType": "user_supplied_scene_fictional_chat",
           "rights": "unknown"
         }
       ],
-      "sourceNote": "尚未核实原视频、人物身份、原话和说话者。"
+      "sourceNote": "根据用户提供的狗尾巴草与蓝色围巾故事编写的原创情景聊天，不代表现实私人消息。"
     },
     {
       "id": "lead_monv",

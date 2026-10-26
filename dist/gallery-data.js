@@ -43,7 +43,7 @@ window.PHOTO_LIBRARY = {
     },
     {
       "id": "muma",
-      "name": "和木马",
+      "name": "和一根洋葱",
       "coverAssetId": "muma-01",
       "photoCount": 4,
       "items": [

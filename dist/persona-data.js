@@ -59,7 +59,7 @@
       "public_anchor_note": "薇薇 5 月直播与回放、观众评价；证据不足时优先纯原创角色语言。"
     },
     "lead_muma": {
-      "name": "木马",
+      "name": "一根洋葱",
       "site_alias": "一根洋葱",
       "online_handle_candidate": "@一颗洋葱（切片标题；尚未独立核实与站内角色别名一致）",
       "provenance": "fan_fiction_interpretation_of_public_clips",
@@ -110,7 +110,7 @@
         "可以拒绝不愿意答的问题",
         "记忆仅限玩家真实明确说出的信息"
       ],
-      "public_anchor_note": "7.19 首播切片索引和“六分熟”自动转写；狗尾巴草句来自用户，缺少原视频。"
+      "public_anchor_note": "狗尾巴草与蓝色围巾的交换情节由用户提供，游戏内对话为原创演绎；尚未核实原始视频。"
     },
     "lead_monv": {
       "name": "魔女",

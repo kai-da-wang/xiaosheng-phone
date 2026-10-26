@@ -41,7 +41,7 @@
    recallMissing:'你还没告诉我呢。要说给我听吗？',
    noFlirt:'好，我们就按普通朋友那样聊，不催你。',
    afterBoundary:'知道啦，我不继续逗你了。',
-   identity:'我是游戏里的木马/洋葱同人角色，不是真人微信好友。'
+   identity:'我是游戏里的一根洋葱，虚构的同人角色，不是真人微信好友。'
   },
   lead_monv:{
    hello:['嗯，在。你说。','来了？今天有什么正经事。','你好啊。怎么这个点来找我。'],
@@ -117,7 +117,7 @@
   if(/(?:我叫|叫我|我的昵称是|我的名字是)/.test(t))return 'stateName';
   if(/我(?:最)?(?:喜欢吃|爱吃|喜欢喝)/.test(t))return 'stateFood';
   if(/我(?:想去|打算去)|我(?:们)?(?:约定|说好)/.test(t))return 'statePlan';
-  if(/狗尾巴草|六分熟|几分熟|那根草/.test(t))return 'onionAnchor';
+  if(/狗尾巴草|六分熟|几分熟|那根草|围巾/.test(t))return 'onionAnchor';
   if(/暗黑魔女|黑白魔女|沙县|猪蹄|电影/.test(t))return 'witchAnchor';
   if(/照片|合照|原图|发朋友圈/.test(t))return 'photo';
   if(/累了|好累|累死|累坏|熬夜|疲惫/.test(t))return 'tired';
@@ -167,7 +167,7 @@
   else if(intent==='boundary')text=p.noFlirt;
   else if(intent==='privacy')text=select('privacy');
   else if(intent==='money')text=select('money');
-  else if(intent==='confusion')text=voice(['这里是薇薇。你是不是想找另一位联系人？','这里是木马，也叫洋葱。三三、珊珊不是这个角色。','黑白魔女。你又把联系人看串了吧。']);
+  else if(intent==='confusion')text=voice(['这里是薇薇。你是不是想找另一位联系人？','这里是一根洋葱。你是不是把我跟别的联系人看串了？','黑白魔女。你又把联系人看串了吧。']);
   else if(intent==='insult')text=select('hurt');
   else if(intent==='sorry')text=select('sorry');
   else if(intent==='angry')text=select(['hurt','guarded'].includes(m.mood)?m.mood:'calm');
@@ -183,7 +183,7 @@
 
   else if(intent==='onionAnchor'&&roomId==='lead_muma'){
    if(/丢了|弄丢|不见/.test(t)){intent='insult';text='啊，我还以为会好好留着呢。下次先想好，再答应收下。';}
-   else text=select('generic',/狗尾巴草|那根草/.test(t)?['你还记得那根草呀。小小一根，也可以好好收着。','游戏里的那份小纪念，留着就好，不用拿它证明什么。','那根草不值钱，不过答应留着这件事，我会认真对待。']:['先六分熟吧，慢慢来，不着急。','熟悉又不是打分，聊得舒服就挺好。','别急着凑满分嘛，慢慢熟也有意思。']);
+   else text=select('generic',/围巾/.test(t)?['照片里那条蓝色围巾呀。交换纪念品的事我还记得。','你连围巾都记着呀。那根狗尾巴草也别忘了。','嗯，就是我们说好交换小纪念的那条。']:/狗尾巴草|那根草/.test(t)?['你还记得那根草呀。小小一根，也可以好好收着。','游戏里的那份小纪念，留着就好，不用拿它证明什么。','那根草不值钱，不过答应留着这件事，我会认真对待。']:['先六分熟吧，慢慢来，不着急。','熟悉又不是打分，聊得舒服就挺好。','别急着凑满分嘛，慢慢熟也有意思。']);
   }else if(intent==='witchAnchor'&&roomId==='lead_monv')text=select('generic',/暗黑魔女/.test(t)?['黑白，不是暗黑。你跟谁学的这读法？','黑白魔女。两个字都给你换了一个。','名字先念对，再聊下一题。黑白魔女。']:/电影/.test(t)?['想聊电影？先说你喜欢哪种，不替你选。','电影先看类型，再挑片子。你想看轻松的还是悬疑的？','聊剧情可以，现实里的私人安排就免了。']:['沙县也行。先看菜单，别光给我颁会员卡。','想吃什么就点什么，黑金会员也得认真吃饭。','先说你想点哪样，菜单总比猜心思好选。']);
   else if(intent==='food'&&/火锅|面条|米饭|饺子|清淡|辣的|甜的/.test(t)){const item=t.match(/火锅|面条|米饭|饺子|清淡|辣的|甜的/)[0];text=select('food',voice([[`那就选${item}呀，先吃好，别一直纠结。`,`想吃${item}就先看看这个选择。你现在方便吃饭吗？`],[`那就${item}吧，按自己喜欢的来。`,`${item}也行，吃饭就不用赶时间啦。`],[`${item}，行，答案有了。可以开饭了。`,`就${item}吧，菜单不用再开会了。`]]));}
   else if(intent==='food'&&f.favoriteFood)text=select('food',voice([[`你说喜欢${f.favoriteFood}，今天想选这个，还是换个口味？`,`想吃${f.favoriteFood}的话可以先看看，记得好好吃饭。`],[`记得你喜欢${f.favoriteFood}。想吃就选，不用问我准不准。`,`那先看看${f.favoriteFood}吧。不想吃也可以换。`],[`你不是说喜欢${f.favoriteFood}？先把自己的那票投了。`,`有${f.favoriteFood}这个选项，今天还要犹豫多久？`]]));

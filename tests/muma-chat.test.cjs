@@ -15,10 +15,14 @@ function setup(room='lead_muma'){
 }
 test('Muma scene contains the supplied line from Muma and all photo IDs resolve',()=>{
  const {window}=setup(),scene=window.MUMA_CHAT;
- const line=scene.messages.find(m=>m.text==='你留狗尾巴草给我当纪念');assert.equal(line.from,'other');
+ const line=scene.messages.find(m=>m.text?.includes('你留狗尾巴草给我当纪念'));assert.equal(line.from,'other');
  assert.equal(new Set(scene.messages.map(m=>m.id)).size,scene.messages.length);
  assert.ok(scene.messages.filter(m=>m.type==='photo').every(m=>window.PHOTO_LIBRARY.assets.find(a=>a.id===m.assetId)?.albumId==='muma'));
- assert.equal(window.PHONE_DATA.people.find(p=>p.id===scene.roomId).alias,'一根洋葱');
+ assert.equal(window.PHONE_DATA.people.find(p=>p.id===scene.roomId).name,'一根洋葱');
+ assert.equal(window.PHONE_DATA.people.find(p=>p.id===scene.roomId).initial,'葱');
+ assert.equal(window.PHOTO_LIBRARY.albums.find(a=>a.id==='muma').name,'和一根洋葱');
+ assert.equal(scene.messages.find(m=>m.text==='你留狗尾巴草给我当纪念，我把自己的围巾送给你。')?.from,'other');
+ assert.equal(scene.messages[0].assetId,'muma-01');
 });
 test('Muma story unread is independent of an older contact read mark',()=>{
  const {x,state,window}=setup();state.chatReadRooms.push('lead_muma');assert.equal(x.unreadCount(),4);
