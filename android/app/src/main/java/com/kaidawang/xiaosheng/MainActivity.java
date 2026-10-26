@@ -42,7 +42,7 @@ import org.json.JSONObject;
 
 /** Installed app only. The published GitHub Pages build has no Android bridge or API keys. */
 public class MainActivity extends Activity {
-  private static final String START = "https://appassets.androidplatform.net/assets/index.html";
+  private static final String START = "https://appassets.androidplatform.net/assets/site/index.html";
   private static final String KEY_ALIAS = "xiaosheng-personal-ai-keys";
   private static final String PREFS = "encrypted_provider_credentials";
   private final ExecutorService network = Executors.newSingleThreadExecutor();
