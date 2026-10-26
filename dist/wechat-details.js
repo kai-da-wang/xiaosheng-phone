@@ -2,7 +2,7 @@
 window.WeChatDetails={create(ctx){
  'use strict';
  const {esc,icon,btn,avatar,go,save,toast,modal}=ctx,S=ctx.getState,route=ctx.getRoute;
- let selected=new Set(),search='',filter='',memberFilter='',editDraft='',reportReason='';
+ let selected=new Set(),search='',filter='',memberFilter='',editDraft='',reportReason='',expandedMembers=false;
  const groupId=ctx.life?.groupId||'group_xiaosheng_fans';
  const prefs=id=>{S().wechatPrefs||={};return S().wechatPrefs[id]||={};};
  const member=id=>{if(typeof id!=='string')return undefined;if(id==='self')return {id,name:'小圣',initial:'圣',color:'#82978d'};if(id.startsWith('fan_')){const p=ctx.life?.members.find(p=>'fan_'+p.id===id);return p?{...p,id}:undefined;}return ctx.people.find(p=>p.id===id);};
@@ -20,7 +20,8 @@ window.WeChatDetails={create(ctx){
  const section=html=>`<div class="wx-detail-section">${html}</div>`;
  function memberTile(p){return `<button class="wx-member-tile" data-action="wx-member" data-member="${esc(p.id)}" aria-label="查看${esc(p.name)}的资料">${avatar(p,p.id==='self')}<span>${esc(p.id==='self'?(prefs(route().id).myNickname||p.name):p.name)}</span></button>`;}
  function info(){const id=route().id,g=group(id),p=prefs(id),left=p.left;
-  const top=`<div class="wx-member-grid">${members(id).map(memberTile).join('')}${left?'':`<button class="wx-member-tile wx-member-add" data-action="wx-invite" aria-label="添加聊天成员"><span class="wx-add-square">${icon('plus')}</span><span aria-hidden="true">　</span></button>`}</div>`;
+  const allMembers=members(id),visibleMembers=g&&!expandedMembers?allMembers.slice(0,19):allMembers;
+  const top=`<div class="wx-member-grid">${visibleMembers.map(memberTile).join('')}${left?'':`<button class="wx-member-tile wx-member-add" data-action="wx-invite" aria-label="添加聊天成员"><span class="wx-add-square">${icon('plus')}</span><span aria-hidden="true">　</span></button>`}</div>${g&&allMembers.length>19&&!expandedMembers?`<button class="wx-member-expand" data-action="wx-expand-members">查看全部 ${allMembers.length} 位群成员 ${icon('chevron')}</button>`:''}`;
   const common=section(row('查找聊天记录','wx-search-history'))+section(toggle('消息免打扰','muted',muted(id))+toggle('置顶聊天','pinned',pinned(id))+(g?toggle('保存到通讯录','saved',p.saved):''));
   const groupRows=g?section(row('群聊名称','wx-detail-edit',g.name,'data-field="groupName"')+row('群二维码','wx-group-code')+row('群公告','wx-detail-edit',p.notice||g.notice||'未设置','data-field="notice"')+row('备注','wx-detail-edit',p.remark||'','data-field="remark"')):'';
   const nickname=g?section(row('我在本群的昵称','wx-detail-edit',p.myNickname||'小圣','data-field="myNickname"')+toggle('显示群成员昵称','showNicknames',p.showNicknames!==false)):'';
@@ -62,6 +63,7 @@ window.WeChatDetails={create(ctx){
    case'wx-invite':selected=new Set();go('chat-invite',{id});return true;
    case'wx-select-member':if(selected.has(t.dataset.member))selected.delete(t.dataset.member);else selected.add(t.dataset.member);ctx.render();return true;
    case'wx-invite-done':{if(!selected.size)return true;let target=id;const added=[...selected];if(isGroup(id)){if(S().wechatGroups?.[id])S().wechatGroups[id].members=[...new Set([...group(id).members,...added])];else p.addedMembers=[...new Set([...(p.addedMembers||[]),...added])];}else{target='local_group_'+Date.now().toString(36);S().wechatGroups||={};S().wechatGroups[target]={id:target,name:[name(id),...added.map(name)].join('、').slice(0,40),members:['self',id,...added],owner:'self'};}S().chatMessages[target]||=[];S().chatMessages[target].push({id:'members_'+Date.now(),type:'system',text:'你邀请了'+added.map(name).join('、')+'加入群聊'});save();selected.clear();go('room',{id:target});return true;}
+   case'wx-expand-members':expandedMembers=true;ctx.render();return true;
    case'wx-member':go('chat-member',{id,member:t.dataset.member});return true;
    case'wx-member-chat':go('room',{id:t.dataset.member});return true;
    case'wx-report':reportReason='';go('chat-report',{id});return true;
