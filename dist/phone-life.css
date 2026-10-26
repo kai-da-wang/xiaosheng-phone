@@ -10,8 +10,3 @@
 .wx-group-count{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}.wx-group-copy{display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:77%;min-width:0}.wx-group-copy .wx-text-bubble{max-width:100%}.wx-member-name{font-size:10px;color:#8a8e8b;line-height:1.4}.wx-group-message .wx-avatar{margin-top:16px}.wx-group-message{align-items:flex-start}.wx-room .wx-nav h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px}
 @keyframes life-wave{50%{height:30px;opacity:.5}}@keyframes life-notice{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .reduced .life-call-ripples i,.reduced .life-banner{animation:none}@media(prefers-reduced-motion:reduce){.life-call-ripples i,.life-banner{animation:none}}@media(max-height:650px){.life-call{padding-top:62px;padding-bottom:25px}.life-call-person{margin-top:24px}.life-call-person .wx-avatar{width:76px;height:76px}.life-call-person h2{margin-top:15px;font-size:29px}.life-call-footnote{margin-top:15px}.life-call-ripples{height:36px;margin-top:15px}}
-
-/* Optional synthesized female voice; shown only after gateway configured. */
-.wx-ai-speech{display:inline-block;margin:5px 0 0 8px;padding:3px 8px;border:0;border-radius:9px;background:rgba(30,140,89,.10);color:#26764d;font-size:11px;line-height:1.5;cursor:pointer;vertical-align:baseline}.wx-ai-speech:focus-visible{outline:2px solid #178749;outline-offset:2px}
-
-.wx-ai-disclosure{text-align:center;font-size:10px;color:#758178;background:#f0f3f0;padding:4px 8px;line-height:1.35}

@@ -17,36 +17,15 @@ window.PersonaChatRuntime={create(ctx){
   }refreshList();
  }
  const scrollTop=e=>e.scrollTop||0;
- function aiEndpoint(){
-  const v=window.GIRLS_AI_API;if(typeof v!=='string'||!v.trim())return '';
-  try{const u=new URL(v);return u.protocol==='https:'?(u.href.endsWith('/')?u.href.slice(0,-1):u.href):'';}catch{return '';}
- }
- async function cloudReply(id,history){
-  const endpoint=aiEndpoint();if(!endpoint)return null;
-  const recent=history.filter(m=>m.type==='text'&&(m.from==='self'||m.autoReply))
-   .slice(-12).map(m=>({role:m.from==='self'?'user':'assistant',content:String(m.text||'').slice(0,400)}));
-  if(!recent.length||recent.at(-1).role!=='user')return null;
-  const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10500);
-  try{
-   const res=await fetch(endpoint+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-     body:JSON.stringify({roomId:id,messages:recent}),credentials:'omit',signal:abort.signal});
-   if(!res.ok)return null;
-   const json=await res.json();
-   return typeof json.reply==='string'&&json.reply.trim()&&json.reply.length<=220?json.reply.trim():null;
-  }catch{return null;}finally{clearTimeout(timeout);}
- }
- async function complete(id,jobId){
+ function complete(id,jobId){
   const r=room(id),job=r.pending;if(!enabled(id)||!job||job.jobId!==jobId)return;
   const history=S().chatMessages[id]||[],answered=new Set(history.filter(m=>m.autoReply).flatMap(m=>Array.isArray(m.replyTo)?m.replyTo:[]));
   const ids=job.ids.filter(source=>!answered.has(source)&&history.some(m=>m.id===source&&m.type==='text'&&m.from==='self'));
   if(!ids.length){r.pending=null;save();removeTyping(id);return;}
   const inputs=ids.map(source=>history.find(m=>m.id===source).text);
   const output=E.createReply({roomId:id,message:inputs,memory:r,now:Date.now()});
-  // Sensitive actions, explicit boundaries and pause are always answered locally.
-  const localOnly=['safety','identity','privacy','pause','forget','boundary','money','insult'].includes(output.intent);
-  const remote=(localOnly||!aiEndpoint())?null:await cloudReply(id,history);
   if(!enabled(id)||room(id).pending?.jobId!==jobId)return;
-  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',from:'other',text:remote||output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:remote?'deepseek-gateway':'local-persona',sceneMode:'fictional_fan_scene'};
+  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',from:'other',text:output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
   history.push(reply);S().personaV2.rooms[id]={...output.memory,pending:null,autoReply:!output.pause};
   if(!active(id))S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);
   save();showReply(id,reply);ctx.onIncoming?.(id,reply);
