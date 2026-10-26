@@ -1,31 +1,36 @@
-"""Build a local-only standalone HTML without external runtime dependencies."""
+"""Build a standalone HTML using the same display images as the published phone."""
 from pathlib import Path
 import base64
+import json
+import mimetypes
 import re
 
 root = Path(__file__).resolve().parents[1]
 dist = root / 'dist'
 html = (dist / 'index.html').read_text()
-css = (dist / 'styles.css').read_text()
-wallpaper = 'data:image/png;base64,' + base64.b64encode((dist / 'assets/coast.png').read_bytes()).decode()
-css = ':root{--coast:url("' + wallpaper + '")}\n' + css.replace("url('./assets/coast.png')", 'var(--coast)')
-html = re.sub(r'<link rel="stylesheet" href="styles\.css(?:\?[^"]*)?">', lambda _: '<style>'+css+'</style>', html)
-for name in ['developer-easter-egg.css','lock-screen.css','phone-life.css']:
-    html = re.sub(r'<link rel="stylesheet" href="'+re.escape(name)+r'(?:\?[^"]*)?">', lambda _: '<style>'+(dist/name).read_text()+'</style>', html)
-favicon = 'data:image/svg+xml;base64,' + base64.b64encode((dist / 'assets/favicon.svg').read_bytes()).decode()
-html = html.replace('assets/favicon.svg', favicon)
-for name in ['content.js', 'gallery-data.js', 'icons.js', 'phone-life.js', 'core.js', 'wang-dialogue.js', 'wang-chat-runtime.js', 'muma-chat.js', 'monv-chat.js', 'vivi-chat.js', 'persona-data.js', 'persona-voice.js', 'persona-dialogue.js', 'persona-chat-runtime.js', 'phone-experience.js', 'dali-map-data.js', 'dali-experience.js', 'app.js', 'developer-easter-egg.js']:
-    js = (dist / name).read_text().replace('</script', '<\\/script')
-    if name in ['gallery-data.js', 'phone-experience.js']:
-        import json
-        for photo in json.loads((root / 'research/ASSET_MANIFEST_0520.json').read_text())['assets']:
-            photo_data = 'data:image/jpeg;base64,' + base64.b64encode((dist / photo['path']).read_bytes()).decode()
-            js = js.replace('"' + photo['path'] + '"', '"' + photo_data + '"').replace("'" + photo['path'] + "'", "'" + photo_data + "'")
+def data_url(path):
+    mime = mimetypes.guess_type(path)[0] or 'application/octet-stream'
+    return 'data:' + mime + ';base64,' + base64.b64encode((dist/path).read_bytes()).decode()
+# Map URLs in one place; shared avatars/thumbnails no longer duplicate image bytes per message.
+embedded = {str(p.relative_to(dist)): data_url(str(p.relative_to(dist))) for p in (dist/'assets').rglob('*') if p.is_file() and p.suffix in ['.jpg', '.webp']}
+html = html.replace('assets/favicon.svg', data_url('assets/favicon.svg'))
+def stylesheet(match):
+    css = (dist/match[1]).read_text()
+    css = re.sub(r'url\([\'\"]?(?:\./)?(assets/[^)\'\"]+)[\'\"]?\)', lambda m: 'url("'+embedded.get(m[1], data_url(m[1]))+'")', css)
+    return '<style>'+css+'</style>'
+html = re.sub(r'<link rel="stylesheet" href="([^"?]+)(?:\?[^"]*)?">', stylesheet, html)
+def script(match):
+    name = match[1]
+    js = (dist/name).read_text()
+    prefix = ''
+    if name == 'photo-media.js':
+        prefix = '<script>window.PHONE_EMBEDDED_ASSETS='+json.dumps(embedded,separators=(',', ':'))+';</script>'
+    if name == 'dali-experience.js':
+        prefix = '<script>'+(dist/'dali-map-data.js').read_text()+'</script>'
     if name == 'developer-easter-egg.js':
-        image_path = 'assets/payment/wechat_099_official_user_image.png'
-        image_data = 'data:image/png;base64,' + base64.b64encode((dist/image_path).read_bytes()).decode()
-        js = js.replace(image_path+'?v=c21531196852', image_data)
-    html = re.sub(r'<script src="'+re.escape(name)+r'(?:\?[^"]*)?"></script>', lambda _: '<script>'+js+'</script>', html)
-(root / 'portable').mkdir(exist_ok=True)
-(root / 'portable/xiaosheng-phone.html').write_text(html)
-print('Portable HTML ready:', root / 'portable/xiaosheng-phone.html')
+        js = js.replace('assets/payment/wechat_099_official_user_image.png?v=c21531196852', data_url('assets/payment/wechat_099_official_user_image.png'))
+    return prefix+'<script>'+js.replace('</script', '<\\/script')+'</script>'
+html = re.sub(r'<script(?: defer)? src="([^"?]+)(?:\?[^"]*)?"></script>', script, html)
+(root/'portable').mkdir(exist_ok=True)
+(root/'portable/xiaosheng-phone.html').write_text(html)
+print('Portable HTML ready:', root/'portable/xiaosheng-phone.html')
