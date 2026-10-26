@@ -9,6 +9,8 @@ on:
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
+# Deploy only the minimized site. Do not publish repository research, scripts,
+# tests, original development files or the complete one-click offline bundle.
 permissions:
   contents: read
   pages: write
@@ -31,10 +33,25 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Upload dist
+      - name: Build reduced-release website
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a dist "$RUNNER_TEMP/xiaosheng-site"
+          npm install --prefix "$RUNNER_TEMP/xiaosheng-minifier" --no-save --no-package-lock --no-fund --no-audit terser@5.39.0
+          TERSER="$RUNNER_TEMP/xiaosheng-minifier/node_modules/.bin/terser"
+          for file in "$RUNNER_TEMP"/xiaosheng-site/*.js; do
+            "$TERSER" "$file" --compress --mangle --format "comments=false" --output "${file}.protected"
+            mv "${file}.protected" "$file"
+            node --check "$file"
+          done
+          printf '%s\n' 'Original code and scripts © 2026 kai-da-wang; all rights reserved.' 'Third-party imagery and map data retain their respective rights.' 'For permitted use, see github.com/kai-da-wang/xiaosheng-phone/LICENSE.' > "$RUNNER_TEMP/xiaosheng-site/RIGHTS.txt"
+          touch "$RUNNER_TEMP/xiaosheng-site/.nojekyll"
+          test -s "$RUNNER_TEMP/xiaosheng-site/index.html"
+      - name: Upload reduced-release site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ${{ runner.temp }}/xiaosheng-site
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -1,8 +1,18 @@
 # 小圣的手机
 
+> **版权声明：本项目不是开源项目。** 作者原创代码、互动设计与原创剧情版权保留，未经授权不得复制部署、改名发布或商业使用。第三方照片、图标及地图数据按其原有权利和许可处理。详情见 [LICENSE](LICENSE) 与 [ATTRIBUTION.md](ATTRIBUTION.md)。
+
 可直接游玩的手机网页。公开地址：https://kai-da-wang.github.io/xiaosheng-phone/
 
 原游玩地址同步更新：https://xiaosheng-phone-kai.imjusttrying341.chatgpt.site/
+
+## 代码保护与使用边界
+
+- 仓库目前仍为 public；公众可以阅读和 fork GitHub 上的内容。查看权不代表获得原创代码的再发布许可。对于已被下载或保存的历史版本，后续措施无法远程撤回。
+- GitHub Pages 现改为**从独立发布目录部署压缩后的 JavaScript**，不直接把可读版 JS 原样上站。混淆/压缩只提高浏览器端抄用成本，不是加密，客户端代码和资源依然能够被访问及还原。
+- 为减少“一键打包走”的风险，仓库当前版本不再附带 12 MB 的便携单文件 HTML。维护者仍能运行 `python3 scripts/build-portable.py` 在本地生成它；生成文件已列入 .gitignore。
+- **真正想阻止大众浏览原始源码**，需要把开发源码迁入私有仓库，仅公开独立部署产物，或在 GitHub Pro 等支持的方案中使用私有仓库部署 Pages。不要在未确认 Pages 可用性之前直接把当前仓库改为 private，否则可能导致现有网站中断。
+- 网页 JS、CSS、图片和发往访客浏览器的数据无法从根本上防止查看或复制。API 密钥等秘密不得写入前端；收费核心逻辑应放在受控后端。
 
 ## 当前交互
 
@@ -25,7 +35,7 @@
 
 ## 运行与存档
 
-直接打开 `dist/index.html`，或下载 `portable/xiaosheng-phone.html` 离线文件。
+直接打开 `dist/index.html`，或访问顶部在线游玩网址。为减少整站被一键搬运，仓库不再附带预先打包的独立离线 HTML；项目维护者仍可通过脚本在本地生成离线版本。
 
 ```bash
 python3 -m http.server 8000 --directory dist
@@ -54,7 +64,7 @@ python3 scripts/build-portable.py
 - `scripts/build-portable.py`：离线单文件生成。
 - `ATTRIBUTION.md`、`TEST_REPORT.md`：素材说明与测试边界。
 
-源码：https://github.com/kai-da-wang/xiaosheng-phone （公开仓库）
+源代码仓库：https://github.com/kai-da-wang/xiaosheng-phone （公开可查看，**不等于开源授权**；请阅读 LICENSE）
 
 ## 微信支持开发者（2026-10-25）
 

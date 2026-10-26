@@ -2,3 +2,6 @@ dist/qa.html
 *.tar.gz
 *.zip
 .DS_Store
+portable/xiaosheng-phone.html
+node_modules/
+*.map
