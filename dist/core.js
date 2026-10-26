@@ -18,7 +18,29 @@
   const lifeDefaults=()=>({version:1,callStatus:'new',callResult:'',followupSent:false,groupIntroSent:false,groupMuted:false,groupPending:null});
   function normalizeLife(raw){const d=lifeDefaults();if(!raw||typeof raw!=='object')return d;for(const k of ['followupSent','groupIntroSent','groupMuted'])if(typeof raw[k]==='boolean')d[k]=raw[k];if(['new','ringing','connected','ended'].includes(raw.callStatus))d.callStatus=raw.callStatus;if(['declined','answered','missed'].includes(raw.callResult))d.callResult=raw.callResult;if(raw.groupPending&&Array.isArray(raw.groupPending.ids)){const ids=[...new Set(raw.groupPending.ids.filter(x=>typeof x==='string'&&x.length<150))].slice(-20);if(ids.length)d.groupPending={ids};}return d;}
   const defaults=()=>({version:1,seenIntro:false,unlocked:false,viewed:[],favorites:[],opened:[],settings:{dark:false,reduced:false,review:false,brightness:100,sound:true},alarms:[{time:'07:30',label:'起床，今天也出门走走',on:true},{time:'23:00',label:'早点休息',on:false}],notes:[],reminders:[{id:'r1',text:'去看看今天的晚霞',done:false},{id:'r2',text:'把喜欢的片段收藏起来',done:false}],sms:[],captures:0,chatReadRooms:[],chatReadStories:[],chatDrafts:{},chatMessages:{},playedVoiceIds:[],discovered:[],callLog:[],noteChecks:[],mapSavedPlaces:[],wangAutoReply:true,wangMemory:{},wangPending:null,wangLastMode:'local',personaV2:personaDefaults(),phoneLife:lifeDefaults()});
-  function normalize(raw){const d=defaults();if(!raw||raw.version!==1)return d;return {...d,...raw,viewed:[...new Set(Array.isArray(raw.viewed)?raw.viewed:[])],favorites:[...new Set(Array.isArray(raw.favorites)?raw.favorites:[])],settings:{...d.settings,...raw.settings},personaV2:normalizePersona(raw.personaV2),phoneLife:normalizeLife(raw.phoneLife)};}
+  function normalize(raw){
+    const d=defaults(),obj=v=>v&&typeof v==='object'&&!Array.isArray(v),strings=v=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'))]:[];
+    if(!obj(raw)||raw.version!==1)return d;
+    const result={...d,...raw,settings:{...d.settings,...(obj(raw.settings)?raw.settings:{})},personaV2:normalizePersona(raw.personaV2),phoneLife:normalizeLife(raw.phoneLife)};
+    for(const k of ['viewed','favorites','opened','chatReadRooms','chatReadStories','playedVoiceIds','discovered','mapSavedPlaces'])result[k]=strings(raw[k]);
+    for(const k of ['seenIntro','unlocked','wangAutoReply'])result[k]=typeof raw[k]==='boolean'?raw[k]:d[k];
+    for(const k of ['dark','reduced','review','sound'])result.settings[k]=typeof raw.settings?.[k]==='boolean'?raw.settings[k]:d.settings[k];
+    result.settings.brightness=Number.isFinite(raw.settings?.brightness)?Math.max(45,Math.min(100,raw.settings.brightness)):100;
+    result.captures=Number.isFinite(raw.captures)?Math.max(0,Math.floor(raw.captures)):0;
+    const records=(key,valid)=>Array.isArray(raw[key])?raw[key].filter(v=>obj(v)&&valid(v)):d[key];
+    result.notes=records('notes',v=>typeof v.id==='string');
+    result.sms=Array.isArray(raw.sms)?raw.sms.filter(v=>typeof v==='string'):[];
+    result.reminders=records('reminders',v=>typeof v.id==='string'&&typeof v.text==='string');
+    result.alarms=records('alarms',v=>typeof v.time==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(v.time)&&typeof v.label==='string');
+    result.callLog=records('callLog',v=>typeof v.id==='string');
+    result.noteChecks=Array.isArray(raw.noteChecks)?[...new Set(raw.noteChecks.filter(v=>Number.isInteger(v)&&v>=0&&v<3))]:[];
+    const validKey=k=>k.length<150&&!['__proto__','constructor','prototype'].includes(k);
+    result.chatDrafts=Object.fromEntries(Object.entries(obj(raw.chatDrafts)?raw.chatDrafts:{}).filter(([k,v])=>validKey(k)&&typeof v==='string').map(([k,v])=>[k,v.slice(0,1000)]));
+    result.chatMessages=Object.fromEntries(Object.entries(obj(raw.chatMessages)?raw.chatMessages:{}).filter(([k,v])=>validKey(k)&&Array.isArray(v)).map(([k,v])=>[k,v.filter(m=>obj(m)&&(m.type===undefined||['text','system'].includes(m.type)?typeof m.text==='string':['voice','photo'].includes(m.type)))]));
+    result.wangMemory=obj(raw.wangMemory)?raw.wangMemory:{};
+    result.wangPending=obj(raw.wangPending)&&typeof raw.wangPending.jobId==='string'&&Array.isArray(raw.wangPending.ids)?{...raw.wangPending,ids:strings(raw.wangPending.ids)}:null;
+    return result;
+  }
   function canQuote(s){return s.status==='verified'&&!!s.speaker&&Number.isFinite(s.timestampSec)&&s.timestampSec>=0&&!!s.sourceUrl&&s.rights==='cleared';}
   function collect(state,id){const i=state.favorites.indexOf(id);if(i<0)state.favorites.push(id);else state.favorites.splice(i,1);return i<0;}
   function favoriteLeads(state,data){return data.people.filter(p=>p.scenes.some(s=>state.favorites.includes(s.id))).length;}
