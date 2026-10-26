@@ -38,10 +38,12 @@ function audioHarness({sound=false}={}){
  return {x,route,state,reads,audio,revoked,writes,upload,events,documentEvents,soundUnlocks:()=>soundUnlocks,renders:()=>renders,reset(){state=Core.defaults();return state;},play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
 }
 const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
-test('lock and passcode gestures skip audio setup; an app gesture still enables sound',()=>{
- const h=audioHarness({sound:true}),locked={target:{closest:()=>({})}};
- h.documentEvents.pointerdown(locked);h.documentEvents.keydown(locked);assert.equal(h.soundUnlocks(),0);
- h.documentEvents.pointerdown({target:{closest:()=>null}});assert.equal(h.soundUnlocks(),1);
+test('locked keyboard focus skips audio setup; successful unlock enables the first call without another tap',()=>{
+ const h=audioHarness({sound:true}),body={target:{closest:()=>null}};
+ for(const app of ['lock','pin']){h.route.app=app;h.documentEvents.pointerdown(body);h.documentEvents.keydown(body);}
+ assert.equal(h.soundUnlocks(),0);
+ h.route.app='home';h.state.unlocked=true;h.x.onUnlock();assert.equal(h.soundUnlocks(),1);
+ h.documentEvents.pointerdown(body);assert.equal(h.soundUnlocks(),2);
 });
 test('leaving a room cancels voice playback even if IndexedDB finishes later',async()=>{
  const h=audioHarness();h.play('a');await flush();h.x.onNavigate();h.route.app='home';h.resolve(0,'a');await flush();assert.equal(h.audio.length,0);assert.deepEqual(h.state.playedVoiceIds,[]);

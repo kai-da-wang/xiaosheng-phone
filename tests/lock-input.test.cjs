@@ -3,7 +3,7 @@ const Core=require('../dist/core.js');
 
 // Exercise the actual app event handlers with no elapsed timers between input events.
 function harness(){
- const listeners=new Map(),windows=new Map();let ctx,renders=0,cycle=0;
+ const listeners=new Map(),windows=new Map();let ctx,renders=0,cycle=0,soundUnlocks=0;
  function element(dataset={}){
   const classes=new Set(),attrs=new Map(),events=new Map();
   return {dataset,style:{},events,isConnected:true,textContent:'',
@@ -18,7 +18,7 @@ function harness(){
  const screen=nodes['#screen'];let html='';
  Object.defineProperty(screen,'innerHTML',{get:()=>html,set(value){html=value;renders++;if(value.includes('realistic-passcode')){dots.forEach(x=>x.classList.remove('filled'));error.textContent='';progress.setAttribute('aria-label','已输入 0 位，共 4 位');}}});
  screen.querySelector=s=>s==='.passcode'&&html.includes('realistic-passcode')?panel:null;
- const x={beforeRender(){},afterRender(){},onNavigate(){},action:()=>false,stopAudio(){},unreadCount:()=>0,avatar:()=>''};
+ const x={beforeRender(){},afterRender(){},onNavigate(){},onUnlock(){assert.equal(ctx.getState().unlocked,true);assert.notEqual(ctx.getRoute().app,'pin');soundUnlocks++;},action:()=>false,stopAudio(){},unreadCount:()=>0,avatar:()=>''};
  const document={querySelector:s=>nodes[s]||null,querySelectorAll:()=>[],addEventListener(type,fn,capture){const list=listeners.get(type)||[];list.push({fn,capture:!!capture});listeners.set(type,list);}};
  const history={replaceState(value){this.state=value;},pushState(value){this.state=value;}};
  const window={PhoneCore:Core,PHONE_DATA:{people:[{id:'wang',name:'小王'}]},PHOTO_LIBRARY:{unlock:{pin:'0520'}},PhoneExperience:{create(c){ctx=c;return x;}},DaliExperience:{create:()=>({action:()=>false,afterRender(){},camera:()=>'<div class="camera-layout"></div>'})},addEventListener:(k,fn)=>windows.set(k,fn)};
@@ -28,7 +28,7 @@ function harness(){
  function click(action,data={}){dispatch('click',event(element({action,...data}),{detail:0}));}
  function down(key,extra={}){const target=element({action:'pin-key',key});dispatch('pointerdown',event(target,extra));return target;}
  function tap(key){const target=down(key);dispatch('pointerup',event(target));dispatch('click',event(target));}
- return {ctx,click,down,tap,dispatch,event,element,screen,dots,error,progress,history,renderCount:()=>renders,filled:()=>dots.filter(x=>x.classList.contains('filled')).length,
+ return {ctx,click,down,tap,dispatch,event,element,screen,dots,error,progress,history,soundUnlocks:()=>soundUnlocks,renderCount:()=>renders,filled:()=>dots.filter(x=>x.classList.contains('filled')).length,
   key(key,repeat=false){dispatch('keydown',event(element(),{key,repeat}));},pop(app){windows.get('popstate')({state:{phone:true,route:{app}}});},
   swipe(cancel=false){const target=element();dispatch('pointerdown',event(target,{pointerId:++cycle,clientY:300}));if(cancel)dispatch('pointercancel',event(target,{pointerId:cycle}));dispatch('pointerup',event(target,{pointerId:cycle,clientY:100}));}};
 }
@@ -43,6 +43,23 @@ test('wrong input, delete, keyboard and repeated keydown recover without recreat
 });
 test('secondary pointers and input behind an inert screen cannot add digits',()=>{
  const h=harness();h.click('pin');h.down('0',{isPrimary:false});assert.equal(h.filled(),0);h.screen.setAttribute('inert','');h.tap('0');assert.equal(h.filled(),0);h.screen.removeAttribute('inert');h.tap('0');assert.equal(h.filled(),1);
+});
+test('an overlapping second finger and its click cannot duplicate or add a PIN digit',()=>{
+ for(const secondaryFirst of [true,false]){
+  const h=harness();h.click('pin');const first=h.down('0'),second=h.down('5',{pointerId:2,isPrimary:false});
+  const clicks=[[second,{pointerId:2,isPrimary:false}],[first,{pointerId:1}]];if(!secondaryFirst)clicks.reverse();
+  for(const [target,extra] of clicks)h.dispatch('click',h.event(target,extra));
+  assert.equal(h.filled(),1);for(const n of '520')h.tap(n);assert.equal(h.ctx.getRoute().app,'home');
+ }
+});
+test('sound is enabled only after a successful PIN or direct unlock, including keyboard entry',()=>{
+ for(const method of ['pointer','keyboard','direct']){
+  const h=harness();h.click('pin');if(method==='direct')h.click('unlock');else{
+   for(const n of '052'){method==='pointer'?h.tap(n):h.key(n);assert.equal(h.soundUnlocks(),0);}
+   method==='pointer'?h.tap('0'):h.key('0');
+  }
+  assert.equal(h.soundUnlocks(),1);assert.equal(h.ctx.getRoute().app,'home');
+ }
 });
 test('canceling a camera or notification unlock clears its deferred destination',()=>{
  for(const action of ['lock-camera','lock-notification']){const h=harness();h.click(action);h.click('back');h.click('pin');for(const n of '0520')h.tap(n);assert.equal(h.ctx.getRoute().app,'home');}
