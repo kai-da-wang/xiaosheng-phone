@@ -107,7 +107,7 @@
    const pick=options=>options[turn%options.length];
    if(/停|别回|安静|不聊/.test(text))return pick([{speaker:'wind',text:'收到，我们先安静一会儿。想聊了再叫我们。'},{speaker:'soda',text:'好嘞，先静音模式一会儿 🤫'}]);
    if(/难过|累|烦|不开心|失落/.test(text))return pick([{speaker:'rice',text:'给你留个靠窗的位置。今天不用负责活跃气氛，我们陪你慢慢聊。'},{speaker:'lulu',text:'抱抱。不用硬撑，想说就说，不想说也没关系。'},{speaker:'nannan',text:'辛苦啦，先喝口水。大家都在呢。'}]);
-   if(/饿|吃|饭|奶茶|火锅/.test(text))return pick([{speaker:'pudding',text:'火锅！我投火锅！已经开始饿了。'},{speaker:'rice',text:'本群一聊吃的，潜水的人都浮上来了。先报菜名，我拿碗！'},{speaker:'cola',text:'暂停，我现在真的想点外卖了😂'}]);
+   if(/饿|吃|饭|奶茶|火锅/.test(text))return pick([{speaker:'pudding',text:'要吃火锅！我投火锅！已经开始饿了。'},{speaker:'rice',text:'本群一聊吃的，潜水的人都浮上来了。先报菜名，我拿碗！'},{speaker:'cola',text:'暂停，我现在真的想点外卖了😂'}]);
    if(/狗尾巴草|洋葱|木马/.test(text))return pick([{speaker:'wind',text:'一根小草也能被认真收藏。好啦，这一段我们一起记得。'},{speaker:'cloud',text:'这种小细节最容易记住，好像突然看到一张旧照片。'}]);
    if(/小王|甜|想|喜欢/.test(text))return pick([{speaker:'youzi',text:'等一下，我搬个小板凳。这个话题听起来有后续 👀'},{speaker:'xiaoqi',text:'不是，等一下，这里是不是有故事！'},{speaker:'yoyo',text:'我宣布这一句值得截屏哈哈哈。'}]);
    if(/你好|来了|大家好|报到|签到/.test(text))return pick([{speaker:'rice',text:'欢迎归队！零食放左边，快乐放右边。'},{speaker:'soda',text:'来啦来啦！今天这群居然这么齐。'},{speaker:'xingle',text:'打卡成功✅ 先坐，慢慢聊～'}]);
