@@ -56,5 +56,5 @@ window.WangChatRuntime={create(ctx){
  function toggle(){stop();S().wangAutoReply=!enabled();if(!enabled())S().wangPending=null;save();removeTyping();return enabled();}
  function mode(){return S().wangLastMode==='model'?'AI对话':'情景对话';}
  setTimeout(()=>{if(pending())schedule(600);},0);
- return {enqueue,typingMarkup,toggle,enabled,mode};
+ return {enqueue,typingMarkup,toggle,enabled,mode,cancel(){stop();S().wangPending=null;removeTyping();}};
 }};

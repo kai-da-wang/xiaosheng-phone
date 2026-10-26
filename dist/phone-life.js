@@ -33,7 +33,7 @@
   function end(result='declined'){if(!['ringing','connected'].includes(L().callStatus))return;clearTimeout(endTimer);endTimer=null;ctx.sound.stop();L().callResult=L().callStatus==='connected'?'answered':result;L().callStatus='ended';S().callLog||=[];S().callLog.push({id:'wang-intro-call-v1',name:'小王',direction:'incoming',result:L().callResult,time:time(),sceneMode:'fictional_fan_scene'});ctx.save();ctx.onCall(null);scheduleFollowup();sync();}
   function showCall(){callTimer=null;if(L().callStatus!=='new')return;if(!eligible()){if(S().unlocked&&!['lock','pin'].includes(ctx.getRoute().app)&&!ctx.hidden?.())callTimer=setTimeout(showCall,500);return;}L().callStatus='ringing';ctx.save();ctx.onCall('ringing');ctx.sound.ring();endTimer=setTimeout(()=>end('missed'),22000);}
   function answer(){if(L().callStatus!=='ringing')return;ctx.sound.stop();clearTimeout(endTimer);L().callStatus='connected';ctx.save();ctx.onCall('connected');endTimer=setTimeout(()=>end('answered'),8000);}
-  function introduce(){introTimer=null;if(!eligible()||L().callStatus==='ringing'||L().callStatus==='connected')return;if(L().groupIntroSent)return;L().groupIntroSent=true;incoming(groupId,{id:'fans-intro-v1',type:'text',from:'other',speaker:'youzi',text:'小圣来啦！今天的群聊签到题：用一个词形容你的心情。'});ctx.save();}
+  function introduce(){introTimer=null;if(!eligible()||L().callStatus==='ringing'||L().callStatus==='connected')return;if(L().groupIntroSent||S().wechatPrefs?.[groupId]?.left)return;L().groupIntroSent=true;incoming(groupId,{id:'fans-intro-v1',type:'text',from:'other',speaker:'youzi',text:'小圣来啦！今天的群聊签到题：用一个词形容你的心情。'});ctx.save();}
   function groupReply(text,turn){
    if(/停|别回|安静|不聊/.test(text))return {speaker:'wind',text:'收到，我们先安静一会儿。想聊了再叫我们。'};
    if(/难过|累|烦|不开心|失落/.test(text))return {speaker:'rice',text:'给你留个靠窗的位置。今天不用负责活跃气氛，我们陪你慢慢聊。'};
@@ -46,7 +46,7 @@
    if(/[?？]|怎么|什么|哪|谁/.test(text))return {speaker:'wind',text:'这个问题我先举手围观。你心里是不是已经有个答案了？'};
    return [{speaker:'youzi',text:'好好好，话题递到你这里了。展开讲讲，我的瓜子还没嗑完。'},{speaker:'rice',text:'我刚想潜水，看到你这句又冒出来了 😂'},{speaker:'wind',text:'这句先留在群里。等大家回来，又有话可以接着聊了。'}][turn%3];
   }
-  function completeGroup(){groupTimer=null;const pending=L().groupPending;if(!pending)return;const history=S().chatMessages[groupId]||[],answered=new Set(history.flatMap(m=>m.replyTo||[])),inputs=history.filter(m=>pending.ids.includes(m.id)&&m.from==='self'&&!answered.has(m.id));L().groupPending=null;if(!inputs.length){ctx.save();return;}const reply=groupReply(inputs.at(-1).text,history.filter(m=>m.replyOrigin==='local-fan-group').length);incoming(groupId,{id:'fans_'+inputs.at(-1).id,type:'text',from:'other',...reply,replyOrigin:'local-fan-group',replyTo:inputs.map(m=>m.id)});ctx.save();}
+  function completeGroup(){groupTimer=null;const pending=L().groupPending;if(S().wechatPrefs?.[groupId]?.left){L().groupPending=null;ctx.save();return;}if(!pending)return;const history=S().chatMessages[groupId]||[],answered=new Set(history.flatMap(m=>m.replyTo||[])),inputs=history.filter(m=>pending.ids.includes(m.id)&&m.from==='self'&&!answered.has(m.id));L().groupPending=null;if(!inputs.length){ctx.save();return;}const reply=groupReply(inputs.at(-1).text,history.filter(m=>m.replyOrigin==='local-fan-group').length);incoming(groupId,{id:'fans_'+inputs.at(-1).id,type:'text',from:'other',...reply,replyOrigin:'local-fan-group',replyTo:inputs.map(m=>m.id)});ctx.save();}
   function enqueueGroup(m){if(m.type!=='text'||m.from!=='self')return;const history=S().chatMessages[groupId]||[];if(history.some(x=>x.replyTo?.includes(m.id)))return;L().groupPending={ids:[...new Set([...(L().groupPending?.ids||[]),m.id])].slice(-20)};ctx.save();clearTimeout(groupTimer);groupTimer=setTimeout(completeGroup,1250+Math.min(m.text.length*8,450));}
   function clearTimers(){for(const t of [callTimer,endTimer,followTimer,groupTimer,introTimer])clearTimeout(t);callTimer=endTimer=followTimer=groupTimer=introTimer=null;ctx.sound.stop();}
   function sync(){
@@ -58,7 +58,7 @@
   }
   function visibility(){if(ctx.hidden?.()){ctx.sound.stop();clearTimeout(callTimer);callTimer=null;clearTimeout(introTimer);introTimer=null;}else{sync();if(L().callStatus==='ringing')ctx.sound.ring();}}
   function toggleGroupMute(){L().groupMuted=!L().groupMuted;ctx.save();return L().groupMuted;}
-  return {sync,answer,end,enqueueGroup,toggleGroupMute,visibility,notify:(id,m)=>ctx.onIncoming(id,m,false),dispose:clearTimers};
+  return {cancelGroup(){clearTimeout(groupTimer);groupTimer=null;L().groupPending=null;},sync,answer,end,enqueueGroup,toggleGroupMute,visibility,notify:(id,m)=>ctx.onIncoming(id,m,false),dispose:clearTimers};
  }
  const api={groupId,members,seed,defaults,normalize,create,createSound};
  if(typeof module!=='undefined')module.exports=api;else root.PhoneLife=api;

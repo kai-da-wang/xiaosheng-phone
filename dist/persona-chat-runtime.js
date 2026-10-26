@@ -45,5 +45,5 @@ window.PersonaChatRuntime={create(ctx){
  function typingMarkup(id,avatar,name){return pending(id)?`<div class="wx-message incoming wx-typing-message" data-persona-room="${id}" role="status" aria-label="${esc(name)}正在输入">${avatar}<div class="wx-text-bubble wx-typing-dots"><i></i><i></i><i></i></div></div>`:'';}
  const mood=id=>({neutral:'自在',warm:'放松',playful:'轻松',hurt:'有些介意',guarded:'想留点空间'})[room(id).mood];
  setTimeout(()=>{for(const id of C.personaIds)if(pending(id))schedule(id,750);},0);
- return {supports,enqueue,enabled,toggle,clearMemory,clearChat,toggleMemory,typingMarkup,mood,memoryEnabled:id=>room(id).memoryAllowed};
+ return {cancel,supports,enqueue,enabled,toggle,clearMemory,clearChat,toggleMemory,typingMarkup,mood,memoryEnabled:id=>room(id).memoryAllowed};
 }};
