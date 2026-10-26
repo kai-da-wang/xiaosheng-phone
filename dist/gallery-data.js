@@ -80,10 +80,9 @@ window.PHOTO_LIBRARY = {
       "id": "gangjie",
       "name": "和港姐",
       "coverAssetId": "gangjie-01",
-      "photoCount": 3,
+      "photoCount": 2,
       "items": [
         "gangjie-01",
-        "gangjie-02",
         "gangjie-03"
       ]
     }
@@ -408,23 +407,9 @@ window.PHOTO_LIBRARY = {
       "quoteLinkId": null
     },
     {
-      "id": "gangjie-02",
-      "albumId": "gangjie",
-      "sortOrder": 2,
-      "path": "assets/photos/gangjie/gangjie_02_night_knit_hat.jpg",
-      "originalFilename": "screenshot_20261026_102814_com.ss.hm.ugc.aweme.jpg",
-      "description": "夜景针织帽合照",
-      "width": 914,
-      "height": 1536,
-      "fileSizeBytes": 109995,
-      "sha256": "debef5d923f03e50202651ec5caf8e88110f9e60e3d5d1f138c85c500b217fef",
-      "sourceType": "user_provided_video_screenshot",
-      "quoteLinkId": null
-    },
-    {
       "id": "gangjie-03",
       "albumId": "gangjie",
-      "sortOrder": 3,
+      "sortOrder": 2,
       "path": "assets/photos/gangjie/gangjie_03_portrait.jpg",
       "originalFilename": "screenshot_20261026_103028_com.ss.hm.ugc.aweme.jpg",
       "description": "室内单人照",

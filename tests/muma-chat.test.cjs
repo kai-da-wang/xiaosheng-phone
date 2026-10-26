@@ -15,16 +15,21 @@ function setup(room='lead_muma'){
 }
 test('Muma scene contains the supplied line from Muma and all photo IDs resolve',()=>{
  const {window}=setup(),scene=window.MUMA_CHAT;
- const firstMeeting=scene.messages.findIndex(m=>m.text?.includes('随手从路边摘了根狗尾巴草'));
- const remembered=scene.messages.findIndex(m=>m.text?.includes('我把它夹在书里'));
+ const firstMeeting=scene.messages.findIndex(m=>m.text?.includes('随手摘了根路边的狗尾巴草'));
+ const remembered=scene.messages.findIndex(m=>m.text?.includes('拿纸包好了'));
  const scarfPhoto=scene.messages.findIndex(m=>m.type==='photo'&&m.assetId==='muma-01');
- const farewell=scene.messages.findIndex(m=>m.text?.includes('突然从脖子上解下来给我'));
- assert.ok(firstMeeting>=0&&firstMeeting<scarfPhoto&&scarfPhoto<farewell&&farewell<remembered);
+ const farewell=scene.messages.findIndex(m=>m.text?.includes('围巾从脖子上解下来塞给我'));
+ assert.ok(firstMeeting>=0&&firstMeeting<remembered&&remembered<scarfPhoto&&scarfPhoto<farewell);
+ assert.deepEqual(Array.from(scene.messages.filter(m=>m.type==='system'),m=>m.text),[
+  '上午 09:18 · 初次相识','中午 12:37 · 一起走走','傍晚 18:56 · 城市亮灯',
+  '晚上 20:14 · 告别以后','晚上 22:36 · 各自到家'
+ ]);
+ assert.ok(!scene.messages.some(m=>/几天后|明天下午|分别前一晚|早就干了/.test(m.text||'')));
  assert.equal(scene.messages[firstMeeting].from,'self');
  assert.equal(scene.messages[remembered].from,'other');
  assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('我是认真收下的')));
- assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('冷了就围上')));
- assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('我的狗尾巴草也还在书里')));
+ assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('冷的时候可以戴')));
+ assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('刚刚夹进书里了')));
  assert.ok(scene.messages.filter(m=>m.type==='system').length>=3);
  assert.equal(new Set(scene.messages.map(m=>m.id)).size,scene.messages.length);
  assert.ok(scene.messages.filter(m=>m.type==='photo').every(m=>window.PHOTO_LIBRARY.assets.find(a=>a.id===m.assetId)?.albumId==='muma'));

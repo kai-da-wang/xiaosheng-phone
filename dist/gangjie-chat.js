@@ -69,60 +69,6 @@ const story={
     },
     {
       "type": "photo",
-      "from": "self",
-      "assetId": "gangjie-02",
-      "id": "gangjie-story-20261026-10"
-    },
-    {
-      "type": "text",
-      "from": "self",
-      "text": "还有这张，帽子和夜景都挺配合。",
-      "id": "gangjie-story-20261026-11"
-    },
-    {
-      "type": "text",
-      "from": "other",
-      "text": "帽子负责好看，我负责比耶，你负责把照片拍清楚。",
-      "id": "gangjie-story-20261026-12"
-    },
-    {
-      "type": "text",
-      "from": "self",
-      "text": "分工这么明确，那风负责什么？",
-      "id": "gangjie-story-20261026-13"
-    },
-    {
-      "type": "text",
-      "from": "other",
-      "text": "负责把你刘海吹乱，给我提供一点笑点。",
-      "id": "gangjie-story-20261026-14"
-    },
-    {
-      "type": "text",
-      "from": "self",
-      "text": "你笑得这么开心，这张我可要留下了。",
-      "id": "gangjie-story-20261026-15"
-    },
-    {
-      "type": "text",
-      "from": "other",
-      "text": "留呀。等以后你说自己很稳重，我就把它翻出来。",
-      "id": "gangjie-story-20261026-16"
-    },
-    {
-      "type": "text",
-      "from": "self",
-      "text": "原来是存证，不是收藏。",
-      "id": "gangjie-story-20261026-17"
-    },
-    {
-      "type": "text",
-      "from": "other",
-      "text": "也可以两个都是，看你以后表现。",
-      "id": "gangjie-story-20261026-18"
-    },
-    {
-      "type": "photo",
       "from": "other",
       "assetId": "gangjie-03",
       "id": "gangjie-story-20261026-19"
@@ -160,7 +106,7 @@ const story={
     {
       "type": "text",
       "from": "self",
-      "text": "三张都收好了。下一次我站近一点。",
+      "text": "两张都收好了。下一次我站近一点。",
       "id": "gangjie-story-20261026-25"
     },
     {
@@ -178,7 +124,7 @@ function createReply({message,memory,now=Date.now()}={}){
  const pools={
   hello:['在呀，刚好把那几张照片整理好了。','来了？先说好，今天不许只聊两句就溜走😌','看到你消息了。今天有什么小事要分我一点？'],
   photo:['原图给你，下次镜头别只顾着往自己那边偏😌','合照我存好了。有没有人偷看我，等我放大研究一下。','那张就留着呀。你检查刘海，我检查你有没有把我拍糊。','先说你挑中了哪张，我看看咱们审美有没有对上。'],
-  night:['那晚风挺忙的，吹你的刘海，还要吹我的帽子。','夜景可以慢慢看，拍完照记得陪我去找点热的喝。','帽子负责好看，你负责别把我拍成一团毛茸茸。'],
+  night:['夜风大的时候别在外面站太久，冻着了我可要念你。','晚上走累了就找地方坐坐，喝口热的。','夜景可以慢慢看，不用一直举着手机拍。'],
   mall:['商场那张可以留。下次站近一点，不然我还得追着镜头跑。','你把合照拍好，我就勉强承认你有一点摄影天赋。','逛累了就找地方坐会儿，照片又不会趁机逃跑。'],
   portrait:['单人照也给你啦。这次不用从合照里辛苦截我出来。','审美总监已经交作业了，摄影师是不是也该交原图？','这张先收好。夸奖可以有，但别复制粘贴上次那句。'],
   missing:['是想我，还是想找个人陪你聊天？好吧，这次两个都算。','收到。刚想装作很淡定，嘴角先不配合了。','那你来得正好，我也想把今天的小事说给你听。','想我就认真聊两句，别发完这句又偷偷潜水。'],
@@ -212,7 +158,7 @@ function createReply({message,memory,now=Date.now()}={}){
   else if(/^(?:我叫|叫我|我的昵称是)/.test(t)){intent='stateName';text=m.memoryAllowed&&m.facts.name?`${m.facts.name}，好。这次记住了，不许下次又临时换考题。`:'听到了，记忆关着，我只接着这句聊，不另存昵称。';}
   else if(/^我(?:最)?(?:喜欢吃|爱吃|喜欢喝)/.test(t)){intent='stateFood';text=m.memoryAllowed&&m.facts.favoriteFood?`${m.facts.favoriteFood}，这一票记下了。下次选菜单你可别又说随便。`:'听到了，记忆关着，这个口味不会另存下来。';}
   else{
-   if(/不喜欢你|不爱你|别自作多情/.test(t)){intent='distance';text='好，不替你加戏。咱们按舒服的距离正常聊。';}else if(/我帅吗|我好看吗/.test(t)){intent='selfLook';text='还没看到你今天的样子呢。不过这句开场，你倒是挺有自信😌';}else if(/难过|委屈|想哭|不开心/.test(t))intent='sad';else if(/好累|累了|疲惫|熬夜/.test(t))intent='tired';else if(/学习|考研|数学|作业|做题|考试/.test(t))intent='study';else if(/晚安|睡觉|困了/.test(t))intent='sleep';else if(/(?:不要|别).{0,5}(?:照片|原图|合照)/.test(t)){intent='boundary';text='好，照片这件事先放一边，按你舒服的方式来。';}else if(/帽子|夜景|夜风/.test(t))intent='night';else if(/商场|逛街/.test(t))intent='mall';else if(/单人照|总监|写真/.test(t))intent='portrait';else if(/照片|合照|原图|拍照/.test(t))intent='photo';else if(/想你|想我|喜欢你|爱你/.test(t))intent='missing';else if(/漂亮|好看|可爱|温柔/.test(t))intent='compliment';else if(/嘴硬|逗你|笨蛋|你猜|哈哈/.test(t))intent='tease';else if(/在干嘛|干嘛呢|忙吗/.test(t))intent='status';else if(/吃什么|吃饭|饿|火锅|奶茶/.test(t))intent='food';else if(/你好|在吗|嗨|hello|早安/i.test(t))intent='hello';else if(/真的|那你呢|然后呢|好呀|可以呀/.test(t)&&pools[m.lastTopic])intent=m.lastTopic;
+   if(/不喜欢你|不爱你|别自作多情/.test(t)){intent='distance';text='好，不替你加戏。咱们按舒服的距离正常聊。';}else if(/我帅吗|我好看吗/.test(t)){intent='selfLook';text='还没看到你今天的样子呢。不过这句开场，你倒是挺有自信😌';}else if(/难过|委屈|想哭|不开心/.test(t))intent='sad';else if(/好累|累了|疲惫|熬夜/.test(t))intent='tired';else if(/学习|考研|数学|作业|做题|考试/.test(t))intent='study';else if(/晚安|睡觉|困了/.test(t))intent='sleep';else if(/(?:不要|别).{0,5}(?:照片|原图|合照)/.test(t)){intent='boundary';text='好，照片这件事先放一边，按你舒服的方式来。';}else if(/夜景|夜风|晚上的风/.test(t))intent='night';else if(/商场|逛街/.test(t))intent='mall';else if(/单人照|总监|写真/.test(t))intent='portrait';else if(/照片|合照|原图|拍照/.test(t))intent='photo';else if(/想你|想我|喜欢你|爱你/.test(t))intent='missing';else if(/漂亮|好看|可爱|温柔/.test(t))intent='compliment';else if(/嘴硬|逗你|笨蛋|你猜|哈哈/.test(t))intent='tease';else if(/在干嘛|干嘛呢|忙吗/.test(t))intent='status';else if(/吃什么|吃饭|饿|火锅|奶茶/.test(t))intent='food';else if(/你好|在吗|嗨|hello|早安/i.test(t))intent='hello';else if(/真的|那你呢|然后呢|好呀|可以呀/.test(t)&&pools[m.lastTopic])intent=m.lastTopic;
    if(!text)text=!m.flirtAllowed&&['missing','compliment'].includes(intent)?'那就按普通朋友的方式聊，不替你加戏。':['hurt','guarded'].includes(m.mood)&&!['sad','tired','study','sleep'].includes(intent)?'刚才那件事我还在意。先把话说清楚，再聊别的。':pick(intent);
   }
  }
