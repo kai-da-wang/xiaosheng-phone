@@ -13,3 +13,5 @@
 
 /* Optional synthesized female voice; shown only after gateway configured. */
 .wx-ai-speech{display:inline-block;margin:5px 0 0 8px;padding:3px 8px;border:0;border-radius:9px;background:rgba(30,140,89,.10);color:#26764d;font-size:11px;line-height:1.5;cursor:pointer;vertical-align:baseline}.wx-ai-speech:focus-visible{outline:2px solid #178749;outline-offset:2px}
+
+.wx-ai-disclosure{text-align:center;font-size:10px;color:#758178;background:#f0f3f0;padding:4px 8px;line-height:1.35}
