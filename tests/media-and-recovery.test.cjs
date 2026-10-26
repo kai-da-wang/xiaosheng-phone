@@ -23,24 +23,42 @@ test('damaged save fields recover without discarding valid legacy messages or no
  const state=Core.normalize({version:1,opened:null,chatReadRooms:{},chatMessages:{wang:[null,1,{text:'legacy text'},{id:'ok',type:'text',text:'kept'}],broken:{}},chatDrafts:{wang:42,other:'draft'},notes:[null,{id:'old-note'}],settings:{brightness:'bad',sound:false},reminders:null});
  assert.deepEqual(state.opened,[]);assert.deepEqual(state.chatReadRooms,[]);assert.equal(state.chatMessages.wang.length,2);assert.equal(state.notes.length,1);assert.equal(state.chatDrafts.other,'draft');assert.equal(state.settings.brightness,100);assert.equal(state.settings.sound,false);assert.ok(Array.isArray(state.reminders));
 });
-function audioHarness(){
- const w={},state=Core.defaults(),route={app:'room',id:'lead_wang_xiaomiao'},reads=[],audio=[],revoked=[],open={};
+function audioHarness({sound=false}={}){
+ const w={},route={app:'room',id:'lead_wang_xiaomiao'},reads=[],audio=[],revoked=[],open={},writes=[],events={},documentEvents={};let state=Core.defaults(),renders=0,soundUnlocks=0;
  for(const name of ['content.js','gallery-data.js'])vm.runInNewContext(fs.readFileSync('dist/'+name,'utf8'),{window:w});
+ if(sound)w.PhoneLife={groupId:'fans',members:[],normalize:v=>v,createSound:()=>({unlock(){soundUnlocks++;}}),create:()=>({})};
  w.indexedDB={open:()=>open};w.WangChatRuntime={create:()=>({typingMarkup:()=>''})};w.PersonaChatRuntime={create:()=>({supports:()=>false})};
- const document={createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
+ const upload={files:[],addEventListener:(type,fn)=>events[type]=fn};
+ const document={addEventListener:(type,fn)=>documentEvents[type]=fn,createElement:()=>upload,body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
  const sandbox={window:w,document,clearTimeout,indexedDB:w.indexedDB,Promise,Intl,Date,Map,Math,URL:{createObjectURL:blob=>'blob:'+blob.id,revokeObjectURL:url=>revoked.push(url)},Audio:class{constructor(url){this.url=url;audio.push(this);}play(){this.played=true;return Promise.resolve();}pause(){this.paused=true;}}};
  vm.runInNewContext(fs.readFileSync('dist/phone-experience.js','utf8'),sandbox);
- const x=w.PhoneExperience.create({data:w.PHONE_DATA,gallery:w.PHOTO_LIBRARY,esc:String,icon:()=>'',btn:()=>'',shell:()=>'',go(){},save(){},toast(){},modal(){},appIcon(){},getState:()=>state,getRoute:()=>route});
- open.result={transaction:()=>({objectStore:()=>({get:()=>{const r={};reads.push(r);return r;}})})};open.onsuccess();
+ const x=w.PhoneExperience.create({data:w.PHONE_DATA,gallery:w.PHOTO_LIBRARY,esc:String,icon:()=>'',btn:()=>'',shell:()=>'',go(){},save(){},toast(){},modal(){},appIcon(){},render(){renders++;},getState:()=>state,getRoute:()=>route});
+ open.result={transaction:()=>{const tx={objectStore:()=>({get:()=>{const r={};reads.push(r);return r;},put:(blob,id)=>writes.push({blob,id,tx})})};return tx;}};open.onsuccess();
  state.chatMessages[route.id]=[{id:'a',type:'voice',blobKey:'a'},{id:'b',type:'voice',blobKey:'b'}];
- return {x,route,state,reads,audio,revoked,play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
+ return {x,route,state,reads,audio,revoked,writes,upload,events,documentEvents,soundUnlocks:()=>soundUnlocks,renders:()=>renders,reset(){state=Core.defaults();return state;},play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
 }
 const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
+test('lock and passcode gestures skip audio setup; an app gesture still enables sound',()=>{
+ const h=audioHarness({sound:true}),locked={target:{closest:()=>({})}};
+ h.documentEvents.pointerdown(locked);h.documentEvents.keydown(locked);assert.equal(h.soundUnlocks(),0);
+ h.documentEvents.pointerdown({target:{closest:()=>null}});assert.equal(h.soundUnlocks(),1);
+});
 test('leaving a room cancels voice playback even if IndexedDB finishes later',async()=>{
  const h=audioHarness();h.play('a');await flush();h.x.onNavigate();h.route.app='home';h.resolve(0,'a');await flush();assert.equal(h.audio.length,0);assert.deepEqual(h.state.playedVoiceIds,[]);
 });
 test('rapid voice selection plays only the latest result and releases its object URL',async()=>{
  const h=audioHarness();h.play('a');await flush();h.play('b');await flush();h.resolve(1,'b');await flush();h.resolve(0,'a');await flush();assert.equal(h.audio.length,1);assert.equal(h.audio[0].url,'blob:b');assert.deepEqual(h.state.playedVoiceIds,['b']);h.x.stopAudio();assert.equal(h.audio[0].paused,true);assert.deepEqual(h.revoked,['blob:b']);
+});
+test('finishing an audio import saves to its original room without repainting another page',async()=>{
+ const h=audioHarness(),room=h.route.id;h.upload.files=[{id:'import',size:100,name:'clip.m4a'}];h.events.change();const probe=h.audio[0];probe.duration=3;const saved=probe.onloadedmetadata();await flush();h.route.app='home';h.writes[0].tx.oncomplete();await saved;
+ assert.equal(h.state.chatMessages[room].at(-1).type,'voice');assert.equal(h.renders(),0);assert.ok(h.revoked.includes('blob:import'));
+});
+test('resetting during metadata or storage prevents an old import from entering the new save',async()=>{
+ for(const phase of ['metadata','storage']){const h=audioHarness();h.upload.files=[{id:'import',size:100,name:'clip.m4a'}];h.events.change();const probe=h.audio[0];probe.duration=3;
+  if(phase==='metadata'){const fresh=h.reset();await probe.onloadedmetadata();assert.deepEqual(fresh.chatMessages,{});assert.equal(h.writes.length,0);}
+  else{const saved=probe.onloadedmetadata();await flush();const fresh=h.reset();h.writes[0].tx.oncomplete();await saved;assert.deepEqual(fresh.chatMessages,{});}
+  assert.equal(h.renders(),0);
+ }
 });
 test('map requests are lazy, shared, retryable, and never repaint a different app',()=>{
  const w={},scripts=[],route={app:'maps'},calls=[],document={createElement:()=>({remove(){}}),head:{appendChild:s=>scripts.push(s)}};
