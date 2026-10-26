@@ -67,7 +67,7 @@
  const clean=v=>String(v??'').trim().replace(/\s+/g,' ').slice(0,1000);
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  const fresh=id=>C.personaRoom(id);
- const isKnown=id=>ids.includes(id);
+ const isKnown=id=>ids.includes(id)||id==='lead_gangjie';
  const roleIndex=id=>ids.indexOf(id);
  const pickRole=(id,list)=>list[roleIndex(id)];
  const extra={
@@ -142,6 +142,7 @@
   return facts;
  }
  function createReply({roomId,message,memory,history=[],now=Date.now()}={}){
+  if(roomId==='lead_gangjie'){const gangjie=typeof module!=='undefined'&&module.exports?require('./gangjie-chat.js'):root.GANGJIE_CHAT;return gangjie.createReply({message,memory,now});}
   if(!isKnown(roomId))throw Error('Unsupported persona room');
   const m=C.normalizePersona({rooms:{[roomId]:memory}}).rooms[roomId];
   const batch=(Array.isArray(message)?message:[message]).slice(-3).map(clean),t=batch.at(-1)||'',whole=batch.join('。');

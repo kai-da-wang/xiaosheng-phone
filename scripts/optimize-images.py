@@ -21,11 +21,12 @@ for asset in gallery['assets'] + [{'id': 'coast', 'path': 'assets/coast.png'}]:
             image = original.copy()
             image.thumbnail((edge, edge), Image.Resampling.LANCZOS)
             relative = f'assets/optimized/{asset["id"]}-{digest}-{name}.webp'
-            buffer = BytesIO()
-            image.save(buffer, 'WEBP', quality=quality, method=6)
-            temporary = (DIST / relative).with_suffix('.tmp')
-            temporary.write_bytes(buffer.getvalue())
-            temporary.replace(DIST / relative)
+            if not (DIST / relative).exists() or not (DIST / relative).stat().st_size:
+                buffer = BytesIO()
+                image.save(buffer, 'WEBP', quality=quality, method=6)
+                temporary = (DIST / relative).with_suffix('.tmp')
+                temporary.write_bytes(buffer.getvalue())
+                temporary.replace(DIST / relative)
             record[name] = {'path': relative, 'width': image.width, 'height': image.height}
     variants[asset['path']] = record
 (DIST / 'photo-variants.js').write_text('window.PHOTO_VARIANTS = ' + json.dumps(variants, ensure_ascii=False, separators=(',', ':')) + ';\n')

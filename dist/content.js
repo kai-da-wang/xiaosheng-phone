@@ -107,29 +107,6 @@ window.PHONE_DATA = {
       "sourceNote": "尚未核实原视频、人物身份、原话和说话者。"
     },
     {
-      "id": "lead_lucky",
-      "name": "Lucky",
-      "alias": "Lucky doesn't cry",
-      "initial": "L",
-      "color": "#9d8865",
-      "subtitle": "心动与克制",
-      "scenes": [
-        {
-          "id": "lead_lucky_1",
-          "title": "心动与克制",
-          "narrative": "有些瞬间，值得停下来再看一遍。",
-          "quote": "我肯定是有心动过啊，但他是炸街博主唉",
-          "speaker": null,
-          "timestampSec": null,
-          "status": "needs_review",
-          "sourceUrl": "https://www.douyin.com/zhuanti/7628794134974777382",
-          "sourceType": "fan_compilation",
-          "rights": "unknown"
-        }
-      ],
-      "sourceNote": "二创/专题索引可见候选语句；需核查原视频、字幕、发言人与秒数。"
-    },
-    {
       "id": "lead_vivi",
       "name": "薇薇",
       "alias": "all4u",
@@ -153,27 +130,27 @@ window.PHONE_DATA = {
       "sourceNote": "二创/直播聚合内容线索；不能据此确认原话、发言者和时间戳。"
     },
     {
-      "id": "lead_xixi",
-      "name": "夕夕",
-      "alias": null,
-      "initial": "夕",
-      "color": "#74988e",
-      "subtitle": "公开片段待补充",
+      "id": "lead_gangjie",
+      "name": "港姐",
+      "alias": "港姐",
+      "initial": "港",
+      "color": "#ab8c7a",
+      "subtitle": "合照里的小心思",
       "scenes": [
         {
-          "id": "lead_xixi_1",
-          "title": "等待重逢的片段",
-          "narrative": "这一页先留白，等那段熟悉的声音。",
+          "id": "lead_gangjie_1",
+          "title": "合照里的小心思",
+          "narrative": "从商场合照到夜风里的小约定。",
           "quote": null,
           "speaker": null,
           "timestampSec": null,
-          "status": "missing",
+          "status": "editorial",
           "sourceUrl": null,
-          "sourceType": "unknown",
-          "rights": "unknown"
+          "sourceType": "user_provided_images_fictional_scene",
+          "rights": "user_provided"
         }
       ],
-      "sourceNote": "尚未核实原视频、人物身份、原话和说话者。"
+      "sourceNote": "昵称由用户指定；聊天为依据用户照片创作的虚构游戏支线，不作为现实私聊或原话。"
     }
   ],
   "folderUnlockCount": 3

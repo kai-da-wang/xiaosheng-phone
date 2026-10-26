@@ -75,3 +75,7 @@
 用户指定screenshot_20261024_173524_com.ss.hm.ugc.aweme(3)(1).jpg和screenshot_20261024_173512_com.ss.hm.ugc.aweme(4)(1).jpg替换健身相册。网页直接使用这两个原始JPG，未采用任何生成图、重绘或修图；尺寸和SHA-256见素材清单。另曾尝试生成仅供核对的并排预览，工具未生成成功，没有预览成品进入项目。
 
 persona-voice.js的口吻、玩笑、记忆回话及上下文短句均为项目原创游戏表达，不代表真人性格或私人聊天原话。人物研究的needs_review状态不变，未新增核实引文、现实行程或声音。
+
+### 2026-10-26 用户指定的港姐素材
+
+`screenshot_20261026_102849_com.ss.hm.ugc.aweme.jpg`、`screenshot_20261026_102814_com.ss.hm.ugc.aweme.jpg`、`screenshot_20261026_103028_com.ss.hm.ugc.aweme.jpg` 为用户提供并要求加入本项目的图片。原字节保存在 `dist/assets/photos/gangjie/`，校验和及尺寸见 `gallery-data.js`。港姐为用户指定的游戏昵称；没有根据图片识别人名、断言身份或推断现实私人关系。聊天为原创同人剧情，不作为真实私聊、原声或原话展示。

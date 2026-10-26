@@ -1,6 +1,6 @@
 window.PHOTO_LIBRARY = {
   "project": "小圣的手机",
-  "packageVersion": "2026-10-25-fitness-portrait",
+  "packageVersion": "2026-10-26-gangjie",
   "type": "incremental_update_for_existing_first_version",
   "unlock": {
     "pin": "0520",
@@ -74,6 +74,17 @@ window.PHOTO_LIBRARY = {
         "vivi-01",
         "vivi-02",
         "vivi-03"
+      ]
+    },
+    {
+      "id": "gangjie",
+      "name": "和港姐",
+      "coverAssetId": "gangjie-01",
+      "photoCount": 3,
+      "items": [
+        "gangjie-01",
+        "gangjie-02",
+        "gangjie-03"
       ]
     }
   ],
@@ -381,6 +392,48 @@ window.PHOTO_LIBRARY = {
       "sourceType": "user_provided_video_screenshot",
       "quoteLinkId": null,
       "containsAiGenerationLabel": true
+    },
+    {
+      "id": "gangjie-01",
+      "albumId": "gangjie",
+      "sortOrder": 1,
+      "path": "assets/photos/gangjie/gangjie_01_mall_selfie.jpg",
+      "originalFilename": "screenshot_20261026_102849_com.ss.hm.ugc.aweme.jpg",
+      "description": "商场合照",
+      "width": 1287,
+      "height": 1536,
+      "fileSizeBytes": 180214,
+      "sha256": "1a12867cd20a33dc0eb41d344f61dd0a5bdb2318faaddc7bf9cb1e11ef6b0e4e",
+      "sourceType": "user_provided_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "gangjie-02",
+      "albumId": "gangjie",
+      "sortOrder": 2,
+      "path": "assets/photos/gangjie/gangjie_02_night_knit_hat.jpg",
+      "originalFilename": "screenshot_20261026_102814_com.ss.hm.ugc.aweme.jpg",
+      "description": "夜景针织帽合照",
+      "width": 914,
+      "height": 1536,
+      "fileSizeBytes": 109995,
+      "sha256": "debef5d923f03e50202651ec5caf8e88110f9e60e3d5d1f138c85c500b217fef",
+      "sourceType": "user_provided_video_screenshot",
+      "quoteLinkId": null
+    },
+    {
+      "id": "gangjie-03",
+      "albumId": "gangjie",
+      "sortOrder": 3,
+      "path": "assets/photos/gangjie/gangjie_03_portrait.jpg",
+      "originalFilename": "screenshot_20261026_103028_com.ss.hm.ugc.aweme.jpg",
+      "description": "室内单人照",
+      "width": 1232,
+      "height": 1536,
+      "fileSizeBytes": 229301,
+      "sha256": "8e6f7854ad9e6f612b273d74021f5a522408638646b7773eb3fafed61eca1909",
+      "sourceType": "user_provided_video_screenshot",
+      "quoteLinkId": null
     }
   ],
   "lockScreenReference": {

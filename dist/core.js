@@ -1,6 +1,6 @@
 (function(root){
   const key='xiaosheng-phone-v1';
-  const personaIds=['lead_vivi','lead_muma','lead_monv'];
+  const personaIds=['lead_vivi','lead_muma','lead_monv','lead_gangjie'];
   const personaRoom=id=>({autoReply:true,affinity:id==='lead_vivi'?30:25,trust:50,discomfort:0,mood:'neutral',lastReplyAt:0,lastTopic:null,facts:{},flirtAllowed:true,memoryAllowed:true,recentReplies:[],recentInputs:[],conversationTurns:0,positiveTurns:0,repairTurns:0,growthCount:0,growthDay:'',lastGrowthTurn:0,lastEmotionDay:'',pending:null});
   const personaDefaults=()=>({version:1,rooms:Object.fromEntries(personaIds.map(id=>[id,personaRoom(id)]))});
   function normalizePersona(raw){

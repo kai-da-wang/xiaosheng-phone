@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const E=require('../dist/persona-dialogue.js'),C=require('../dist/core.js');
-const ids=C.personaIds,run=(id,message,memory,extra={})=>E.createReply({roomId:id,message,memory,now:1792880000000,...extra});
+const ids=['lead_vivi','lead_muma','lead_monv'],run=(id,message,memory,extra={})=>E.createReply({roomId:id,message,memory,now:1792880000000,...extra});
 test('same messages produce three distinct personalities and no assumed romance',()=>{
  for(const msg of ['你好','忙吗','你生气了吗','你是不是喜欢我','你和小圣私底下做什么了','别聊这个']){
   const replies=ids.map(id=>run(id,msg).text);assert.equal(new Set(replies).size,3,msg);

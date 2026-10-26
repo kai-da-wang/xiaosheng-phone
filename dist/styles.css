@@ -20,3 +20,5 @@
 
 /* Reserve photo layout before decoding and keep retry actions within reach. */
 .wx-photo-bubble{width:min(210px,65%)}.wx-photo-bubble img{height:auto}.viewer-error button{color:#fff;text-decoration:underline;margin-top:10px;padding:10px 18px;display:block;margin-inline:auto}.viewer-original{font-size:12px;color:#fff;white-space:nowrap;padding:10px 0 10px 8px}.album-cover img,.album-thumbnail img,.wx-pick-grid img{background:var(--line)}
+
+.wx-avatar img.gangjie-avatar{object-position:25% 43%;transform:scale(1.65);transform-origin:20% 40%}

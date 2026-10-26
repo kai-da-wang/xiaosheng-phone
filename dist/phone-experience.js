@@ -2,7 +2,7 @@ window.PhoneExperience={create(ctx){
  'use strict';
  const {data:D,gallery:G,esc,icon,btn,shell,go,save,toast,modal,appIcon}=ctx;
  const media=(asset,size='thumb')=>window.PhotoMedia?window.PhotoMedia.attrs(asset,size):`src="${esc(typeof asset==='string'?asset:asset?.path||'')}"`;
- const S=()=>ctx.getState(),people=D.people,wang=people[0].id,scenes=[window.MUMA_CHAT,window.MONV_CHAT,window.VIVI_CHAT].filter(Boolean);
+ const S=()=>ctx.getState(),people=D.people,wang=people[0].id,scenes=[window.MUMA_CHAT,window.MONV_CHAT,window.VIVI_CHAT,window.GANGJIE_CHAT].filter(Boolean);
  const Life=window.PhoneLife,group=Life?{id:Life.groupId,name:'小圣的快乐补给站',initial:'群',color:'#73a58b',alias:'粉丝群聊'}:null,chatPeople=()=>group?[people[0],group,...(Details?.groups()||[]),...people.slice(1)]:people;
  const isGroup=id=>Details?Details.isGroup(id):id===group?.id;
  const preference=id=>Details?.prefs(id)||{};
@@ -18,7 +18,7 @@ window.PhoneExperience={create(ctx){
  const upload=document.createElement('input');upload.type='file';upload.accept='audio/*,.mp3,.m4a,.wav,.ogg';upload.id='chat-audio-file';upload.hidden=true;document.body.appendChild(upload);
  const person=id=>chatPeople().find(p=>p.id===id)||people[0];
  const photoList=albumId=>{const a=G.albums.find(x=>x.id===albumId);return (a?.items||[]).map(id=>G.assets.find(x=>x.id===id)).filter(Boolean);};
- const avatar=(p,self=false)=>{if(!self&&Details&&isGroup(p.id))return `<span class="wx-avatar wx-composite-avatar">${Details.members(p.id).slice(0,4).map(m=>avatar(m,m.id==='self')).join('')}</span>`;const path=self?selfPortrait:p.id===wang?wangPortrait:G.assets.find(a=>a.id===storyFor(p.id)?.portraitAssetId)?.path;return `<span class="wx-avatar" style="--accent:${esc(p.color||'#79958a')}">${path?`<img ${media(path,'avatar')} alt="${self?'小圣':esc(p.name)}" class="${self?'self-avatar':p.id===wang?'wang-avatar':p.id==='lead_monv'?'monv-avatar':'muma-avatar'}">`:esc(p.initial)}</span>`;};
+ const avatar=(p,self=false)=>{if(!self&&Details&&isGroup(p.id))return `<span class="wx-avatar wx-composite-avatar">${Details.members(p.id).slice(0,4).map(m=>avatar(m,m.id==='self')).join('')}</span>`;const path=self?selfPortrait:p.id===wang?wangPortrait:G.assets.find(a=>a.id===storyFor(p.id)?.portraitAssetId)?.path;return `<span class="wx-avatar" style="--accent:${esc(p.color||'#79958a')}">${path?`<img ${media(path,'avatar')} alt="${self?'小圣':esc(p.name)}" class="${self?'self-avatar':p.id===wang?'wang-avatar':p.id==='lead_monv'?'monv-avatar':p.id==='lead_gangjie'?'gangjie-avatar':'muma-avatar'}">`:esc(p.initial)}</span>`;};
  // Authored game dialogue requested by the user; never treated as verified quotations.
  const wangStory=[
   {type:'photo',assetId:'xiaowang-07',from:'other'},
