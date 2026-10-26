@@ -4,8 +4,8 @@ const D=window.PHONE_DATA,G=window.PHOTO_LIBRARY,C=window.PhoneCore,$=s=>documen
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state;try{state=C.normalize(JSON.parse(localStorage.getItem(C.key)));}catch{state=C.defaults();}
 let route=state.unlocked?{app:'home'}:{app:'lock'},pendingApp=null,pin='',pinError=false,modalStack=[],lastFocus=null,toastTimer,swRunning=false,swElapsed=0,swStart=0,clockTab='alarms',dial='',calendarOffset=0,calendarSelected=new Date().getDate();
-const apps=[['messages','信息'],['calendar','日历'],['photos','照片'],['camera','相机'],['clock','时钟'],['maps','地图'],['notes','备忘录'],['reminders','提醒事项'],['store','App Store'],['settings','设置'],['calculator','计算器'],['wechat','微信']];
-const extraApps=[['alipay','支付宝'],['music','音乐'],['file-manager','文件'],['douyin','抖音'],['contacts','通讯录'],['health','健康'],['qq','QQ'],['weibo','微博'],['xiaohongshu','小红书'],['bilibili','哔哩哔哩'],['taobao','淘宝'],['jd','京东'],['meituan','美团'],['amap','高德地图']];
+const apps=[['messages','信息'],['calendar','日历'],['photos','照片'],['camera','相机'],['clock','时钟'],['maps','地图'],['notes','备忘录'],['reminders','提醒事项'],['store','App Store'],['settings','设置'],['contacts','通讯录'],['wechat','微信']];
+const extraApps=[['alipay','支付宝'],['music','音乐'],['file-manager','文件'],['douyin','抖音'],['calculator','计算器'],['health','健康'],['qq','QQ'],['weibo','微博'],['xiaohongshu','小红书'],['bilibili','哔哩哔哩'],['taobao','淘宝'],['jd','京东'],['meituan','美团'],['amap','高德地图']];
 let homePage=0;
 const dock=[['phone','电话'],['safari','Safari'],['messages','信息'],['camera','相机']];
 const allApps=[...apps,...extraApps,...dock.filter(([id])=>!apps.some(a=>a[0]===id))];
