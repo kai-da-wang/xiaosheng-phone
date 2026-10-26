@@ -8,7 +8,7 @@ function harness(){
   const classes=new Set(),attrs=new Map(),events=new Map();
   return {dataset,style:{},events,isConnected:true,textContent:'',
    classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),contains:k=>classes.has(k),toggle(k,on){if(on===undefined)on=!classes.has(k);on?classes.add(k):classes.delete(k);}},
-   setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),hasAttribute:k=>attrs.has(k),getAttribute:k=>attrs.get(k),
+   setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),hasAttribute:k=>attrs.has(k),getAttribute:k=>attrs.get(k),toggleAttribute(k,on){on?attrs.set(k,''):attrs.delete(k);},
    addEventListener(type,fn){events.set(type,fn);},focus(){},matches:()=>false,
    closest(selector){return selector==='[data-action]'&&dataset.action||selector==='[data-action="pin-key"]'&&dataset.action==='pin-key'?this:null;}};
  }
@@ -17,7 +17,11 @@ function harness(){
  panel.querySelectorAll=()=>dots;panel.querySelector=s=>s==='.pin-dots'?progress:error;
  const screen=nodes['#screen'];let html='';
  Object.defineProperty(screen,'innerHTML',{get:()=>html,set(value){html=value;renders++;if(value.includes('realistic-passcode')){dots.forEach(x=>x.classList.remove('filled'));error.textContent='';progress.setAttribute('aria-label','已输入 0 位，共 4 位');}}});
- screen.querySelector=s=>s==='.passcode'&&html.includes('realistic-passcode')?panel:null;
+ const pager=element(),pages=[element(),element()],pageButtons=[element({page:'0'}),element({page:'1'})];
+ pager.clientWidth=320;pager.scrollLeft=0;pager.querySelectorAll=()=>pages;
+ pager.scrollTo=options=>{pager.lastScroll=options;pager.scrollLeft=options.left;pager.events.get('scroll')?.();};
+ screen.querySelector=s=>s==='.passcode'&&html.includes('realistic-passcode')?panel:s==='.home-pager'&&html.includes('home-pager')?pager:null;
+ screen.querySelectorAll=()=>pageButtons;
  const x={beforeRender(){},afterRender(){},onNavigate(){},onUnlock(){assert.equal(ctx.getState().unlocked,true);assert.notEqual(ctx.getRoute().app,'pin');soundUnlocks++;},action:()=>false,stopAudio(){},unreadCount:()=>0,avatar:()=>''};
  const document={querySelector:s=>nodes[s]||null,querySelectorAll:()=>[],addEventListener(type,fn,capture){const list=listeners.get(type)||[];list.push({fn,capture:!!capture});listeners.set(type,list);}};
  const history={replaceState(value){this.state=value;},pushState(value){this.state=value;}};
@@ -28,7 +32,8 @@ function harness(){
  function click(action,data={}){dispatch('click',event(element({action,...data}),{detail:0}));}
  function down(key,extra={}){const target=element({action:'pin-key',key});dispatch('pointerdown',event(target,extra));return target;}
  function tap(key){const target=down(key);dispatch('pointerup',event(target));dispatch('click',event(target));}
- return {ctx,click,down,tap,dispatch,event,element,screen,dots,error,progress,history,soundUnlocks:()=>soundUnlocks,renderCount:()=>renders,filled:()=>dots.filter(x=>x.classList.contains('filled')).length,
+ return {ctx,click,down,tap,dispatch,event,element,screen,dots,error,progress,history,pager,pages,pageButtons,soundUnlocks:()=>soundUnlocks,renderCount:()=>renders,filled:()=>dots.filter(x=>x.classList.contains('filled')).length,
+  scrollHome(page){pager.scrollLeft=page*pager.clientWidth;pager.events.get('scroll')?.();},home(){nodes['#home-indicator'].events.get('click')();},
   key(key,repeat=false){dispatch('keydown',event(element(),{key,repeat}));},pop(app){windows.get('popstate')({state:{phone:true,route:{app}}});},
   swipe(cancel=false){const target=element();dispatch('pointerdown',event(target,{pointerId:++cycle,clientY:300}));if(cancel)dispatch('pointercancel',event(target,{pointerId:cycle}));dispatch('pointerup',event(target,{pointerId:cycle,clientY:100}));}};
 }
@@ -70,4 +75,23 @@ test('history never reopens a stale keypad or an app while locked',()=>{
 });
 test('canceled swipes cannot unlock and a completed swipe opens an empty keypad',()=>{
  const h=harness();h.swipe(true);assert.equal(h.ctx.getRoute().app,'lock');h.swipe();assert.equal(h.ctx.getRoute().app,'pin');h.tap('0');assert.equal(h.filled(),1);
+});
+test('native home swipes update page controls and inactive accessibility without repainting',()=>{
+ const h=harness();h.click('unlock');const count=h.renderCount();h.scrollHome(1);
+ assert.equal(h.pageButtons[1].getAttribute('aria-pressed'),'true');assert.equal(h.pages[0].hasAttribute('inert'),true);assert.equal(h.pages[1].hasAttribute('inert'),false);
+ h.scrollHome(0);assert.equal(h.pageButtons[0].getAttribute('aria-pressed'),'true');assert.equal(h.renderCount(),count);
+});
+test('the six empty apps return to the second page, and its file app keeps a separate route',()=>{
+ const h=harness();h.click('unlock');h.scrollHome(1);
+ for(const [app,name] of [['alipay','支付宝'],['music','音乐'],['file-manager','文件'],['douyin','抖音'],['contacts','通讯录'],['health','健康']]){
+  h.click('app',{app});assert.equal(h.ctx.getRoute().app,app);assert.ok(h.screen.innerHTML.includes('<h1>'+name+'</h1>'));assert.match(h.screen.innerHTML,/<div class="app-scroll "><\/div>/);
+  h.click('back');assert.equal(h.ctx.getRoute().app,'home');assert.equal(h.pager.scrollLeft,h.pager.clientWidth);
+ }
+});
+test('page dots, home indicator and arrows switch pages without locking or adding history',()=>{
+ const h=harness();h.click('unlock');const history=h.history.state;h.click('home-page',{page:'1'});assert.equal(h.pager.scrollLeft,320);
+ h.home();assert.equal(h.pager.scrollLeft,0);assert.equal(h.ctx.getState().unlocked,true);assert.equal(h.history.state,history);
+ h.ctx.getState().settings.reduced=true;h.pager.events.get('keydown')(h.event(h.element(),{key:'ArrowRight'}));assert.equal(h.pager.scrollLeft,320);assert.equal(h.pager.lastScroll.behavior,'auto');
+ h.click('back');assert.equal(h.ctx.getRoute().app,'home');assert.equal(h.pager.scrollLeft,0);
+ h.scrollHome(1);h.click('reset-confirm');h.click('unlock');assert.equal(h.pager.scrollLeft,0);
 });

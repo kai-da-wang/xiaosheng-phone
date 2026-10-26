@@ -6,6 +6,11 @@ window.icon=function(name,cls=''){
 window.appIcon=function(id){
  const svg=(s)=>`<svg viewBox="0 0 64 64" aria-hidden="true">${s}</svg>`;
  const icons={
+ alipay:svg('<rect width="64" height="64" fill="#1677ff"/><text x="32" y="49" text-anchor="middle" fill="white" font-size="49" font-family="Arial,Microsoft YaHei,sans-serif" font-weight="600">支</text>'),
+ music:svg('<defs><linearGradient id="music-bg" x2="0" y2="1"><stop stop-color="#ff5275"/><stop offset="1" stop-color="#f0204f"/></linearGradient></defs><rect width="64" height="64" fill="url(#music-bg)"/><path d="M28 19v26m0-23 21-5v24M28 24l21-5" fill="none" stroke="white" stroke-width="5" stroke-linejoin="round"/><ellipse cx="21.5" cy="46" rx="8" ry="5.5" fill="white" transform="rotate(-18 21.5 46)"/><ellipse cx="42.5" cy="42" rx="8" ry="5.5" fill="white" transform="rotate(-18 42.5 42)"/>'),
+ 'file-manager':svg('<rect width="64" height="64" fill="#fff"/><path d="M8 18a4 4 0 0 1 4-4h14l5 5h21a4 4 0 0 1 4 4v25H8Z" fill="#79d0f5"/><rect x="8" y="24" width="48" height="28" rx="4" fill="#17a6ee"/>'),
+ contacts:svg('<rect width="64" height="64" fill="#d6d2c7"/><path d="M55 6h9v13h-9Z" fill="#efb849"/><path d="M55 19h9v13h-9Z" fill="#60be79"/><path d="M55 32h9v13h-9Z" fill="#5bace6"/><path d="M55 45h9v13h-9Z" fill="#f07b6d"/><circle cx="30" cy="27" r="11" fill="#f4f2eb"/><path d="M11 53v-5a19 15 0 0 1 38 0v5" fill="#f4f2eb"/>'),
+ health:svg('<rect width="64" height="64" fill="#fff"/><path d="M32 47 17 32a9 9 0 0 1 15-13 9 9 0 0 1 15 13Z" fill="#fa2d61"/>'),
  calculator:svg('<rect x="0" y="0" width="64" height="64" fill="#303333"/><rect x="10" y="8" width="44" height="13" rx="3" fill="#cbd5c5"/>'+[27,39,51].map(y=>[14,28,42].map(x=>`<rect x="${x}" y="${y}" width="8" height="7" rx="2" fill="${x===42?'#f4a13d':'#eee'}"/>`).join('')).join('')),
  messages:svg('<path fill="white" d="M10 29c0-11 10-19 22-19s22 8 22 19-10 19-22 19c-3 0-6-.5-9-1.5L12 52l3-10c-3-3-5-8-5-13Z"/>'),
  calendar:`<span class="cal-day">${new Intl.DateTimeFormat('zh-CN',{weekday:'short'}).format(new Date())}</span><b class="cal-number">${new Date().getDate()}</b>`,
