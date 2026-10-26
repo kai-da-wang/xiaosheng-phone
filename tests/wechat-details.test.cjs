@@ -12,7 +12,7 @@ test('single chat has a complete iPhone-style detail page and keeps engine setti
  const h=setup(),html=h.x.render('chat-info');for(const text of ['聊天详情','添加聊天成员','查找聊天记录','消息免打扰','置顶聊天','设置当前聊天背景','清空聊天记录','投诉'])assert.ok(html.includes(text));for(const text of ['群聊名称','自动回复','偏好记忆','role="dialog"'])assert.ok(!html.includes(text));
 });
 test('group information uses member grid and group-only settings',()=>{
- const h=setup(Life.groupId),html=h.x.render('chat-info');for(const text of ['聊天信息(4)','阿柚','小米饭','晚风','群聊名称','群二维码','群公告','备注','保存到通讯录','我在本群的昵称','显示群成员昵称','退出群聊'])assert.ok(html.includes(text));assert.equal(h.x.count(Life.groupId),4);
+ const h=setup(Life.groupId),html=h.x.render('chat-info');for(const text of ['聊天信息('+ (Life.members.length+1) +')','阿柚','小米饭','晚风','群聊名称','群二维码','群公告','备注','保存到通讯录','我在本群的昵称','显示群成员昵称','退出群聊'])assert.ok(html.includes(text));assert.equal(h.x.count(Life.groupId),Life.members.length+1);
 });
 test('mute, pin, and background settings are per conversation and persist across reload',()=>{
  const h=setup();h.x.action('wx-detail-toggle',{dataset:{key:'muted'}});h.x.action('wx-detail-toggle',{dataset:{key:'pinned'}});assert.equal(h.x.muted('lead_muma'),true);assert.equal(h.x.muted('lead_vivi'),false);assert.equal(h.x.pinned('lead_muma'),true);h.x.action('wx-background-select',{dataset:{background:'mint'}});const restored=C.normalize(JSON.parse(JSON.stringify(h.state)));assert.equal(restored.wechatPrefs.lead_muma.background,'mint');assert.equal(restored.wechatPrefs.lead_muma.muted,true);
@@ -27,7 +27,7 @@ test('single-chat plus creates a separate local group without changing original 
  const h=setup();h.x.action('wx-invite',{dataset:{}});h.x.action('wx-select-member',{dataset:{member:'lead_vivi'}});h.x.action('wx-invite-done',{dataset:{}});assert.match(h.route.id,/^local_group_/);assert.equal(h.x.count(h.route.id),3);assert.equal(h.state.chatMessages[h.route.id][0].type,'system');assert.equal(h.x.isGroup('lead_muma'),false);assert.equal(Object.keys(C.normalize(JSON.parse(JSON.stringify(h.state))).wechatGroups).length,1);
 });
 test('adding a member to an existing group updates the group count exactly once',()=>{
- const h=setup(Life.groupId);h.x.action('wx-invite',{dataset:{}});h.x.action('wx-select-member',{dataset:{member:'lead_vivi'}});h.x.action('wx-invite-done',{dataset:{}});assert.equal(h.x.count(Life.groupId),5);assert.equal(h.x.group(Life.groupId).members.filter(x=>x==='lead_vivi').length,1);
+ const h=setup(Life.groupId);h.x.action('wx-invite',{dataset:{}});h.x.action('wx-select-member',{dataset:{member:'lead_vivi'}});h.x.action('wx-invite-done',{dataset:{}});assert.equal(h.x.count(Life.groupId),Life.members.length+2);assert.equal(h.x.group(Life.groupId).members.filter(x=>x==='lead_vivi').length,1);
 });
 test('history clear requires its confirmation and cancels only this conversation queue',()=>{
  const h=setup();h.state.chatMessages.lead_muma=[{id:'a',type:'text',text:'mine'}];h.state.chatMessages.lead_vivi=[{id:'b',type:'text',text:'keep'}];h.x.action('wx-clear-history',{dataset:{}});assert.equal(h.state.chatMessages.lead_muma.length,1);assert.equal(h.calls.at(-1)[2].items[0].action,'wx-clear-confirm');h.x.action('wx-clear-confirm',{dataset:{}});assert.equal(h.state.chatMessages.lead_muma.length,0);assert.equal(h.state.chatMessages.lead_vivi.length,1);assert.ok(h.calls.some(x=>x[0]==='cancel'&&x[1]==='lead_muma'));assert.equal(h.state.wechatPrefs.lead_muma.historyCleared,true);
