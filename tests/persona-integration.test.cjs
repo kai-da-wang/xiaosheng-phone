@@ -19,13 +19,13 @@ test('actual send integration writes once and updates persona unread independent
 test('details explain fictional dialogue and clear record flow requires its own confirmation',()=>{
  const h=setup();h.x.action('wx-room-info',{});assert.equal(h.route.app,'chat-info');assert.match(h.x.details('chat-info'),/聊天详情/);h.x.action('wx-reply-config',{dataset:{room:'lead_muma'}});const detail=h.calls.at(-1)[1];assert.match(detail.note,/虚构演绎/);assert.ok(detail.items.some(i=>i.action==='persona-toggle'));
  h.state.chatMessages.lead_muma=[{id:'test',type:'text',from:'self',text:'old'}];h.x.action('persona-chat-clear',{});assert.equal(h.state.chatMessages.lead_muma.length,1);
- assert.equal(h.calls.at(-1)[1].items[0].action,'persona-chat-confirm');h.x.action('persona-chat-confirm',{});assert.equal(h.state.chatMessages.lead_muma.length,0);assert.match(h.x.room(),/你留狗尾巴草给我当纪念/);
+ assert.equal(h.calls.at(-1)[1].items[0].action,'persona-chat-confirm');h.x.action('persona-chat-confirm',{});assert.equal(h.state.chatMessages.lead_muma.length,0);assert.match(h.x.room(),/你是随手摘的，可我是认真收下的/);
 });
 test('player HTML remains escaped in the existing bubble renderer',()=>{
  const h=setup();h.state.chatDrafts.lead_muma='<img src=x onerror=alert(1)>';h.x.send();const html=h.x.room();assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<img src=x/);
 });
 test('native history clearing hides preset stories, cancels queued replies, and keeps other rooms',()=>{
- const h=setup();h.state.chatMessages.lead_vivi=[{id:'other',type:'text',from:'self',text:'keep'}];h.state.chatDrafts.lead_muma='等会回复';h.x.send();h.x.action('wx-clear-confirm',{dataset:{}});h.tick();assert.equal(h.state.chatMessages.lead_muma.length,0);assert.equal(h.state.chatMessages.lead_vivi.length,1);assert.doesNotMatch(h.x.room(),/你留狗尾巴草给我当纪念/);assert.equal(h.state.personaV2.rooms.lead_muma.pending,null);
+ const h=setup();h.state.chatMessages.lead_vivi=[{id:'other',type:'text',from:'self',text:'keep'}];h.state.chatDrafts.lead_muma='等会回复';h.x.send();h.x.action('wx-clear-confirm',{dataset:{}});h.tick();assert.equal(h.state.chatMessages.lead_muma.length,0);assert.equal(h.state.chatMessages.lead_vivi.length,1);assert.doesNotMatch(h.x.room(),/你是随手摘的，可我是认真收下的/);assert.equal(h.state.personaV2.rooms.lead_muma.pending,null);
 });
 test('muting a single chat suppresses its global unread badge while still receiving the reply',()=>{
  const h=setup();h.state.chatReadRooms=[...C.personaIds,'lead_wang_xiaomiao'];h.state.chatReadStories=['vivi-photos-20261025','muma-dogtail-20261025','monv-shaxian-20261025'];h.x.action('wx-detail-toggle',{dataset:{key:'muted'}});h.state.chatDrafts.lead_muma='在干嘛';h.x.send();h.route.app='wechat';h.tick();assert.equal(h.state.chatMessages.lead_muma.filter(x=>x.autoReply).length,1);assert.equal(h.x.unreadCount(),0);assert.equal(h.state.wechatPrefs.lead_muma.muted,true);

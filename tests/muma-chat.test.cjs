@@ -15,18 +15,28 @@ function setup(room='lead_muma'){
 }
 test('Muma scene contains the supplied line from Muma and all photo IDs resolve',()=>{
  const {window}=setup(),scene=window.MUMA_CHAT;
- const line=scene.messages.find(m=>m.text?.includes('你留狗尾巴草给我当纪念'));assert.equal(line.from,'other');
+ const firstMeeting=scene.messages.findIndex(m=>m.text?.includes('随手从路边摘了根狗尾巴草'));
+ const remembered=scene.messages.findIndex(m=>m.text?.includes('我把它夹在书里'));
+ const scarfPhoto=scene.messages.findIndex(m=>m.type==='photo'&&m.assetId==='muma-01');
+ const farewell=scene.messages.findIndex(m=>m.text?.includes('突然从脖子上解下来给我'));
+ assert.ok(firstMeeting>=0&&firstMeeting<scarfPhoto&&scarfPhoto<farewell&&farewell<remembered);
+ assert.equal(scene.messages[firstMeeting].from,'self');
+ assert.equal(scene.messages[remembered].from,'other');
+ assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('我是认真收下的')));
+ assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('冷了就围上')));
+ assert.ok(scene.messages.some(m=>m.from==='other'&&m.text?.includes('我的狗尾巴草也还在书里')));
+ assert.ok(scene.messages.filter(m=>m.type==='system').length>=3);
  assert.equal(new Set(scene.messages.map(m=>m.id)).size,scene.messages.length);
  assert.ok(scene.messages.filter(m=>m.type==='photo').every(m=>window.PHOTO_LIBRARY.assets.find(a=>a.id===m.assetId)?.albumId==='muma'));
  assert.equal(window.PHONE_DATA.people.find(p=>p.id===scene.roomId).name,'一根洋葱');
  assert.equal(window.PHONE_DATA.people.find(p=>p.id===scene.roomId).initial,'葱');
  assert.equal(window.PHOTO_LIBRARY.albums.find(a=>a.id==='muma').name,'和一根洋葱');
- assert.equal(scene.messages.find(m=>m.text==='你留狗尾巴草给我当纪念，我把自己的围巾送给你。')?.from,'other');
- assert.equal(scene.messages[0].assetId,'muma-01');
+ assert.ok(scene.messages.some(m=>m.type==='photo'&&m.assetId==='muma-01'));
+ assert.doesNotMatch(scene.messages.map(m=>m.text||'').join(''),/我把自己的围巾送给你。/);
 });
 test('Muma story unread is independent of an older contact read mark',()=>{
  const {x,state,window}=setup();state.chatReadRooms.push('lead_muma');assert.equal(x.unreadCount(),4);
- const html=x.room();assert.match(html,/你留狗尾巴草给我当纪念/);assert.match(html,/data-album="muma"/);assert.doesNotMatch(html,/wx-shared-album|wx-shared-grid|查看全部/);
+ const html=x.room();assert.match(html,/你是随手摘的，可我是认真收下的/);assert.match(html,/data-album="muma"/);assert.doesNotMatch(html,/wx-shared-album|wx-shared-grid|查看全部/);
  assert.ok(state.chatReadStories.includes(window.MUMA_CHAT.storyId));assert.equal(x.unreadCount(),3);
  assert.match(x.avatar(window.PHONE_DATA.people.find(p=>p.id==='lead_muma')),/muma_03_museum_selfie/);
 });

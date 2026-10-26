@@ -66,12 +66,12 @@ window.PHONE_DATA = {
       "alias": "洋葱",
       "initial": "葱",
       "color": "#a58e6b",
-      "subtitle": "蓝色围巾与小小的纪念",
+      "subtitle": "那根被认真收下的狗尾巴草",
       "scenes": [
         {
           "id": "lead_muma_1",
           "title": "狗尾巴草与蓝色围巾",
-          "narrative": "她收下狗尾巴草，也把蓝色围巾留给了他。",
+          "narrative": "初见时，他慌乱中随手摘了根狗尾巴草。她悄悄夹进书里；分别时，她把自己戴着的蓝色围巾解下来留给了他。",
           "quote": null,
           "speaker": null,
           "timestampSec": null,
