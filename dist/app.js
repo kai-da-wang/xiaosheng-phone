@@ -158,7 +158,7 @@ case 'setting':{const k=t.dataset.key;if(k==='review'&&!state.settings.review){s
 case 'review-enable':closeModal();break;
 case 'data-info':showModal('about-data');break;
 case 'reset':showModal('reset');break;
-case 'reset-confirm':state=C.defaults();homePage=0;save();dial='';pendingApp=null;go('lock',{},true);toast('已重新开始');break;
+case 'reset-confirm':X.discardAllMedia?.();state=C.defaults();homePage=0;save();dial='';pendingApp=null;go('lock',{},true);toast('已重新开始');break;
 case 'month':calendarOffset+=Number(t.dataset.delta);render();break;
 case 'date':calendarSelected=Number(t.dataset.date);render();break;
 case 'today':calendarOffset=0;calendarSelected=new Date().getDate();render();break;

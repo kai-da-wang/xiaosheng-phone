@@ -39,3 +39,5 @@ test('sound is gesture-unlocked, respects mute, and stops scheduled ringtone osc
 });
 
 test('an open sheet defers the incoming call until it closes',()=>{const h=setup();try{h.runtime.sync();h.tick(1000);h.block(false);h.tick(2000);assert.equal(h.calls.length,0);h.block(true);h.tick(500);assert.deepEqual(h.calls,['ringing']);}finally{h.close();}});
+
+test('group welcome retries after the user finishes editing without requiring navigation',()=>{const h=setup();try{h.state.phoneLife.callStatus='ended';h.state.phoneLife.followupSent=true;h.runtime.sync();h.tick(5000);h.block(false);h.tick(6000);assert.equal(h.events.length,0);h.block(true);h.tick(1000);assert.equal(h.events.length,1);assert.equal(h.events[0].m.id,'fans-intro-v1');h.tick(10000);assert.equal(h.events.length,1);}finally{h.close();}});

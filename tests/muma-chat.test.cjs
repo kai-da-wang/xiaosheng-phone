@@ -50,7 +50,7 @@ test('Photo viewer, picker and send stay in the current contact album; legacy de
  x.action('wx-pick-photo',{dataset:{}});assert.equal(calls.at(-1)[2].albumId,'muma');assert.equal(calls.at(-1)[2].photos.length,4);
  x.action('wx-send-photo',{dataset:{album:'muma',index:'1'}});assert.equal(state.chatMessages.lead_muma[0].assetId,'muma-02');
  x.action('wx-photo',{dataset:{index:'0'}});assert.equal(calls.at(-1)[2].albumId,'xiaowang');
- x.action('wx-album',{dataset:{}});assert.equal(calls.at(-1)[1],'album');assert.equal(calls.at(-1)[2].id,'muma');assert.equal(calls.at(-1)[2].returnRoom,'lead_muma');
+ x.action('wx-album',{dataset:{}});assert.equal(calls.at(-1)[1],'album');assert.equal(calls.at(-1)[2].id,'muma');assert.equal(calls.at(-1)[2].returnRoom,'lead_muma');assert.equal(calls.at(-1)[2].returnTo.id,'lead_muma');
 });
 
 test('Monv alias, story, photo references and read state remain independent',()=>{

@@ -41,3 +41,5 @@ test('leaving a group stops pending replies, retains history, and offers no fake
 test('ordinary group members can read the notice without getting an owner edit control',()=>{
  const h=setup(Life.groupId);h.x.action('wx-detail-edit',{dataset:{field:'notice'}});assert.match(h.x.render('chat-edit'),/暂无群公告/);assert.doesNotMatch(h.x.render('chat-edit'),/textarea|wx-detail-save/);
 });
+
+test('chat history finds a transfer by amount, note, or transaction filter',()=>{const h=setup();h.state.chatMessages.lead_muma=[{id:'t1',type:'transfer',from:'other',amountFen:1880,note:'奶茶钱'},{id:'t2',type:'text',from:'self',text:'thanks'}];h.x.action('wx-search-history',{dataset:{}});assert.match(h.x.render('chat-search'),/交易/);h.x.input({id:'wx-history-input',value:'18.80'});assert.match(h.result.innerHTML,/奶茶钱/);assert.match(h.result.innerHTML,/t1/);h.x.input({id:'wx-history-input',value:'转账'});assert.match(h.result.innerHTML,/¥18.80/);h.x.action('wx-history-reset',{dataset:{}});h.x.action('wx-history-filter',{dataset:{filter:'transfer'}});assert.match(h.x.render('chat-search'),/1 条相关记录 · 交易/);assert.doesNotMatch(h.x.render('chat-search'),/data-message="t2"/);});

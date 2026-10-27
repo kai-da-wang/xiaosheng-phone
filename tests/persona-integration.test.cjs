@@ -64,3 +64,5 @@ test('pinned, muted and large unread badges preserve their usual semantics',()=>
  h.state.chatMessages.lead_monv=Array.from({length:105},(_,i)=>({id:'m'+i,type:'text',from:'other',text:'hi'}));h.state.chatUnreadIds.lead_monv=h.state.chatMessages.lead_monv.map(x=>x.id);
  assert.equal(h.x.unreadCount(),105);assert.match(h.x.wechat(),/>99\+<\/b>/);h.state.wechatPrefs.lead_monv={muted:true};assert.equal(h.x.unreadCount(),0);assert.match(h.x.wechat(),/wx-unread quiet/);
 });
+
+test('saying I am sending money does not cause the other character to send a transfer',()=>{const h=setup({realWang:true});for(const text of ['我给你转账','我给你转个账','我刚给你发红包','我转账给你','我想给你转钱']){h.state.chatDrafts.lead_muma=text;h.x.send();h.tick();assert.equal(h.state.chatMessages.lead_muma.filter(m=>m.type==='transfer').length,0,text);}});

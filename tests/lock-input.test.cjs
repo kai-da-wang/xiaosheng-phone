@@ -121,3 +121,5 @@ test('draft saving coalesces typing and flushes on navigation and page exit',()=
  h.ctx.getState().chatDrafts.wang='离开前';h.ctx.saveDraft();h.click('app',{app:'contacts'});assert.equal(h.saves.at(-1).chatDrafts.wang,'离开前');
  h.ctx.getState().chatDrafts.wang='刷新前';h.ctx.saveDraft();h.windows.get('pagehide')();assert.equal(h.saves.at(-1).chatDrafts.wang,'刷新前');
 });
+
+test('back from an album opened in a contact chat returns through that chat to contacts',()=>{const h=harness();h.click('unlock');h.click('app',{app:'contacts'});h.click('room',{id:'wang'});const origin={...h.ctx.getRoute()};h.ctx.go('album',{id:'xiaowang',returnRoom:'wang',returnTo:origin});h.click('back');assert.equal(h.ctx.getRoute().app,'room');h.click('back');assert.equal(h.ctx.getRoute().app,'contacts');});

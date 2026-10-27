@@ -33,21 +33,22 @@ test('damaged save fields recover without discarding valid legacy messages or no
  const state=Core.normalize({version:1,opened:null,chatReadRooms:{},chatMessages:{wang:[null,1,{text:'legacy text'},{id:'ok',type:'text',text:'kept'}],broken:{}},chatDrafts:{wang:42,other:'draft'},notes:[null,{id:'old-note'}],settings:{brightness:'bad',sound:false},reminders:null});
  assert.deepEqual(state.opened,[]);assert.deepEqual(state.chatReadRooms,[]);assert.equal(state.chatMessages.wang.length,2);assert.equal(state.notes.length,1);assert.equal(state.chatDrafts.other,'draft');assert.equal(state.settings.brightness,100);assert.equal(state.settings.sound,false);assert.ok(Array.isArray(state.reminders));
 });
-function audioHarness({sound=false}={}){
- const w={},route={app:'room',id:'lead_wang_xiaomiao'},reads=[],audio=[],revoked=[],open={},writes=[],events={},documentEvents={};let state=Core.defaults(),renders=0,soundUnlocks=0,lifeContext;
+function audioHarness({sound=false,failOpen=false,failTransaction=false}={}){
+ const w={},route={app:'room',id:'lead_wang_xiaomiao'},reads=[],audio=[],revoked=[],open={},writes=[],deletes=[],clears=[],toasts=[],events={},documentEvents={};let state=Core.defaults(),renders=0,soundUnlocks=0,lifeContext;
  for(const name of ['content.js','gallery-data.js'])vm.runInNewContext(fs.readFileSync('dist/'+name,'utf8'),{window:w});
  if(sound)w.PhoneLife={groupId:'fans',members:[],normalize:v=>v,createSound:()=>({unlock(){soundUnlocks++;}}),create:c=>(lifeContext=c,{})};
- w.indexedDB={open:()=>open};w.WangChatRuntime={create:()=>({typingMarkup:()=>''})};w.PersonaChatRuntime={create:()=>({supports:()=>false})};
- const upload={files:[],addEventListener:(type,fn)=>events[type]=fn};
+ w.indexedDB={open:()=>{if(failOpen)throw Error('blocked');return open;}};w.WangChatRuntime={create:()=>({typingMarkup:()=>''})};w.PersonaChatRuntime={create:()=>({supports:()=>false})};
+ const upload={files:[],click(){},addEventListener:(type,fn)=>events[type]=fn};
  const document={addEventListener:(type,fn)=>documentEvents[type]=fn,createElement:()=>upload,body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
- const sandbox={window:w,document,clearTimeout,indexedDB:w.indexedDB,Promise,Intl,Date,Map,Math,URL:{createObjectURL:blob=>'blob:'+blob.id,revokeObjectURL:url=>revoked.push(url)},Audio:class{constructor(url){this.url=url;audio.push(this);}play(){this.played=true;return Promise.resolve();}pause(){this.paused=true;}}};
+ const sandbox={window:w,document,clearTimeout,indexedDB:w.indexedDB,Promise,Intl,Date,Map,Set,Math,URL:{createObjectURL:blob=>'blob:'+blob.id,revokeObjectURL:url=>revoked.push(url)},Audio:class{constructor(url){this.url=url;audio.push(this);}play(){this.played=true;return Promise.resolve();}pause(){this.paused=true;}}};
+ vm.runInNewContext(fs.readFileSync('dist/wechat-details.js','utf8'),sandbox);
  vm.runInNewContext(fs.readFileSync('dist/phone-experience.js','utf8'),sandbox);
- const x=w.PhoneExperience.create({data:w.PHONE_DATA,gallery:w.PHOTO_LIBRARY,esc:String,icon:()=>'',btn:()=>'',shell:()=>'',go(){},save(){},toast(){},modal(){},appIcon(){},render(){renders++;},getState:()=>state,getRoute:()=>route});
- open.result={transaction:()=>{const tx={objectStore:()=>({get:()=>{const r={};reads.push(r);return r;},put:(blob,id)=>writes.push({blob,id,tx})})};return tx;}};open.onsuccess();
+ const x=w.PhoneExperience.create({data:w.PHONE_DATA,gallery:w.PHOTO_LIBRARY,esc:String,icon:()=>'',btn:(action,label,cls='',extra='')=>`<button data-action="${action}" ${extra}>${label}</button>`,shell:(title,body)=>body,go(){},save(){},toast(message){toasts.push(message);},modal(){},closeModal(){},appIcon(){},render(){renders++;},getState:()=>state,getRoute:()=>route});
+ if(!failOpen){open.result={transaction:()=>{if(failTransaction)throw Error('database closed');const tx={objectStore:()=>({get:()=>{const r={};reads.push(r);return r;},put:(blob,id)=>writes.push({blob,id,tx}),delete:id=>deletes.push({id,tx}),clear:()=>clears.push(tx)})};return tx;}};open.onsuccess();}
  state.chatMessages[route.id]=[{id:'a',type:'voice',blobKey:'a'},{id:'b',type:'voice',blobKey:'b'}];
- return {x,route,state,reads,document,lifeContext,audio,revoked,writes,upload,events,documentEvents,soundUnlocks:()=>soundUnlocks,renders:()=>renders,reset(){state=Core.defaults();return state;},play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
+ return {x,route,state,reads,document,lifeContext,audio,revoked,writes,deletes,clears,toasts,upload,events,documentEvents,soundUnlocks:()=>soundUnlocks,renders:()=>renders,reset(){state=Core.defaults();return state;},play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
 }
-const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
+const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 test('locked keyboard focus skips audio setup; successful unlock enables the first call without another tap',()=>{
  const h=audioHarness({sound:true}),body={target:{closest:()=>null}};
  for(const app of ['lock','pin']){h.route.app=app;h.documentEvents.pointerdown(body);h.documentEvents.keydown(body);}
@@ -82,3 +83,23 @@ test('map requests are lazy, shared, retryable, and never repaint a different ap
 test('incoming call eligibility defers while a composer, note editor, or overlay is active',()=>{
  const h=audioHarness({sound:true});assert.equal(h.lifeContext.available(),true);h.document.activeElement={matches:()=>true};assert.equal(h.lifeContext.available(),false);h.document.activeElement={matches:()=>false};assert.equal(h.lifeContext.available(),true);h.document.querySelector=()=>({});assert.equal(h.lifeContext.available(),false);
 });
+
+test('clearing a chat cancels imports at metadata and storage stages and releases orphan audio',async()=>{
+ for(const phase of ['metadata','storage']){const h=audioHarness(),id=h.route.id;h.state.chatMessages.other=[{id:'other',type:'voice',blobKey:'b'}];h.upload.files=[{id:'clip',size:100,name:'clip.m4a'}];h.events.change();const probe=h.audio[0];probe.duration=3;
+  const pending=phase==='storage'?probe.onloadedmetadata():null;if(pending)await flush();h.x.action('wx-clear-confirm',{dataset:{}});await flush();
+  if(pending){h.writes[0].tx.oncomplete();await pending;await flush();assert.ok(h.deletes.some(x=>x.id===h.writes[0].id));}else{await probe.onloadedmetadata();assert.equal(h.writes.length,0);}
+  assert.equal(h.state.chatMessages[id].length,0);assert.equal(h.state.chatMessages.other.length,1);assert.ok(h.deletes.some(x=>x.id==='a'));assert.ok(!h.deletes.some(x=>x.id==='b'));
+ }
+});
+test('file picker retains the original chat even if the user navigates before selection',async()=>{
+ const h=audioHarness(),original=h.route.id;h.x.action('wx-import',{dataset:{}});h.route.id='lead_muma';h.upload.files=[{id:'picked',size:100,name:'clip.m4a'}];h.events.change();const probe=h.audio[0];probe.duration=3;const saved=probe.onloadedmetadata();await flush();h.writes[0].tx.oncomplete();await saved;
+ assert.equal(h.state.chatMessages[original].at(-1).type,'voice');assert.equal(h.state.chatMessages.lead_muma,undefined);assert.equal(h.renders(),0);
+});
+test('reset invalidates an open picker and clears stored audio',async()=>{
+ const h=audioHarness();h.x.action('wx-import',{dataset:{}});h.x.discardAllMedia();h.reset();h.upload.files=[{id:'old',size:100,name:'clip.m4a'}];h.events.change();await flush();assert.equal(h.audio.length,0);assert.equal(h.writes.length,0);assert.equal(h.clears.length,1);
+});
+test('unavailable or closed browser audio storage shows a helpful message instead of crashing',async()=>{
+ for(const opts of [{failOpen:true},{failTransaction:true}]){const h=audioHarness(opts);h.play('a');await flush();assert.ok(h.toasts.some(t=>/原声文件不可用/.test(t)));assert.equal(h.audio.length,0);}
+});
+
+test('Safari recent entries lead to valid apps, with readable names and no duplicate detail pages',()=>{const h=audioHarness();h.state.opened=['contacts','room','chat-info','chat-search','album','photos','file-manager','chapters'];const html=h.x.safari();assert.match(html,/>文件</);assert.match(html,/>故事片段</);assert.match(html,/>微信</);assert.equal((html.match(/data-app="wechat"/g)||[]).length,2);assert.doesNotMatch(html,/data-app="chat-info"|data-app="chat-search"|data-app="album"/);});
