@@ -28,9 +28,9 @@
   const recent=(Array.isArray(history)?history:[]).filter(x=>x.type==='text').slice(-20);
   const select=(topic,choices,pending='')=>{const unused=choices.filter(s=>!m.recent.includes(s)),list=unused.length?unused:choices;const reply=list[(m.turn-1)%list.length];m.topic=topic;m.pending=pending;m.recent=[...m.recent,reply].slice(-8);return {text:reply,memory:m,topic};};
   const one=(topic,t,pending)=>select(topic,[t],pending);
-  if(/(?:不要|别|停止|暂停).{0,4}(?:回复|说话|聊天)|先安静/.test(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
   if(/(?:自杀|自残|不想活|想死|结束生命)/.test(text))return one('safety','我很担心你现在的安全。先远离可能伤到自己的东西，找一个能陪着你的人；眼前有危险就联系当地急救。你身边有人吗？');
   if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(text))return one('safety','这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。先照顾好自己。');
+  if(/(?:不要|别|停止|暂停).{0,4}(?:回复|说话|聊天)|先安静/.test(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
   if(/(?:你是|你是不是|你真是|你到底是).{0,8}(?:真人|本人|真的小王|人工智能|机器人|AI)|(?:是不是|是).{0,3}程序/.test(text))return one('identity','我是这部手机里的小王游戏角色呀。现在用情景对话陪你聊天，真人的私事我可不会乱编。');
   if(/^(?:我叫|叫我|我的名字是)\s*((?!(?:什么|什麼|啥|谁))[\u4e00-\u9fffA-Za-z]{1,10})(?:[，。！!\s]|$)/.test(text)){m.name=RegExp.$1;return one('name',`${m.name}，记住啦。那以后我就这样叫你，好不好？`);}
   if(/(?:我叫什[么麼]|我的名字|记得我的名字|还记得我叫)/.test(text))return one('name',m.name?`${m.name}呀。自己告诉我的，我有认真记着。`:'你还没正式告诉我呢。你想让我怎么叫你？',m.name?'':'name');
@@ -49,10 +49,13 @@
   if(/^早[呀啊哦安好！!~～]*$|早上好|早安/.test(text))return select('morning',pools.morning,'day-plan');
   if(/(?:难过|不开心|伤心|委屈|焦虑|烦死|想哭|失落|生气|心情不好)/.test(text))return select('sad',pools.sad,'feelings');
   if(/(?:不想你|没想你|才没想你)/.test(text))return one('tease','好嘛，那先不逗你了。你今天在忙什么？');
-  if(/想你|想我|想见你|想念/.test(text))return select('missing',pools.missing);
+  if(/想你|想我|想见你|想念/.test(text))return m.flirt===false?one('boundary','听见啦，我们就按你舒服的方式聊天。今天过得还好吗？'):select('missing',pools.missing);
   if(/喜欢你|爱你|爱我|亲亲|抱抱|牵手|牵着/.test(text))return m.flirt===false?one('boundary','听见啦，我们就按你舒服的方式聊天。今天过得还好吗？'):select('love',pools.love);
+  if(/给你发了张照片/.test(text))return one('photo-received','照片收到啦，这是在哪儿拍的？快跟我讲讲。');
+  if(/给你发了个位置/.test(text))return one('location-received','位置收到啦。你这是想约我一起去吗？');
   if(/大理|洱海|才村|双廊|苍山/.test(text))return select('dali',pools.dali,'place-choice');
   if(/(?:想吃|要吃|就吃|吃点)(火锅|面条|米饭|蛋糕|草莓|冰淇淋|麻辣烫|烧烤)/.test(text)){m.plan=RegExp.$1;return one('food-plan',`那就${m.plan}，先记下啦。饿了就去吃点，别光顾着跟我聊天。`);}
+  if(/你.{0,5}吃(?:饭)?了(?:吗|没)|你吃过了吗/.test(text))return one('meal-care','有记得吃饭呀。你呢，今天别光顾着问我，也要吃饱。');
   if(/(?:吃什么|吃饭|饿了|好饿|晚饭|午饭|早饭|火锅|面条|奶茶|蛋糕)/.test(text))return select('meal',m.food?[`你不是说喜欢吃${m.food}吗？今天想吃那个，还是换点热乎的？`,...pools.meal]:pools.meal,'food-choice');
   if(/累|疲惫|没力气|忙死|加班/.test(text))return select('tired',pools.tired);
   if(/学习|考研|高数|数学|考试|背单词|作业|做题|复习/.test(text))return select('study',pools.study);

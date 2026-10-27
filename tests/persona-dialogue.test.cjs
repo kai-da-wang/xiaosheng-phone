@@ -84,3 +84,9 @@ test('food acknowledgement is conversational and recall has no automatic stock s
 test('appearance questions do not pretend the role can see the player',()=>{
  for(const id of ids){const a=run(id,'我帅吗');assert.equal(a.intent,'selfLook');assert.match(a.text,/没看到|还没看到|图都没给/);}
 });
+
+test('long rapid message bursts preserve early boundaries and respond to everyday care',()=>{
+ for(const id of ids){let a=run(id,['别撩我','嗯','好呀','我想你了']);assert.equal(a.intent,'boundary');assert.equal(a.memory.flirtAllowed,false);assert.doesNotMatch(a.text,/收好|嘴甜|真接不住/);a=run(id,['不要回复了','嗯','好的','在吗']);assert.equal(a.pause,true);a=run(id,'我今天很不开心');assert.equal(a.intent,'sad');const care=run(id,'你吃了吗');assert.equal(care.intent,'mealCare');assert.match(care.text,/吃|饭|肚子/);}
+});
+
+test('physical emergencies take priority over pausing in every persona',()=>{for(const id of [...ids,'lead_gangjie']){let a=run(id,['我胸痛','先安静']);assert.equal(a.safety,true,id);assert.match(a.text,/急救|医院/);}});

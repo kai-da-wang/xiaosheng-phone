@@ -5,7 +5,7 @@ function setup(state=Core.defaults()){
  const timers={setTimeout:global.setTimeout,clearTimeout:global.clearTimeout};
  global.setTimeout=(fn,delay)=>{const id=++n;tasks.set(id,{at:now+delay,fn});return id;};global.clearTimeout=id=>tasks.delete(id);
  const route={app:'home'},sound={ring:()=>sounds.push('ring'),stop:()=>sounds.push('stop')};state.unlocked=true;
- const runtime=Life.create({getState:()=>state,getRoute:()=>route,wang:'wang',sound,save(){},hidden:()=>hidden,available:()=>available,onCall:p=>calls.push(p),onIncoming:(id,m)=>events.push({id,m})});
+ const runtime=Life.create({getState:()=>state,getRoute:()=>route,wang:'wang',sound,save(){},hidden:()=>hidden,available:()=>available,markUnread(id,m){(state.chatUnreadIds[id]||=[]).push(m.id)},onCall:p=>calls.push(p),onIncoming:(id,m)=>events.push({id,m})});
  function tick(ms){const end=now+ms;for(let limit=0;limit<100;limit++){const entry=[...tasks].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!entry)break;tasks.delete(entry[0]);now=entry[1].at;entry[1].fn();}now=end;}
  return {state,route,runtime,events,calls,sounds,tick,hide(v){hidden=v;runtime.visibility();},block(v){available=v;},close(){runtime.dispose();Object.assign(global,timers);}};
 }
@@ -41,3 +41,5 @@ test('sound is gesture-unlocked, respects mute, and stops scheduled ringtone osc
 test('an open sheet defers the incoming call until it closes',()=>{const h=setup();try{h.runtime.sync();h.tick(1000);h.block(false);h.tick(2000);assert.equal(h.calls.length,0);h.block(true);h.tick(500);assert.deepEqual(h.calls,['ringing']);}finally{h.close();}});
 
 test('group welcome retries after the user finishes editing without requiring navigation',()=>{const h=setup();try{h.state.phoneLife.callStatus='ended';h.state.phoneLife.followupSent=true;h.runtime.sync();h.tick(5000);h.block(false);h.tick(6000);assert.equal(h.events.length,0);h.block(true);h.tick(1000);assert.equal(h.events.length,1);assert.equal(h.events[0].m.id,'fans-intro-v1');h.tick(10000);assert.equal(h.events.length,1);}finally{h.close();}});
+
+test('a message arriving while the current room is backgrounded is unread',()=>{const h=setup();try{h.state.phoneLife.callStatus='ended';h.state.phoneLife.followupSent=false;h.state.phoneLife.groupIntroSent=true;h.route.app='room';h.route.id='wang';h.state.chatReadRooms=['wang'];h.hide(true);h.runtime.sync();h.tick(850);assert.equal(h.state.chatMessages.wang.length,1);assert.deepEqual(h.state.chatUnreadIds.wang,['wang-call-followup-v1']);}finally{h.close();}});

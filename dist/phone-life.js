@@ -92,7 +92,7 @@
   return {unlock,message,ring,stop,enabled};
  }
  function create(ctx){
-  const S=ctx.getState,L=()=>S().phoneLife,active=id=>ctx.getRoute().app==='room'&&ctx.getRoute().id===id;
+  const S=ctx.getState,L=()=>S().phoneLife,active=id=>!ctx.hidden?.()&&ctx.getRoute().app==='room'&&ctx.getRoute().id===id;
   let callTimer=null,endTimer=null,followTimer=null,groupTimer=null,introTimer=null,started=false,previousState=S();
   const time=()=>new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
   const eligible=()=>S().unlocked&&!['lock','pin'].includes(ctx.getRoute().app)&&!ctx.hidden?.()&&ctx.available()!==false;

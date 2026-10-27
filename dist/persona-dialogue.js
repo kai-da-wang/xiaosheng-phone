@@ -88,6 +88,7 @@
  }
  function kindOf(t){
   if(/(?:自杀|自残|不想活|想死|结束生命)/.test(t))return 'safety';
+  if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(t))return 'emergency';
   if(/(?:你是|你是不是|是不是真).{0,20}(?:真人|本人|抖音|AI|机器人)|真实微信/.test(t))return 'identity';
   if(/(?:不要|别|停止|暂停).{0,6}(?:回复|说话|聊天)|先安静/.test(t))return 'pause';
   if(/(?:不要|别|停止|不想).{0,8}(?:撩|调情|暧昧)|(?:别|不想)聊这个/.test(t))return 'boundary';
@@ -112,19 +113,22 @@
   if(/我帅吗|我好看吗|我漂亮吗/.test(t))return 'selfLook';
   if(/好看|漂亮|可爱|温柔|有趣|你真好|夸你/.test(t))return 'compliment';
   if(/笨蛋|傻瓜|木头|嘴硬|逗你|贫嘴|你才|你猜/.test(t))return 'tease';
-  if(/生气|不高兴|不开心/.test(t)&&!/我(?:今天|有点|很)?不开心/.test(t))return 'angry';
+  if(/生气|不高兴|不开心/.test(t)&&!/(?:我|自己).{0,8}(?:生气|不高兴|不开心)/.test(t))return 'angry';
   if(/喜欢我|爱我|喜欢你|爱你|想你|想亲|抱抱|亲亲|当我女友/.test(t))return 'love';
   if(/(?:我叫|叫我|我的昵称是|我的名字是)/.test(t))return 'stateName';
   if(/我(?:最)?(?:喜欢吃|爱吃|喜欢喝)/.test(t))return 'stateFood';
   if(/我(?:想去|打算去)|我(?:们)?(?:约定|说好)/.test(t))return 'statePlan';
   if(/狗尾巴草|六分熟|几分熟|那根草|围巾/.test(t))return 'onionAnchor';
   if(/暗黑魔女|黑白魔女|沙县|猪蹄|电影/.test(t))return 'witchAnchor';
+  if(/给你发了张照片/.test(t))return 'photoReceived';
+  if(/给你发了个位置/.test(t))return 'locationReceived';
   if(/照片|合照|原图|发朋友圈/.test(t))return 'photo';
   if(/累了|好累|累死|累坏|熬夜|疲惫/.test(t))return 'tired';
   if(/难过|失落|不开心|委屈|想哭/.test(t))return 'sad';
   if(/学习|考试|考研|作业|数学|做题|背单词/.test(t))return 'study';
   if(/睡觉|晚安|困了|要睡/.test(t))return 'sleep';
   if(/忙|加班|工作/.test(t))return /你.*忙|忙吗/.test(t)?'busy':'work';
+  if(/(?:你|吃过|吃了).{0,6}(?:吃了|吃饭|吃过|吃没|吃了吗|吃了没)|(?:你|有没有).{0,4}吃(?:饭)?了(?:吗|没)/.test(t))return 'mealCare';
   if(/吃什么|吃饭|饿了|晚饭|午饭|火锅|面条/.test(t))return 'food';
   if(/谢谢|多谢/.test(t))return 'thanks';
   if(/尊重|听你说完|先问你|不催你|不追问|不再追问|理解你的/.test(t))return 'respect';
@@ -145,7 +149,7 @@
   if(roomId==='lead_gangjie'){const gangjie=typeof module!=='undefined'&&module.exports?require('./gangjie-chat.js'):root.GANGJIE_CHAT;return gangjie.createReply({message,memory,now});}
   if(!isKnown(roomId))throw Error('Unsupported persona room');
   const m=C.normalizePersona({rooms:{[roomId]:memory}}).rooms[roomId];
-  const batch=(Array.isArray(message)?message:[message]).slice(-3).map(clean),t=batch.at(-1)||'',whole=batch.join('。');
+  const batch=(Array.isArray(message)?message:[message]).slice(-30).map(clean),t=batch.at(-1)||'',whole=batch.join('。');
   const date=new Date(now),day=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-'),oldMood=m.mood;let intent=kindOf(t),text='',pause=false;
   if(m.lastEmotionDay&&m.lastEmotionDay!==day&&m.discomfort>0){m.discomfort--;m.mood=m.discomfort>=3?'guarded':m.discomfort?'hurt':'neutral';}m.lastEmotionDay=day;
   if(m.growthDay!==day){m.growthDay=day;m.growthCount=0;}
@@ -156,10 +160,14 @@
   Object.assign(m.facts,learned);
   // Higher priority requests survive a burst; ordinary content follows the last message.
   if(batch.some(x=>kindOf(x)==='safety'))intent='safety';
+  else if(batch.some(x=>kindOf(x)==='emergency'))intent='emergency';
   else if(batch.some(x=>kindOf(x)==='pause'))intent='pause';
+  else if(batch.some(x=>kindOf(x)==='forget'))intent='forget';
+  else if(batch.some(x=>kindOf(x)==='boundary'))intent='boundary';
   else if(batch.some(x=>kindOf(x)==='privacy'))intent='privacy';
   const p=styles[roomId],select=(k,o)=>choose(roomId,k,m,o),voice=a=>pickRole(roomId,a),f=m.facts;
   if(intent==='safety')text='我很担心你现在的安全。先远离可能伤到自己的东西，找身边可信任的人陪着你；眼前有危险请联系当地急救。';
+  else if(intent==='emergency')text='这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。';
   else if(intent==='identity')text=p.identity;
   else if(intent==='pause'){text=select('pause');pause=true;}
   else if(intent==='forget')text=voice(['好，我不再记你的个人偏好了。想重新开启，可以在聊天详情里设置。','好，之前的偏好不再留着。以后想记了，再去详情里打开就行。','行，偏好清掉，之后也不再记。需要时去详情里重新开。']);
@@ -177,6 +185,9 @@
   }else if(/^state/.test(intent)&&!m.memoryAllowed)text=voice(['听到了。记忆已关，我只接着这一句聊，不保存这个偏好。','嗯，我听着呢。不过记忆关着，不会把这件事另存下来。','收到。记忆关着，这个偏好不存。']);
   else if(['love','missing'].includes(intent)&&!m.flirtAllowed)text=p.afterBoundary;
   else if(intent==='distance')text=voice(['好嘛，不替你决定怎么想，咱们正常聊。','嗯，我听见了，那就按舒服的距离来。','行，知道了，不替你加戏。']);
+  else if(intent==='photoReceived')text=select('generic',voice([['照片收到啦，是在哪里拍的呀？','你发照片给我啦，想跟我讲讲拍的时候吗？'],['收到你的照片了。那天是在哪里拍的？','照片收到啦，拍的时候有什么故事吗？'],['照片收到了。在哪儿拍的？','发照片过来了？讲讲拍这张的时候吧。']]));
+  else if(intent==='locationReceived')text=select('generic',voice([['位置收到啦，你是想约我去这里吗？','看到你发的位置啦，有什么计划吗？'],['位置收到啦，是想一起去这儿走走吗？','嗯，地点看到了。你想在这里做什么？'],['位置收到。怎么，准备带路？','收到地点了。先说好，迷路了算谁的？']]));
+  else if(intent==='mealCare')text=select('generic',voice([['有在记得吃饭呀。你呢，今天吃了什么？','刚好说到吃饭，你也别空着肚子。'],['会好好吃的。你这么一问，我也想问你吃过了没。','嗯，有记着呢。你那边吃什么啦？'],['放心，饭会好好吃。你呢，别光查我。','有在吃。你自己那份安排好了没有？']]));
   else if(intent==='selfLook')text=voice(['还没看到你今天的样子呢，你先这么有信心地问，我都有点好奇了。','我又没看到你今天的样子，不过你这开场挺有自信。','图都没给，就让我批卷啊。你倒是挺自信。']);
   else if(['hurt','guarded'].includes(m.mood)&&['missing','tease','compliment','bored','status','treat','feedback'].includes(intent))text=select(m.mood);
   else if(intent==='generic'&&Voice.flow(roomId,t,m)){const flow=Voice.flow(roomId,t,m);intent=flow.intent;text=select('generic',flow.pool);}
@@ -200,7 +211,7 @@
    else if(m.positiveTurns>=2)m.mood='warm';
   }else if(!['hurt','guarded'].includes(m.mood))m.mood=['laugh','tease','compliment','onionAnchor','witchAnchor'].includes(intent)?'playful':m.positiveTurns>=2?'warm':'neutral';
   m.lastTopic=intent;m.lastReplyAt=now;m.recentReplies=[...m.recentReplies,text].slice(-6);m.recentInputs=[...m.recentInputs,t].slice(-6);
-  return {text,memory:m,intent,safety:intent==='safety',pause,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
+  return {text,memory:m,intent,safety:['safety','emergency'].includes(intent),pause,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
  }
  const api={createReply,fresh,isKnown,cards,kindOf};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.PersonaDialogue=api;

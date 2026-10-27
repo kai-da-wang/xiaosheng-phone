@@ -5,10 +5,10 @@ function harness(state=C.defaults()){
  let now=1792880000000,next=1,saves=0,visible=[],route={app:'room',id:ids[0]};const tasks=new Map();
  class Clock extends Date{constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}}
  const scroll={dataset:{roomId:ids[0]},scrollTop:0,scrollHeight:600,clientHeight:500};
- const sandbox={window:{PhoneCore:C,PersonaDialogue:E},document:{querySelector(s){return s==='.wx-chat-scroll'?scroll:s==='#wx-chat-bottom'?{insertAdjacentHTML(_,v){visible.push(v)}}:null;}},Date:Clock,Intl,setTimeout(fn,ms){const id=next++;tasks.set(id,{fn,at:now+ms});return id;},clearTimeout(id){tasks.delete(id)}};
- vm.runInNewContext(code,sandbox);const r=sandbox.window.PersonaChatRuntime.create({getState:()=>state,getRoute:()=>route,save(){saves++},renderBubble:(m,id)=>id+':'+m.text,refreshList(){},esc:v=>v});
+ const sandbox={window:{PhoneCore:C,PersonaDialogue:E},document:{hidden:false,querySelector(s){return s==='.wx-chat-scroll'?scroll:s==='#wx-chat-bottom'?{insertAdjacentHTML(_,v){visible.push(v)}}:null;}},Date:Clock,Intl,setTimeout(fn,ms){const id=next++;tasks.set(id,{fn,at:now+ms});return id;},clearTimeout(id){tasks.delete(id)}};
+ vm.runInNewContext(code,sandbox);const r=sandbox.window.PersonaChatRuntime.create({getState:()=>state,getRoute:()=>route,save(){saves++},renderBubble:(m,id)=>id+':'+m.text,refreshList(){},markUnread(id,m){(state.chatUnreadIds[id]||=[]).push(m.id)},esc:v=>v});
  const tick=ms=>{const end=now+ms;while(true){const due=[...tasks].filter(([,v])=>v.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!due)break;tasks.delete(due[0]);now=due[1].at;due[1].fn()}now=end};tick(0);
- return {r,state,tick,visible,tasks,go(id){route={app:'room',id};scroll.dataset.roomId=id},send(id,text,mid){const m={id:mid,type:'text',text,from:'self'};(state.chatMessages[id]||=[]).push(m);r.enqueue(id,m);return m;}};
+ return {r,state,tick,visible,tasks,hide(v){sandbox.document.hidden=v},go(id){route={app:'room',id};scroll.dataset.roomId=id},send(id,text,mid){const m={id:mid,type:'text',text,from:'self'};(state.chatMessages[id]||=[]).push(m);r.enqueue(id,m);return m;}};
 }
 test('three concurrent rooms debounce bursts, reply once and never render into another room',()=>{
  const h=harness();h.state.chatReadRooms=[...ids];for(const id of ids){h.send(id,'我叫小凯',id+'1');h.tick(100);h.send(id,'我喜欢吃草莓',id+'2');h.tick(100);h.send(id,'你记得我喜欢什么吗',id+'3');}
@@ -31,3 +31,7 @@ test('refresh restores pending once and retrying already answered source IDs is 
 test('text pause produces one acknowledgement and cancels future automatic replies',()=>{
  const h=harness();h.send(ids[0],'先安静，不要回复了','a');h.tick(2200);assert.equal(h.r.enabled(ids[0]),false);h.send(ids[0],'你好','b');h.tick(2200);assert.equal(h.state.chatMessages[ids[0]].filter(m=>m.autoReply).length,1);
 });
+
+test('clearing remembered preferences preserves relationship progress',()=>{const h=harness(),id='lead_muma',r=h.state.personaV2.rooms[id];r.affinity=41;r.trust=62;r.discomfort=2;r.mood='hurt';r.facts={name:'小凯'};r.recentInputs=['我叫小凯'];h.r.clearMemory(id);const after=h.state.personaV2.rooms[id];assert.equal(after.affinity,41);assert.equal(after.trust,62);assert.equal(after.discomfort,2);assert.equal(after.mood,'hurt');assert.equal(Object.keys(after.facts).length,0);assert.equal(after.recentInputs.length,0);});
+
+test('persona replies to a location and a photo, including while a room is backgrounded',()=>{const h=harness();const id='lead_muma';for(const m of [{id:'photo',type:'photo',assetId:'muma-01',from:'self'},{id:'location',type:'location',place:'洱海',address:'云南省大理市',from:'self'}]){(h.state.chatMessages[id]||=[]).push(m);h.hide(true);h.r.enqueue(id,m);h.tick(2500);const reply=h.state.chatMessages[id].at(-1);assert.equal(reply.autoReply,true);assert.ok(reply.replyTo.includes(m.id));assert.match(reply.text,m.type==='photo'?/照片|挑|这张/:/位置|地点/);assert.ok(h.state.chatUnreadIds[id].includes(reply.id));}assert.equal(h.visible.length,0);});

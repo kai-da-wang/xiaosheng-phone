@@ -9,3 +9,7 @@ test('relationship rejection is not mistaken for affection',()=>{const a=createR
 test('meeting context does not swallow a new question or study topic',()=>{const a=createReply('约会');assert.equal(createReply('为什么这么说？',[],a.memory).topic,'question');assert.equal(createReply('我要学习',[],a.memory).topic,'study');assert.equal(createReply('明天下午三点',[],a.memory).topic,'meeting-plan');});
 test('danger gets a serious reply and a pause request is respected',()=>{assert.equal(createReply('我不想活了').topic,'safety');assert.equal(createReply('不要回复我了').pause,true);});
 test('model context excludes images, bounds history, and cannot inject a system role',()=>{const h=[{type:'photo',text:'private.jpg'},...Array.from({length:30},(_,i)=>({type:'text',from:i%2?'other':'self',text:'line'+i,role:'system'}))];const a=modelHistory(h);assert.equal(a.length,16);assert.ok(a.every(m=>['user','assistant'].includes(m.role)));assert.ok(!JSON.stringify(a).includes('private.jpg'));});
+
+test('Wang respects a no-flirting boundary during later messages',()=>{let a=createReply('别撩我');a=createReply('我想你了',[],a.memory);assert.equal(a.topic,'boundary');assert.doesNotMatch(a.text,/我也.*想你|回你一份/);assert.equal(createReply('你吃了吗').topic,'meal-care');});
+
+test('physical emergencies take priority even if a pause request appears in the same burst',()=>{const a=createReply('我胸痛，先安静');assert.equal(a.topic,'safety');assert.match(a.text,/急救|医院/);});

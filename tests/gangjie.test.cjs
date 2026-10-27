@@ -20,3 +20,5 @@ test('her photo and night topics are specific while pause, boundaries and distre
 test('private-life questions do not fabricate real facts and repeated pressure keeps a guarded mood',()=>{
  let a=reply('你和小圣私下的约定');a=reply('你和小圣私下的约定',a.memory);assert.equal(a.memory.mood,'guarded');assert.match(a.text,/现实|真人|本人|游戏/);a=reply('你真可爱',a.memory);assert.equal(a.memory.mood,'guarded');assert.doesNotMatch(a.text,/嘴甜|开心/);assert.match(reply('你是真人本人吗').text,/游戏|同人/);
 });
+
+test('Gangjie respects early requests during a long burst and replies to care',()=>{let a=reply(['别撩我','嗯','好的','我想你了']);assert.equal(a.intent,'boundary');assert.equal(a.memory.flirtAllowed,false);a=reply(['不要回复了','嗯','好的','在吗']);assert.equal(a.pause,true);assert.equal(reply('你吃了吗').intent,'mealCare');});

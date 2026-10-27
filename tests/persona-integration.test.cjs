@@ -1,15 +1,17 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const C=require('../dist/core.js'),E=require('../dist/persona-dialogue.js');
-function setup({realWang=false}={}){
- const state=C.defaults(),route={app:'room',id:'lead_muma'},calls=[],tasks=[];const window={PhoneCore:C,PersonaDialogue:E,WangDialogue:require('../dist/wang-dialogue.js')};
+function setup({realWang=false,localGroups=false}={}){
+ const state=C.defaults(),route={app:'room',id:'lead_muma'},calls=[],tasks=[],listeners={};const window={PhoneCore:C,PersonaDialogue:E,WangDialogue:require('../dist/wang-dialogue.js')};
  for(const f of ['content.js','gallery-data.js','muma-chat.js','monv-chat.js','vivi-chat.js'])vm.runInNewContext(fs.readFileSync('dist/'+f,'utf8'),{window});
- const document={addEventListener(){},createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
+ const inserted=[],scroll={dataset:{roomId:''},scrollHeight:100,scrollTop:0,clientHeight:100},bottom={insertAdjacentHTML(_,html){inserted.push(html)}};
+ const document={hidden:false,addEventListener(type,fn){(listeners[type]||=[]).push(fn)},createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:q=>localGroups&&q==='.wx-chat-scroll'&&scroll.dataset.roomId?scroll:null,querySelectorAll:()=>[],getElementById:id=>localGroups&&id==='wx-chat-bottom'&&scroll.dataset.roomId?bottom:null};
  const sandbox={window,document,Promise,Intl,Date,Map,Set,Math,setTimeout(fn){tasks.push(fn);return tasks.length;},clearTimeout(n){tasks[n-1]=null;}};
  window.WangChatRuntime={create:()=>({typingMarkup:()=>'',enqueue(){calls.push('wang-enqueued')},enabled:()=>true,mode:()=> '情景对话'})};
+ if(localGroups){window.PhoneLife={groupId:'group_xiaosheng_fans',members:[],seed:[],normalize:x=>x,createSound:()=>({unlock(){},message(){},stop(){},ring(){}}),create:c=>({sync(){},visibility(){},notify(id,m){c.onIncoming(id,m,false)},cancelGroup(){},toggleGroupMute(){}})};vm.runInNewContext(fs.readFileSync('dist/local-group-runtime.js','utf8'),sandbox);}
  if(realWang)vm.runInNewContext(fs.readFileSync('dist/wang-chat-runtime.js','utf8'),sandbox);
  for(const f of ['wechat-details.js','persona-chat-runtime.js','phone-experience.js'])vm.runInNewContext(fs.readFileSync('dist/'+f,'utf8'),sandbox);
  const x=window.PhoneExperience.create({data:window.PHONE_DATA,gallery:window.PHOTO_LIBRARY,esc:v=>String(v??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])),icon:()=>'',btn:(a,label)=>`<button data-action="${a}">${label}</button>`,shell:()=>'',go(app,opts={}){for(const k of Object.keys(route))delete route[k];Object.assign(route,{app,...opts});calls.push(['go',app,opts]);},save(){},toast(){},modal:(...a)=>calls.push(a),closeModal(){},appIcon(){},getState:()=>state,getRoute:()=>route,render(){}});
- return {x,state,route,calls,tick(){for(let i=0;i<tasks.length;i++){const t=tasks[i];tasks[i]=null;t?.();}}};
+ return {x,state,route,calls,inserted,scroll,document,window,setHidden(v){document.hidden=v;for(const fn of listeners.visibilitychange||[])fn()},tick(){for(let i=0;i<tasks.length;i++){const t=tasks[i];tasks[i]=null;t?.();}}};
 }
 test('actual send integration writes once and updates persona unread independently of static read marks',()=>{
  const h=setup();h.state.chatReadRooms=[...C.personaIds,'lead_wang_xiaomiao'];h.state.chatReadStories=['vivi-photos-20261025','muma-dogtail-20261025','monv-shaxian-20261025'];
@@ -72,3 +74,9 @@ test('saying I am sending money does not cause the other character to send a tra
 });
 
 test('location messages can be sent, viewed, searched and survive reload',()=>{const h=setup();h.x.action('wx-location-pick',{dataset:{}});assert.equal(h.calls.at(-1)[1].title,'选择位置');h.x.action('wx-location-send',{dataset:{member:'2'}});let m=h.state.chatMessages.lead_muma.at(-1);assert.equal(m.place,'龙龛码头');assert.match(h.x.room(),/查看位置 龙龛码头/);h.x.action('wx-location-open',{dataset:{id:m.id}});assert.equal(h.calls.at(-1)[1].title,'龙龛码头');assert.equal(C.normalize(JSON.parse(JSON.stringify(h.state))).chatMessages.lead_muma.at(-1).place,'龙龛码头');assert.equal(h.x.sendLocation(' <地点> ','自定义地址'),true);assert.match(h.x.room(),/&lt;地点&gt;/);assert.equal(h.x.sendLocation('   ',''),false);});
+
+test('a locally created group displays a woman’s reply in the active conversation',()=>{const h=setup({localGroups:true});const id='local_group_test';h.state.wechatGroups[id]={id,name:'一起聊',members:['self','lead_muma','lead_monv'],owner:'self'};h.route.id=id;h.scroll.dataset.roomId=id;h.state.chatDrafts[id]='大家好';h.x.send();h.tick();const replies=h.state.chatMessages[id].filter(m=>m.replyOrigin==='local-group');assert.equal(replies.length,1);assert.equal(replies[0].speaker,'lead_muma');assert.ok(h.inserted.some(x=>x.includes(replies[0].text)));assert.match(h.x.room(),/一根洋葱/);assert.equal(h.state.chatUnreadIds[id],undefined);});
+
+test('photos and locations enqueue real messages and get a reply from their character',()=>{for(const kind of ['photo','location']){const h=setup();if(kind==='photo')h.x.action('wx-send-photo',{dataset:{album:'muma',index:'0'}});else h.x.sendLocation('洱海','云南大理');const m=h.state.chatMessages.lead_muma.at(-1);assert.equal(m.type,kind);h.tick();assert.ok(h.state.chatMessages.lead_muma.some(reply=>reply.autoReply&&reply.replyTo.includes(m.id)),kind);}});
+test('background transfers and replies remain unread until the conversation is visible',()=>{const h=setup();h.state.chatDrafts.lead_muma='请我喝奶茶吧';h.x.send();h.document.hidden=true;h.tick();assert.equal(h.state.chatUnreadIds.lead_muma.length,2);h.x.room();assert.equal(h.state.chatUnreadIds.lead_muma.length,2);h.setHidden(false);assert.equal(h.state.chatUnreadIds.lead_muma,undefined);});
+test('favorites attachment shares a saved story into the current chat',()=>{const h=setup();h.x.action('wx-choose-favorite',{dataset:{}});assert.match(h.calls.at(-1)[1].note,/没有收藏/);const scene=h.window.PHONE_DATA.people.flatMap(p=>p.scenes)[0];h.state.favorites.push(scene.id);h.x.action('wx-choose-favorite',{dataset:{}});assert.equal(h.calls.at(-1)[1].items[0].member,scene.id);h.x.action('wx-share-favorite',{dataset:{member:scene.id}});assert.match(h.state.chatMessages.lead_muma.at(-1).text,/分享收藏/);});
