@@ -1,0 +1,37 @@
+/* WeChat-style moments: one photograph per post; the full albums stay in Photos. */
+.wx-moments-screen{--moments-ink:#171b1a;--moments-blue:#576b95;--moments-muted:#9a9d9e;--moments-paper:#fff;--moments-panel:#f5f5f5}
+.phone.dark .wx-moments-screen{--moments-ink:#e5e5e5;--moments-blue:#a6b9d8;--moments-muted:#9a9d9e;--moments-paper:#202320;--moments-panel:#303330}
+.wx-moments-screen .wx-nav,.wx-moments-scroll{background:var(--moments-paper)}
+.wx-moments-scroll{padding:0 0 42px;color:var(--moments-ink)}
+.wx-moments-hero{height:clamp(250px,72vw,312px);position:relative;background:#a6b9b9;overflow:visible;margin-bottom:42px}
+.wx-moments-hero>img{display:block;width:100%;height:100%;object-fit:cover}
+.wx-moments-hero-shade{position:absolute;inset:38% 0 0;background:linear-gradient(transparent,#0006);pointer-events:none}
+.wx-moments-identity{position:absolute;right:18px;bottom:-18px;display:flex;align-items:flex-end;gap:12px}
+.wx-moments-identity>span{padding-bottom:29px;color:#fff;font-size:18px;font-weight:600;text-shadow:0 1px 4px #0009}
+.wx-moments-identity button{padding:0;border:2px solid var(--moments-paper);border-radius:7px;box-shadow:0 1px 4px #0003}
+.wx-moments-identity .wx-avatar{width:70px;height:70px;border-radius:5px;font-size:25px}
+.wx-moments-intro{padding:0 17px 11px;color:var(--moments-muted);font-size:12px}
+.wx-moments-timeline{padding:0 15px}
+.wx-moment{display:flex;gap:11px;padding:18px 0 19px;border-top:1px solid var(--line);min-width:0}
+.wx-moment-avatar{padding:0;align-self:flex-start;flex-shrink:0;border-radius:5px}
+.wx-moment-avatar .wx-avatar{width:43px;height:43px;border-radius:5px;font-size:19px}
+.wx-moment-body{flex:1;min-width:0}
+.wx-moment-name{display:block;padding:0;color:var(--moments-blue);font-size:15px;font-weight:600;text-align:left}
+.wx-moment-text{font-size:14px;line-height:1.6;margin:6px 0 9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.wx-moment-photo{display:block;padding:0;max-width:min(205px,100%);border-radius:3px;overflow:hidden;background:var(--moments-panel)}
+.wx-moment-photo img{display:block;width:auto;max-width:100%;max-height:240px;object-fit:cover;object-position:center}
+.wx-moment-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;min-height:26px}
+.wx-moment-meta time{font-size:11px;color:var(--moments-muted)}
+.wx-moment-actions{position:relative;display:flex;align-items:center}
+.wx-moment-more{display:grid;place-items:center;width:31px;height:25px;border-radius:4px;color:#64718a;background:var(--moments-panel);font-size:18px;font-weight:700;letter-spacing:1px;line-height:1}
+.wx-moment-menu{position:absolute;right:37px;top:-6px;z-index:4;display:flex;align-items:center;background:#4c5056;color:white;border-radius:5px;box-shadow:0 4px 12px #0002;white-space:nowrap}
+.wx-moment-menu button{display:flex;align-items:center;gap:5px;padding:10px 12px;color:white;font-size:12px}
+.wx-moment-menu button+button{border-left:1px solid #ffffff30}.wx-moment-menu .icon{width:15px;height:15px}
+.wx-moment-reactions{position:relative;margin-top:7px;padding:7px 9px;border-radius:3px;background:var(--moments-panel);font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.wx-moment-reactions:before{content:'';position:absolute;top:-5px;left:12px;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid var(--moments-panel)}
+.wx-moment-likes{display:flex;align-items:flex-start;gap:4px;color:var(--moments-blue)}.wx-moment-likes .icon{width:13px;height:13px;margin-top:3px}
+.wx-moment-comments{color:var(--moments-ink)}.wx-moment-comments b{font-weight:550;color:var(--moments-blue)}
+.wx-moment-likes+.wx-moment-comments{border-top:1px solid var(--line);margin-top:5px;padding-top:5px}.wx-moment-comments p+p{margin-top:3px}
+.wx-moment-empty{padding:45px 10px;color:var(--moments-muted);text-align:center;font-size:13px}
+
+.wx-moments-cover-button{position:absolute;left:16px;bottom:12px;padding:6px 9px;color:#fff;background:#0005;border-radius:5px;font-size:11px;line-height:1.2}
