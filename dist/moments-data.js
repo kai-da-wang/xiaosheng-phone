@@ -10,7 +10,7 @@ window.PHONE_MOMENTS={
   {id:'moment_gangjie_1',author:'lead_gangjie',assetId:'gangjie-03',date:'2026-10-24 15:26',text:'慢慢过一个舒服的下午。',likes:[],comments:[{author:'小圣',text:'这张拍得很有氛围。'},{author:'港姐',text:'我也觉得好看～'}]},
   {id:'moment_self_2',author:'self',assetId:'xiaowang-05',date:'2026-10-23 19:03',text:'雪山和今天的好心情，一起存档。',likes:['小王','薇薇'],comments:[{author:'小王',text:'这张我要留着。'}]},
   {id:'moment_muma_2',author:'lead_muma',assetId:'muma-01',date:'2026-10-22 20:14',text:'蓝色围巾和那天的晚风。',likes:[],comments:[{author:'小圣',text:'围巾我有好好戴。'}]},
-  {id:'moment_wang_2',author:'lead_wang_xiaomiao',assetId:'xiaowang-07',date:'2026-10-21 13:08',text:'海边的风和好天气。',likes:[],comments:[{author:'小圣',text:'没有，很好看。'}]},
+  {id:'moment_wang_2',author:'lead_wang_xiaomiao',assetId:'xiaowang-07',date:'2026-10-21 13:08',text:'海边的风和好天气。',likes:[],comments:[{author:'小圣',text:'这张很有夏天的感觉。'}]},
   {id:'moment_monv_2',author:'lead_monv',assetId:'monv-03',date:'2026-10-20 21:11',text:'随手拍的两张，也还行吧。',likes:[],comments:[]},
   {id:'moment_vivi_2',author:'lead_vivi',assetId:'vivi-02',date:'2026-10-19 19:40',text:'这个滤镜，没想到还挺适合。🐱',likes:[],comments:[{author:'小圣',text:'猫耳朵通过。'}]},
   {id:'moment_gangjie_2',author:'lead_gangjie',assetId:'gangjie-01',date:'2026-10-18 14:20',text:'逛一逛，给今天留张合照。',likes:[],comments:[]},
