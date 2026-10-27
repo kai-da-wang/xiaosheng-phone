@@ -15,3 +15,10 @@
 .wx-ai-speech{display:inline-block;margin:5px 0 0 8px;padding:3px 8px;border:0;border-radius:9px;background:rgba(30,140,89,.10);color:#26764d;font-size:11px;line-height:1.5;cursor:pointer;vertical-align:baseline}.wx-ai-speech:focus-visible{outline:2px solid #178749;outline-offset:2px}
 
 .wx-ai-disclosure{text-align:center;font-size:10px;color:#758178;background:#f0f3f0;padding:4px 8px;line-height:1.35}
+
+/* Fictional in-phone transfer, with no payment integration. */
+.wx-transfer-card{width:216px;max-width:75vw;padding:0;border-radius:6px;overflow:hidden;text-align:left;background:#f5a34c;color:#fff}
+.wx-transfer-card.received{background:#f4c99e}.wx-transfer-main{display:flex;align-items:center;gap:11px;min-height:72px;padding:12px}
+.wx-transfer-symbol{display:grid;place-items:center;width:36px;height:36px;border:2px solid currentColor;border-radius:50%;font-size:20px;line-height:1;flex-shrink:0}
+.wx-transfer-main strong,.wx-transfer-main small{display:block}.wx-transfer-main strong{font-size:17px;font-weight:500}.wx-transfer-main small{font-size:11px;margin-top:4px;line-height:1.35}
+.wx-transfer-foot{display:block;border-top:1px solid #fff5;padding:5px 11px;font-size:10px}.transfer-amount{font-size:32px!important;font-weight:600;color:var(--fg)!important;margin:20px 0 7px!important}.transfer-done{color:#07ae55!important;font-weight:600;margin-top:18px!important}

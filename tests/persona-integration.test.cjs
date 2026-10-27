@@ -1,11 +1,12 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const C=require('../dist/core.js'),E=require('../dist/persona-dialogue.js');
-function setup(){
- const state=C.defaults(),route={app:'room',id:'lead_muma'},calls=[],tasks=[];const window={PhoneCore:C,PersonaDialogue:E};
+function setup({realWang=false}={}){
+ const state=C.defaults(),route={app:'room',id:'lead_muma'},calls=[],tasks=[];const window={PhoneCore:C,PersonaDialogue:E,WangDialogue:require('../dist/wang-dialogue.js')};
  for(const f of ['content.js','gallery-data.js','muma-chat.js','monv-chat.js','vivi-chat.js'])vm.runInNewContext(fs.readFileSync('dist/'+f,'utf8'),{window});
  const document={addEventListener(){},createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
  const sandbox={window,document,Promise,Intl,Date,Map,Set,Math,setTimeout(fn){tasks.push(fn);return tasks.length;},clearTimeout(n){tasks[n-1]=null;}};
  window.WangChatRuntime={create:()=>({typingMarkup:()=>'',enqueue(){calls.push('wang-enqueued')},enabled:()=>true,mode:()=> '情景对话'})};
+ if(realWang)vm.runInNewContext(fs.readFileSync('dist/wang-chat-runtime.js','utf8'),sandbox);
  for(const f of ['wechat-details.js','persona-chat-runtime.js','phone-experience.js'])vm.runInNewContext(fs.readFileSync('dist/'+f,'utf8'),sandbox);
  const x=window.PhoneExperience.create({data:window.PHONE_DATA,gallery:window.PHOTO_LIBRARY,esc:v=>String(v??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])),icon:()=>'',btn:(a,label)=>`<button data-action="${a}">${label}</button>`,shell:()=>'',go(app,opts={}){for(const k of Object.keys(route))delete route[k];Object.assign(route,{app,...opts});calls.push(['go',app,opts]);},save(){},toast(){},modal:(...a)=>calls.push(a),closeModal(){},appIcon(){},getState:()=>state,getRoute:()=>route,render(){}});
  return {x,state,route,calls,tick(){for(let i=0;i<tasks.length;i++){const t=tasks[i];tasks[i]=null;t?.();}}};
@@ -39,4 +40,27 @@ test('Enter sends once while Shift+Enter and IME confirmation do not send',()=>{
  const h=setup();h.state.chatDrafts.lead_muma='今天好呀';const event=extra=>({target:{id:'wx-message-input'},key:'Enter',preventDefault(){this.prevented=true;},...extra});
  for(const extra of [{shiftKey:true},{isComposing:true},{keyCode:229}])assert.equal(h.x.keydown(event(extra)),false);
  assert.equal(h.state.chatMessages.lead_muma,undefined);const enter=event();assert.equal(h.x.keydown(enter),true);assert.equal(enter.prevented,true);assert.equal(h.state.chatMessages.lead_muma.length,1);assert.ok(h.state.chatMessages.lead_muma[0].createdAt>0);h.state.chatDrafts.lead_muma='下一句';h.x.keydown(event({repeat:true}));assert.equal(h.state.chatMessages.lead_muma.length,1);
+});
+
+test('each character can send a fictional transfer in response to a relevant chat, not to a refusal',()=>{
+ const rooms=['lead_muma','lead_monv','lead_vivi','lead_gangjie','lead_wang_xiaomiao'];
+ for(const id of rooms){const h=setup({realWang:true});h.route.id=id;h.state.chatDrafts[id]='请我喝奶茶吧';h.x.send();h.tick();
+  const messages=h.state.chatMessages[id],transfer=messages.find(m=>m.type==='transfer');assert.ok(transfer,id);assert.equal(transfer.from,'other');assert.ok(transfer.amountFen>0);assert.match(h.x.room(),/待收款/);assert.match(h.x.room(),/微信转账/);
+  h.x.action('wx-transfer',{dataset:{id:transfer.id}});const modal=h.calls.at(-1);assert.equal(modal[0],'transfer');assert.match(h.x.renderTransfer(modal[1]),/剧情转账/);
+  h.x.action('wx-transfer-accept',{dataset:{id:transfer.id,room:id}});assert.equal(h.state.transferReceipts[transfer.id],true);assert.match(h.x.room(),/已收款/);
+  const restored=C.normalize(JSON.parse(JSON.stringify(h.state)));assert.ok(restored.chatMessages[id].some(m=>m.id===transfer.id&&m.amountFen===transfer.amountFen));assert.equal(restored.transferReceipts[transfer.id],true);
+  h.state.chatDrafts[id]='再请我喝奶茶';h.x.send();h.tick();assert.equal(messages.filter(m=>m.type==='transfer').length,1,'does not spam '+id);
+ }
+ const h=setup({realWang:true});h.state.chatDrafts.lead_muma='别给我转账';h.x.send();h.tick();assert.equal(h.state.chatMessages.lead_muma.filter(m=>m.type==='transfer').length,0);
+});
+test('unread numbers count individual off-room arrivals and clear only the opened room',()=>{
+ const h=setup();h.state.chatReadRooms=[...C.personaIds,'lead_wang_xiaomiao'];h.state.chatReadStories=['vivi-photos-20261025','muma-dogtail-20261025','monv-shaxian-20261025'];
+ for(const text of ['你好','早安','晚上好']){h.route.app='room';h.route.id='lead_muma';h.state.chatDrafts.lead_muma=text;h.x.send();h.route.app='wechat';h.tick();}
+ assert.equal(h.x.unreadCount(),3);assert.match(h.x.wechat(),/wx-unread [^>]*>3<\/b>/);
+ h.route.app='room';h.route.id='lead_muma';h.x.room();assert.equal(h.x.unreadCount(),0);assert.equal(h.state.chatUnreadIds.lead_muma,undefined);
+});
+test('pinned, muted and large unread badges preserve their usual semantics',()=>{
+ const h=setup();h.state.chatReadRooms=[...C.personaIds,'lead_wang_xiaomiao'];h.state.chatReadStories=['vivi-photos-20261025','muma-dogtail-20261025','monv-shaxian-20261025'];
+ h.state.chatMessages.lead_monv=Array.from({length:105},(_,i)=>({id:'m'+i,type:'text',from:'other',text:'hi'}));h.state.chatUnreadIds.lead_monv=h.state.chatMessages.lead_monv.map(x=>x.id);
+ assert.equal(h.x.unreadCount(),105);assert.match(h.x.wechat(),/>99\+<\/b>/);h.state.wechatPrefs.lead_monv={muted:true};assert.equal(h.x.unreadCount(),0);assert.match(h.x.wechat(),/wx-unread quiet/);
 });

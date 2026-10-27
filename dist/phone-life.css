@@ -10,3 +10,10 @@
 .wx-group-count{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}.wx-group-copy{display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:77%;min-width:0}.wx-group-copy .wx-text-bubble{max-width:100%}.wx-member-name{font-size:10px;color:#8a8e8b;line-height:1.4}.wx-group-message .wx-avatar{margin-top:16px}.wx-group-message{align-items:flex-start}.wx-room .wx-nav h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px}
 @keyframes life-wave{50%{height:30px;opacity:.5}}@keyframes life-notice{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .reduced .life-call-ripples i,.reduced .life-banner{animation:none}@media(prefers-reduced-motion:reduce){.life-call-ripples i,.life-banner{animation:none}}@media(max-height:650px){.life-call{padding-top:62px;padding-bottom:25px}.life-call-person{margin-top:24px}.life-call-person .wx-avatar{width:76px;height:76px}.life-call-person h2{margin-top:15px;font-size:29px}.life-call-footnote{margin-top:15px}.life-call-ripples{height:36px;margin-top:15px}}
+
+/* Fictional in-phone transfer, with no payment integration. */
+.wx-transfer-card{width:216px;max-width:75vw;padding:0;border-radius:6px;overflow:hidden;text-align:left;background:#f5a34c;color:#fff}
+.wx-transfer-card.received{background:#f4c99e}.wx-transfer-main{display:flex;align-items:center;gap:11px;min-height:72px;padding:12px}
+.wx-transfer-symbol{display:grid;place-items:center;width:36px;height:36px;border:2px solid currentColor;border-radius:50%;font-size:20px;line-height:1;flex-shrink:0}
+.wx-transfer-main strong,.wx-transfer-main small{display:block}.wx-transfer-main strong{font-size:17px;font-weight:500}.wx-transfer-main small{font-size:11px;margin-top:4px;line-height:1.35}
+.wx-transfer-foot{display:block;border-top:1px solid #fff5;padding:5px 11px;font-size:10px}.transfer-amount{font-size:32px!important;font-weight:600;color:var(--fg)!important;margin:20px 0 7px!important}.transfer-done{color:#07ae55!important;font-weight:600;margin-top:18px!important}

@@ -40,9 +40,9 @@ test('Muma scene contains the supplied line from Muma and all photo IDs resolve'
  assert.doesNotMatch(scene.messages.map(m=>m.text||'').join(''),/我把自己的围巾送给你。/);
 });
 test('Muma story unread is independent of an older contact read mark',()=>{
- const {x,state,window}=setup();state.chatReadRooms.push('lead_muma');assert.equal(x.unreadCount(),4);
+ const {x,state,window}=setup();state.chatReadRooms.push('lead_muma');const before=x.unreadCount();assert.ok(before>0);
  const html=x.room();assert.match(html,/你是随手摘的，可我是认真收下的/);assert.match(html,/data-album="muma"/);assert.doesNotMatch(html,/wx-shared-album|wx-shared-grid|查看全部/);
- assert.ok(state.chatReadStories.includes(window.MUMA_CHAT.storyId));assert.equal(x.unreadCount(),3);
+ assert.ok(state.chatReadStories.includes(window.MUMA_CHAT.storyId));assert.equal(before-x.unreadCount(),window.MUMA_CHAT.messages.filter(m=>m.from==='other'&&m.type!=='system').length);
  assert.match(x.avatar(window.PHONE_DATA.people.find(p=>p.id==='lead_muma')),/muma_03_museum_selfie/);
 });
 test('Photo viewer, picker and send stay in the current contact album; legacy defaults remain Wang',()=>{
@@ -74,9 +74,9 @@ test('Vivi photos, avatar and unread story are independent of existing contacts'
  assert.equal(scene.messages.length,19);assert.equal(new Set(scene.messages.map(m=>m.id)).size,19);
  const photos=scene.messages.filter(m=>m.type==='photo');assert.equal(photos.length,3);
  assert.ok(photos.every(m=>window.PHOTO_LIBRARY.assets.find(a=>a.id===m.assetId)?.albumId==='vivi'));
- state.chatReadRooms.push('lead_vivi');assert.equal(x.unreadCount(),4);
+ state.chatReadRooms.push('lead_vivi');const before=x.unreadCount();assert.ok(before>0);
  const html=x.room();assert.match(html,/薇薇老师交代的/);assert.match(html,/data-album="vivi"/);
- assert.ok(state.chatReadStories.includes(scene.storyId));assert.equal(x.unreadCount(),3);
+ assert.ok(state.chatReadStories.includes(scene.storyId));assert.equal(before-x.unreadCount(),scene.messages.filter(m=>m.from==='other'&&m.type!=='system').length);
  assert.ok(!state.chatReadStories.includes(window.MUMA_CHAT.storyId));assert.ok(!state.chatReadStories.includes(window.MONV_CHAT.storyId));
  assert.match(x.avatar(window.PHONE_DATA.people.find(p=>p.id==='lead_vivi')),/vivi_02_cat_ears/);
 });

@@ -25,10 +25,11 @@ window.PersonaChatRuntime={create(ctx){
   const inputs=ids.map(source=>history.find(m=>m.id===source).text);
   const output=E.createReply({roomId:id,message:inputs,memory:r,now:Date.now()});
   if(!enabled(id)||room(id).pending?.jobId!==jobId)return;
-  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',createdAt:Date.now(),from:'other',text:output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
+  const transfer=ctx.transferOffer?.(id,inputs,output);
+  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',createdAt:Date.now(),from:'other',text:transfer?.reply||output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
   history.push(reply);S().personaV2.rooms[id]={...output.memory,pending:null,autoReply:!output.pause};
-  if(!active(id))S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);
-  save();showReply(id,reply);ctx.onIncoming?.(id,reply);
+  if(!active(id)){S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);ctx.markUnread?.(id,reply);}
+  save();showReply(id,reply);ctx.onIncoming?.(id,reply);ctx.sendTransfer?.(id,transfer);
  }
  function schedule(id,delay){stop(id);const job=room(id).pending;if(job)timers.set(id,setTimeout(()=>{timers.delete(id);complete(id,job.jobId);},delay));}
  function enqueue(id,message){
@@ -41,7 +42,7 @@ window.PersonaChatRuntime={create(ctx){
  function toggle(id){cancel(id);room(id).autoReply=!room(id).autoReply;save();return enabled(id);}
  function clearMemory(id){cancel(id);const old=room(id);S().personaV2.rooms[id]={...C.personaRoom(id),autoReply:old.autoReply,memoryAllowed:old.memoryAllowed,flirtAllowed:old.flirtAllowed};save();}
  function toggleMemory(id){const on=!room(id).memoryAllowed;clearMemory(id);room(id).memoryAllowed=on;save();return on;}
- function clearChat(id){clearMemory(id);S().chatMessages[id]=[];delete S().chatDrafts[id];save();refreshList();}
+ function clearChat(id){clearMemory(id);S().chatMessages[id]=[];delete S().chatDrafts[id];if(S().chatUnreadIds)delete S().chatUnreadIds[id];save();refreshList();}
  function typingMarkup(id,avatar,name){return pending(id)?`<div class="wx-message incoming wx-typing-message" data-persona-room="${id}" role="status" aria-label="${esc(name)}正在输入">${avatar}<div class="wx-text-bubble wx-typing-dots"><i></i><i></i><i></i></div></div>`:'';}
  const mood=id=>({neutral:'自在',warm:'放松',playful:'轻松',hurt:'有些介意',guarded:'想留点空间'})[room(id).mood];
  setTimeout(()=>{for(const id of C.personaIds)if(pending(id))schedule(id,750);},0);

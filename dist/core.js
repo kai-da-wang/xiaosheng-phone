@@ -17,7 +17,7 @@
   }
   const lifeDefaults=()=>({version:1,callStatus:'new',callResult:'',followupSent:false,groupIntroSent:false,groupMuted:false,groupPending:null});
   function normalizeLife(raw){const d=lifeDefaults();if(!raw||typeof raw!=='object')return d;for(const k of ['followupSent','groupIntroSent','groupMuted'])if(typeof raw[k]==='boolean')d[k]=raw[k];if(['new','ringing','connected','ended'].includes(raw.callStatus))d.callStatus=raw.callStatus;if(['declined','answered','missed'].includes(raw.callResult))d.callResult=raw.callResult;if(raw.groupPending&&Array.isArray(raw.groupPending.ids)){const ids=[...new Set(raw.groupPending.ids.filter(x=>typeof x==='string'&&x.length<150))].slice(-20);if(ids.length)d.groupPending={ids};}return d;}
-  const defaults=()=>({version:1,seenIntro:false,unlocked:false,viewed:[],favorites:[],opened:[],settings:{dark:false,reduced:false,review:false,brightness:100,sound:true},alarms:[{time:'07:30',label:'起床，今天也出门走走',on:true},{time:'23:00',label:'早点休息',on:false}],notes:[],reminders:[{id:'r1',text:'去看看今天的晚霞',done:false},{id:'r2',text:'把喜欢的片段收藏起来',done:false}],sms:[],captures:0,wechatPrefs:{},wechatGroups:{},wechatFeedback:[],chatReadRooms:[],chatReadStories:[],chatDrafts:{},chatMessages:{},playedVoiceIds:[],discovered:[],callLog:[],noteChecks:[],mapSavedPlaces:[],wangAutoReply:true,wangMemory:{},wangPending:null,wangLastMode:'local',personaV2:personaDefaults(),phoneLife:lifeDefaults()});
+  const defaults=()=>({version:1,seenIntro:false,unlocked:false,viewed:[],favorites:[],opened:[],settings:{dark:false,reduced:false,review:false,brightness:100,sound:true},alarms:[{time:'07:30',label:'起床，今天也出门走走',on:true},{time:'23:00',label:'早点休息',on:false}],notes:[],reminders:[{id:'r1',text:'去看看今天的晚霞',done:false},{id:'r2',text:'把喜欢的片段收藏起来',done:false}],sms:[],captures:0,wechatPrefs:{},wechatGroups:{},wechatFeedback:[],chatReadRooms:[],chatReadStories:[],chatUnreadIds:{},transferReceipts:{},chatDrafts:{},chatMessages:{},playedVoiceIds:[],discovered:[],callLog:[],noteChecks:[],mapSavedPlaces:[],wangAutoReply:true,wangMemory:{},wangPending:null,wangLastMode:'local',personaV2:personaDefaults(),phoneLife:lifeDefaults()});
   function normalize(raw){
     const d=defaults(),obj=v=>v&&typeof v==='object'&&!Array.isArray(v),strings=v=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'))]:[];
     if(!obj(raw)||raw.version!==1)return d;
@@ -36,7 +36,22 @@
     result.noteChecks=Array.isArray(raw.noteChecks)?[...new Set(raw.noteChecks.filter(v=>Number.isInteger(v)&&v>=0&&v<3))]:[];
     const validKey=k=>k.length<150&&!['__proto__','constructor','prototype'].includes(k);
     result.chatDrafts=Object.fromEntries(Object.entries(obj(raw.chatDrafts)?raw.chatDrafts:{}).filter(([k,v])=>validKey(k)&&typeof v==='string').map(([k,v])=>[k,v.slice(0,1000)]));
-    result.chatMessages=Object.fromEntries(Object.entries(obj(raw.chatMessages)?raw.chatMessages:{}).filter(([k,v])=>validKey(k)&&Array.isArray(v)).map(([k,v])=>[k,v.filter(m=>obj(m)&&(m.type===undefined||['text','system'].includes(m.type)?typeof m.text==='string':['voice','photo'].includes(m.type)))]));
+    result.chatMessages=Object.fromEntries(Object.entries(obj(raw.chatMessages)?raw.chatMessages:{}).filter(([k,v])=>validKey(k)&&Array.isArray(v)).map(([k,v])=>[k,v.filter(m=>obj(m)&&(m.type===undefined||['text','system'].includes(m.type)?typeof m.text==='string':(['voice','photo'].includes(m.type)||(m.type==='transfer'&&typeof m.id==='string'&&Number.isInteger(m.amountFen)&&m.amountFen>0&&m.amountFen<=9999999&&m.from==='other'))))]));
+    result.chatUnreadIds={};
+    if(obj(raw.chatUnreadIds)){
+      for(const [id,ids] of Object.entries(raw.chatUnreadIds))if(validKey(id)&&Array.isArray(ids)){
+        const existing=new Set((result.chatMessages[id]||[]).filter(m=>m.from==='other').map(m=>m.id));
+        const pending=strings(ids).filter(x=>existing.has(x)).slice(-500);if(pending.length)result.chatUnreadIds[id]=pending;
+      }
+    }else{
+      // Old saves stored only a read/unread bit, so conservatively preserve one unread per room.
+      for(const [id,history] of Object.entries(result.chatMessages))if(!result.chatReadRooms.includes(id)){
+        const last=history.filter(m=>m.from==='other'&&typeof m.id==='string').at(-1);if(last)result.chatUnreadIds[id]=[last.id];
+      }
+    }
+    const wang='lead_wang_xiaomiao';
+    if(!obj(raw.chatUnreadIds)&&(result.chatReadRooms.includes(wang)||(result.chatMessages[wang]||[]).some(m=>m.from==='self'))&&!result.chatReadStories.includes('wang-story-20261024'))result.chatReadStories.push('wang-story-20261024');
+    result.transferReceipts=Object.fromEntries(Object.entries(obj(raw.transferReceipts)?raw.transferReceipts:{}).filter(([id,value])=>validKey(id)&&value===true));
     result.wechatPrefs={};
     for(const [id,p] of Object.entries(obj(raw.wechatPrefs)?raw.wechatPrefs:{})){if(!validKey(id)||!obj(p))continue;const clean={};for(const k of ['muted','pinned','saved','showNicknames','left','historyCleared'])if(typeof p[k]==='boolean')clean[k]=p[k];for(const k of ['groupName','notice','remark','myNickname'])if(typeof p[k]==='string')clean[k]=p[k].slice(0,k==='notice'?500:40);if(['default','mint','blue','pink','sand'].includes(p.background))clean.background=p.background;if(Array.isArray(p.addedMembers))clean.addedMembers=strings(p.addedMembers).filter(validKey);result.wechatPrefs[id]=clean;}
     result.wechatGroups={};
