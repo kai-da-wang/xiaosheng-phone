@@ -66,3 +66,7 @@ test('pinned, muted and large unread badges preserve their usual semantics',()=>
 });
 
 test('saying I am sending money does not cause the other character to send a transfer',()=>{const h=setup({realWang:true});for(const text of ['我给你转账','我给你转个账','我刚给你发红包','我转账给你','我想给你转钱']){h.state.chatDrafts.lead_muma=text;h.x.send();h.tick();assert.equal(h.state.chatMessages.lead_muma.filter(m=>m.type==='transfer').length,0,text);}});
+
+ test('chat avatars open the correct member profile and return to the chat',()=>{
+ const h=setup();const html=h.x.room();assert.match(html,/data-action="wx-member" data-member="lead_muma"/);assert.match(html,/data-action="wx-member" data-member="self"/);h.x.action('wx-member',{dataset:{member:'lead_muma'}});assert.equal(h.route.app,'chat-member');assert.equal(h.route.member,'lead_muma');assert.match(h.x.details('chat-member'),/朋友圈/);h.x.action('wx-detail-back',{dataset:{}});assert.equal(h.route.app,'room');assert.equal(h.route.id,'lead_muma');
+});

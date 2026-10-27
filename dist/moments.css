@@ -35,3 +35,5 @@
 .wx-moment-empty{padding:45px 10px;color:var(--moments-muted);text-align:center;font-size:13px}
 
 .wx-moments-cover-button{position:absolute;left:16px;bottom:12px;padding:6px 9px;color:#fff;background:#0005;border-radius:5px;font-size:11px;line-height:1.2}
+
+.wx-chat-avatar-button { padding: 0; border: 0; background: transparent; flex: 0 0 auto; align-self: flex-start; cursor: pointer; }

@@ -45,7 +45,7 @@ window.WeChatDetails={create(ctx){
  function clearHistory(){const id=route().id;ctx.cancelReplies(id);ctx.discardRoomMedia?.(id);S().chatMessages[id]=[];delete S().chatDrafts[id];prefs(id).historyCleared=true;ctx.markRead(id);ctx.resetView(id);save();ctx.closeModal();go('room',{id},true);toast('聊天记录已清空');}
  function action(a,t){const id=route().id,p=id?prefs(id):{};
   switch(a){
-   case'wx-detail-back':go(route().app==='chat-info'?'room':'chat-info',{id},true);return true;
+   case'wx-detail-back':go(route().app==='chat-info'||route().app==='chat-member'&&route().memberBack==='room'?'room':'chat-info',{id},true);return true;
    case'wx-open-info':go('chat-info',{id});return true;
    case'wx-detail-toggle':{const key=t.dataset.key;if(!['muted','pinned','saved','showNicknames'].includes(key))return true;p[key]=!(key==='muted'?muted(id):key==='pinned'?pinned(id):key==='showNicknames'?p.showNicknames!==false:p[key]);if(key==='muted'&&id===groupId)S().phoneLife.groupMuted=p[key];save();ctx.render();return true;}
    case'wx-search-history':search='';filter='';memberFilter='';go('chat-search',{id});return true;
@@ -65,7 +65,7 @@ window.WeChatDetails={create(ctx){
    case'wx-select-member':if(selected.has(t.dataset.member))selected.delete(t.dataset.member);else selected.add(t.dataset.member);ctx.render();return true;
    case'wx-invite-done':{if(!selected.size)return true;let target=id;const added=[...selected];if(isGroup(id)){if(S().wechatGroups?.[id])S().wechatGroups[id].members=[...new Set([...group(id).members,...added])];else p.addedMembers=[...new Set([...(p.addedMembers||[]),...added])];}else{target='local_group_'+Date.now().toString(36);S().wechatGroups||={};S().wechatGroups[target]={id:target,name:[name(id),...added.map(name)].join('、').slice(0,40),members:['self',id,...added],owner:'self'};}S().chatMessages[target]||=[];S().chatMessages[target].push({id:'members_'+Date.now(),type:'system',text:'你邀请了'+added.map(name).join('、')+'加入群聊'});save();selected.clear();go('room',{id:target});return true;}
    case'wx-expand-members':expandedMembers=true;ctx.render();return true;
-   case'wx-member':go('chat-member',{id,member:t.dataset.member});return true;
+   case'wx-member':go('chat-member',{id,member:t.dataset.member,memberBack:route().app==='room'?'room':'chat-info'});return true;
    case'wx-member-chat':go('room',{id:t.dataset.member});return true;
    case'wx-report':reportReason='';go('chat-report',{id});return true;
    case'wx-report-reason':reportReason=t.dataset.reason;ctx.render();return true;
