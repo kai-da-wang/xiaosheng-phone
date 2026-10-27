@@ -37,3 +37,5 @@
 .wx-moments-cover-button{position:absolute;left:16px;bottom:12px;padding:6px 9px;color:#fff;background:#0005;border-radius:5px;font-size:11px;line-height:1.2}
 
 .wx-chat-avatar-button { padding: 0; border: 0; background: transparent; flex: 0 0 auto; align-self: flex-start; cursor: pointer; }
+
+.wx-location-card{width:200px;padding:10px 11px 0;text-align:left;background:var(--wx-page);border-radius:5px;overflow:hidden;color:var(--fg)}.wx-location-card strong,.wx-location-card small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wx-location-card strong{font-size:14px}.wx-location-card small{font-size:11px;color:var(--muted);margin:4px 0 8px}.wx-location-map{height:64px;margin:0 -11px;display:grid;place-items:center;font-size:25px;background:linear-gradient(25deg,transparent 46%,#fff 47%,#fff 52%,transparent 53%),linear-gradient(115deg,#dcebdc 42%,#e4eddf 42%,#e4eddf 67%,#cee3ee 67%)}

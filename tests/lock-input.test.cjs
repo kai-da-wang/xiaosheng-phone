@@ -123,3 +123,5 @@ test('draft saving coalesces typing and flushes on navigation and page exit',()=
 });
 
 test('back from an album opened in a contact chat returns through that chat to contacts',()=>{const h=harness();h.click('unlock');h.click('app',{app:'contacts'});h.click('room',{id:'wang'});const origin={...h.ctx.getRoute()};h.ctx.go('album',{id:'xiaowang',returnRoom:'wang',returnTo:origin});h.click('back');assert.equal(h.ctx.getRoute().app,'room');h.click('back');assert.equal(h.ctx.getRoute().app,'contacts');});
+
+test('brightness adjusts the entire simulated phone without repainting the screen',()=>{const h=harness();const n=h.renderCount(),slider=h.field('brightness','55');slider.id='brightness';h.dispatch('input',h.event(slider));assert.equal(h.nodes['#phone'].style.filter,'brightness(0.55)');assert.equal(h.ctx.getState().settings.brightness,55);assert.equal(h.renderCount(),n);});

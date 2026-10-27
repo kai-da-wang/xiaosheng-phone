@@ -36,7 +36,7 @@
     result.noteChecks=Array.isArray(raw.noteChecks)?[...new Set(raw.noteChecks.filter(v=>Number.isInteger(v)&&v>=0&&v<3))]:[];
     const validKey=k=>k.length<150&&!['__proto__','constructor','prototype'].includes(k);
     result.chatDrafts=Object.fromEntries(Object.entries(obj(raw.chatDrafts)?raw.chatDrafts:{}).filter(([k,v])=>validKey(k)&&typeof v==='string').map(([k,v])=>[k,v.slice(0,1000)]));
-    result.chatMessages=Object.fromEntries(Object.entries(obj(raw.chatMessages)?raw.chatMessages:{}).filter(([k,v])=>validKey(k)&&Array.isArray(v)).map(([k,v])=>[k,v.filter(m=>obj(m)&&(m.type===undefined||['text','system'].includes(m.type)?typeof m.text==='string':(['voice','photo'].includes(m.type)||(m.type==='transfer'&&typeof m.id==='string'&&Number.isInteger(m.amountFen)&&m.amountFen>0&&m.amountFen<=9999999&&m.from==='other'))))]));
+    result.chatMessages=Object.fromEntries(Object.entries(obj(raw.chatMessages)?raw.chatMessages:{}).filter(([k,v])=>validKey(k)&&Array.isArray(v)).map(([k,v])=>[k,v.filter(m=>obj(m)&&(m.type===undefined||['text','system'].includes(m.type)?typeof m.text==='string':(['voice','photo'].includes(m.type)||(m.type==='location'&&typeof m.place==='string'&&m.place.length<=80&&typeof m.address==='string'&&m.address.length<=160)||(m.type==='transfer'&&typeof m.id==='string'&&Number.isInteger(m.amountFen)&&m.amountFen>0&&m.amountFen<=9999999&&m.from==='other'))))]));
     result.chatUnreadIds={};
     if(obj(raw.chatUnreadIds)){
       for(const [id,ids] of Object.entries(raw.chatUnreadIds))if(validKey(id)&&Array.isArray(ids)){
