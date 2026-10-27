@@ -61,7 +61,7 @@ window.PhoneExperience={create(ctx){
  const money=m=>'¥'+(m.amountFen/100).toFixed(2);
  function transferOffer(id,inputs,output={}){
   const profile=transferProfiles[id],text=inputs.map(m=>typeof m==='string'?m:m.text||'').join(' ');
-  if(!profile||output.pause||output.safety||['safety','privacy','identity','pause','boundary','insult'].includes(output.intent||output.topic))return null;
+  if(!profile||output.pause||output.safety||['safety','privacy','identity','pause','boundary','forget','insult'].includes(output.intent||output.topic))return null;
   if(/(?:别|不要|不用|不必|不需要|不想|千万别).{0,8}(?:转账|转钱|给我钱|发红包|请我|还我)/.test(text))return null;
   if(/(?:我|小圣)(?:刚刚|已经|刚|先|再|要|这就|马上|想|打算|准备)?(?:给|向)(?:你|她)(?:转账|转钱|转个账|转一笔|转个红包|发红包)/.test(text)||/(?:我|小圣)(?:刚刚|已经|刚|先|再|要|这就|马上|想|打算|准备)?(?:转账|转钱|转个账|转一笔钱|发红包)(?:给了|给|向)(?:你|她)/.test(text))return null;
   if(!/(?:转账|转钱|转(?:一|点|个|些|我|给我|给小圣)|给(?:我|小圣).{0,5}(?:钱|红包)|(?:给我|请我|补我|报销).{0,6}(?:奶茶|咖啡|饭钱|路费|钱)|(?:请|给)我喝.{0,3}(?:奶茶|咖啡)|(?:我先|我替你|我帮你).{0,5}(?:付|垫|买))/.test(text))return null;

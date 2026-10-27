@@ -8,8 +8,9 @@ window.LocalGroupRuntime={create(ctx){
  const supported=m=>m?.from==='self'&&(['photo','location'].includes(m.type)||(m.type==='text'&&typeof m.text==='string'&&m.text.trim()));
  const words=m=>m.type==='text'?m.text:'';
  const emergency=text=>/自杀|自残|割腕|不想活|想死|伤害自己|胸痛|胸口疼|喘不过气|呼吸困难/.test(text);
- const pause=text=>/别.{0,4}回|不要.{0,4}(?:回|说话)|先安静|停一下|不聊/.test(text);
- const resume=text=>/可以回复|可以回了|继续聊|开始聊天|继续说|说话吧/.test(text);
+ const resumeAfterNegatedStop=text=>/(?:不要|不用|别)(?:再)?(?:停止|暂停)(?:聊天|聊|回复|说话)/.test(text);
+ const pause=text=>!resumeAfterNegatedStop(text)&&/(?:别|不要|不用|不想|停止|暂停)(?:再|继续|跟我|和我|给我|先){0,2}(?:回复|回|聊天|聊|说话)|先安静|停一下|不聊/.test(text);
+ const resume=text=>resumeAfterNegatedStop(text)||/可以回复|可以回了|继续聊|开始聊天|继续说|说话吧/.test(text);
  function paused(id){const last=(S().chatMessages?.[id]||[]).filter(m=>typeof m.groupPauseChange==='boolean').at(-1);return last?.groupPauseChange===true;}
  const eligible=id=>!!group(id)&&!S().wechatPrefs?.[id]?.left;
  const members=id=>{const known=new Set(ctx.people.map(p=>p.id));return [...new Set(group(id)?.members||[])].filter(x=>known.has(x));};
@@ -42,7 +43,7 @@ window.LocalGroupRuntime={create(ctx){
  function schedule(id,delay){stop(id);const owner=S();timers.set(id,setTimeout(()=>complete(id,owner),delay));}
  function enqueue(id,message){if(!eligible(id)||!members(id).length||!supported(message))return false;
   const history=S().chatMessages?.[id]||[];if(!history.includes(message)||history.some(m=>m.replyOrigin==='local-group'&&m.replyTo?.includes(message.id)))return false;
-  const text=words(message);if(resume(text))message.groupPauseChange=false;else if(pause(text))message.groupPauseChange=true;
+  const text=words(message);if(pause(text))message.groupPauseChange=true;else if(resume(text))message.groupPauseChange=false;
   if(paused(id)&&!pause(text)&&!emergency(text)){ctx.save();return false;}
   message.groupPending=true;ctx.save();schedule(id,Math.min(1900,1000+text.length*12));return true;
  }

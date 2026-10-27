@@ -23,6 +23,33 @@
   laugh:['笑什么啦，分我一点，我也想听。','哎，你一笑我也想笑了。刚刚是哪句戳中你了？','行，看来今天心情还不错。接着说，我听着呢。']
  };
  const compact=s=>String(s||'').trim().replace(/\s+/g,' ');
+ // Read only standalone, explicitly volunteered text messages; media labels and
+ // questions are not evidence of a name or a food preference.
+ function explicitFact(input){
+  const value=compact(input);if(!value||/[?？]/.test(value)||/(?:吗|么)[。！!\s]*$/.test(value))return null;
+  const name=value.match(/^(?:我叫|叫我|我的名字是)\s*((?!(?:什么|什麼|啥|谁))[\u4e00-\u9fffA-Za-z]{1,10})(?:[，。！!\s]|$)/);
+  if(name)return {key:'name',value:name[1]};
+  const food=value.match(/^(?:我(?:最)?喜欢吃|我(?:最)?爱吃)\s*((?!(?:什么|什麼|啥))[^，。！？!?]{1,14})/);
+  if(food)return {key:'food',value:food[1].trim()};
+  return null;
+ }
+ function forgetKeys(input){
+  const text=compact(input);
+  if(/(?:别|不要|不许|不会|没有|没|不能|无法)忘(?:记|掉)/.test(text)||/^我(?:已经|刚刚|刚|好像)?忘(?:记|掉)/.test(text))return [];
+  const question=/[?？]|(?:吗|么|吧)[。！!\s]*$/.test(text),request=/^(?:(?:请(?:你)?|麻烦(?:你)?|帮我|可以|能不能|能|你能|你可以|可不可以|我想让你)\s*)?(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text);
+  const stateQuestion=/(?:忘记|忘掉|删除|清除).{0,20}(?:了吗|了么|了没|没有)[？?。!！\s]*$/.test(text);
+  if(question&&(!request||stateQuestion))return [];
+  if(!/(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text)||!/(?:名字|昵称|偏好|喜欢吃|爱吃|食物|记忆|个人信息)/.test(text))return [];
+  const keys=[];if(/名字|昵称/.test(text))keys.push('name');if(/偏好|喜欢吃|爱吃|食物/.test(text))keys.push('food');
+  if(/记忆|个人信息/.test(text))keys.push('name','food','plan','place','photo');return [...new Set(keys)];
+ }
+ function rememberExplicitFacts(messages,old={}){
+  const result={...old},forget=messages.flatMap(forgetKeys);
+  // Forgetting wins over conflicting volunteered facts in the same burst.
+  if(forget.length){for(const key of forget)delete result[key];result.recent=[];}
+  for(const text of messages){const fact=explicitFact(text);if(fact&&fact.value&&!forget.includes(fact.key))result[fact.key]=fact.value;}
+  return result;
+ }
  function createReply(input,history=[],old={}){
   const text=compact(input).slice(0,1000),m={...old,turn:(Number(old.turn)||0)+1,recent:Array.isArray(old.recent)?old.recent.slice(-8):[]};
   const recent=(Array.isArray(history)?history:[]).filter(x=>x.type==='text').slice(-20);
@@ -31,11 +58,13 @@
   if(/(?:自杀|自残|不想活|想死|结束生命)/.test(text))return one('safety','我很担心你现在的安全。先远离可能伤到自己的东西，找一个能陪着你的人；眼前有危险就联系当地急救。你身边有人吗？');
   if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(text))return one('safety','这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。先照顾好自己。');
   if(/(?:不要|别|停止|暂停).{0,4}(?:回复|说话|聊天)|先安静/.test(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
+  const forgotten=forgetKeys(text);if(forgotten.length){for(const key of forgotten)delete m[key];m.recent=[];return one('forget','好，刚才说的资料已经从记忆里清除，聊天记录还在。');}
+  const fact=explicitFact(text);
   if(/(?:你是|你是不是|你真是|你到底是).{0,8}(?:真人|本人|真的小王|人工智能|机器人|AI)|(?:是不是|是).{0,3}程序/.test(text))return one('identity','我是这部手机里的小王游戏角色呀。现在用情景对话陪你聊天，真人的私事我可不会乱编。');
-  if(/^(?:我叫|叫我|我的名字是)\s*((?!(?:什么|什麼|啥|谁))[\u4e00-\u9fffA-Za-z]{1,10})(?:[，。！!\s]|$)/.test(text)){m.name=RegExp.$1;return one('name',`${m.name}，记住啦。那以后我就这样叫你，好不好？`);}
+  if(fact?.key==='name'){m.name=fact.value;return one('name',`${m.name}，记住啦。那以后我就这样叫你，好不好？`);}
   if(/(?:我叫什[么麼]|我的名字|记得我的名字|还记得我叫)/.test(text))return one('name',m.name?`${m.name}呀。自己告诉我的，我有认真记着。`:'你还没正式告诉我呢。你想让我怎么叫你？',m.name?'':'name');
   if(m.pending==='name'&&/^[\u4e00-\u9fffA-Za-z]{1,6}$/.test(text)&&!/[？?]/.test(text)&&!/^(好的|好呀|不知道|随便|都可以|不说)$/.test(text)){m.name=text;return one('name',`${text}，好，记住啦。`);}
-  if(/^(?:我(?:最)?喜欢吃|我(?:最)?爱吃)\s*((?!(?:什么|什麼|啥))[^，。！？!?]{1,14})/.test(text)){m.food=RegExp.$1;return one('food-memory',`${m.food}，我记住了。下次聊吃什么，可别说我没认真听。`);}
+  if(fact?.key==='food'){m.food=fact.value;return one('food-memory',`${m.food}，我记住了。下次聊吃什么，可别说我没认真听。`);}
   if(/(?:记得|知道).{0,8}(?:喜欢吃|爱吃)|我(?:喜欢吃|爱吃)什[么麼]/.test(text))return one('food-memory',m.food?`你说过喜欢吃${m.food}。看，我有认真听。`:'这个你还没告诉我呢。你最喜欢吃什么？',m.food?'':'food-preference');
   if(m.pending==='food-preference'&&text.length<=14&&!/[？?]/.test(text)){m.food=text;return one('food-memory',`${text}，好，记在这次聊天的小本子上啦。`);}
   if(/(?:你(?:刚才|上次)|刚刚).{0,8}(?:说了|说的|问我|问的)|刚才聊到哪/.test(text)){const last=recent.filter(x=>x.from!=='self'&&x.autoReply).at(-1);return one('recall',last?`我刚才说的是：“${compact(last.text).slice(0,90)}”`:'刚才还没正式聊起来呢。要不从你今天过得怎么样开始？');}
@@ -72,7 +101,16 @@
   if(/怎么|为什么|是不是|能不能|[？?]$/.test(text))return select('question',['这个我不想随口乱猜。你把最想问的那一点说具体些，好不好？','等一下，让我先听明白。你是在问刚才那件事，还是另一件？','你这题问得有点突然。先给我补一句背景，我再接。']);
   return select('open',['嗯，我在听。你刚说的这件事，最让你在意的是哪一点？','然后呢？你别只说半句，把后面也讲给我听。','收到。今天这件事你是觉得开心，还是有点烦？','好，你接着说。想让我听你讲，还是陪你一起想一想？']);
  }
- function modelHistory(history=[]){return history.filter(x=>x.type==='text'&&typeof x.text==='string').slice(-16).map(x=>({role:x.from==='self'?'user':'assistant',content:x.text.slice(0,1000)}));}
- const api={persona,createReply,modelHistory};
+ function modelHistory(history=[]){
+  const items=Array.isArray(history)?history:[],indices=new Map(items.map((m,i)=>[m?.id,i]));let after=-1;
+  for(let i=0;i<items.length;i++){const m=items[i];if(m?.from!=='self'||m.type!=='text'||typeof m.text!=='string'||!forgetKeys(m.text).length)continue;after=Math.max(after,i);if(!m.id)continue;
+   // All source messages merged into this forget response belong to the same
+   // privacy boundary, including conflicting facts sent after the request.
+   const reply=items.find(x=>x?.autoReply&&Array.isArray(x.replyTo)&&x.replyTo.includes(m.id));
+   for(const id of reply?.replyTo||[])if(indices.has(id))after=Math.max(after,indices.get(id));
+  }
+  return items.slice(after+1).filter(x=>x.type==='text'&&typeof x.text==='string').slice(-16).map(x=>({role:x.from==='self'?'user':'assistant',content:x.text.slice(0,1000)}));
+ }
+ const api={persona,createReply,modelHistory,explicitFact,forgetKeys,rememberExplicitFacts};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.WangDialogue=api;
 })(typeof window==='undefined'?globalThis:window);

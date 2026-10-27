@@ -13,3 +13,5 @@ test('model context excludes images, bounds history, and cannot inject a system 
 test('Wang respects a no-flirting boundary during later messages',()=>{let a=createReply('别撩我');a=createReply('我想你了',[],a.memory);assert.equal(a.topic,'boundary');assert.doesNotMatch(a.text,/我也.*想你|回你一份/);assert.equal(createReply('你吃了吗').topic,'meal-care');});
 
 test('physical emergencies take priority even if a pause request appears in the same burst',()=>{const a=createReply('我胸痛，先安静');assert.equal(a.topic,'safety');assert.match(a.text,/急救|医院/);});
+
+test('model context never replays conflicting facts from the same forget burst',()=>{const h=[{id:'a',type:'text',from:'self',text:'忘掉我的名字'},{id:'b',type:'text',from:'self',text:'我叫小明'},{id:'r',type:'text',from:'other',autoReply:true,replyTo:['a','b'],text:'已清除。'},{id:'c',type:'text',from:'self',text:'今天想聊天'}];const messages=modelHistory(h);assert.doesNotMatch(JSON.stringify(messages),/小明/);assert.ok(messages.some(m=>m.content==='今天想聊天'));});
