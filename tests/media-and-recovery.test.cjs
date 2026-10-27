@@ -34,9 +34,9 @@ test('damaged save fields recover without discarding valid legacy messages or no
  assert.deepEqual(state.opened,[]);assert.deepEqual(state.chatReadRooms,[]);assert.equal(state.chatMessages.wang.length,2);assert.equal(state.notes.length,1);assert.equal(state.chatDrafts.other,'draft');assert.equal(state.settings.brightness,100);assert.equal(state.settings.sound,false);assert.ok(Array.isArray(state.reminders));
 });
 function audioHarness({sound=false}={}){
- const w={},route={app:'room',id:'lead_wang_xiaomiao'},reads=[],audio=[],revoked=[],open={},writes=[],events={},documentEvents={};let state=Core.defaults(),renders=0,soundUnlocks=0;
+ const w={},route={app:'room',id:'lead_wang_xiaomiao'},reads=[],audio=[],revoked=[],open={},writes=[],events={},documentEvents={};let state=Core.defaults(),renders=0,soundUnlocks=0,lifeContext;
  for(const name of ['content.js','gallery-data.js'])vm.runInNewContext(fs.readFileSync('dist/'+name,'utf8'),{window:w});
- if(sound)w.PhoneLife={groupId:'fans',members:[],normalize:v=>v,createSound:()=>({unlock(){soundUnlocks++;}}),create:()=>({})};
+ if(sound)w.PhoneLife={groupId:'fans',members:[],normalize:v=>v,createSound:()=>({unlock(){soundUnlocks++;}}),create:c=>(lifeContext=c,{})};
  w.indexedDB={open:()=>open};w.WangChatRuntime={create:()=>({typingMarkup:()=>''})};w.PersonaChatRuntime={create:()=>({supports:()=>false})};
  const upload={files:[],addEventListener:(type,fn)=>events[type]=fn};
  const document={addEventListener:(type,fn)=>documentEvents[type]=fn,createElement:()=>upload,body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
@@ -45,7 +45,7 @@ function audioHarness({sound=false}={}){
  const x=w.PhoneExperience.create({data:w.PHONE_DATA,gallery:w.PHOTO_LIBRARY,esc:String,icon:()=>'',btn:()=>'',shell:()=>'',go(){},save(){},toast(){},modal(){},appIcon(){},render(){renders++;},getState:()=>state,getRoute:()=>route});
  open.result={transaction:()=>{const tx={objectStore:()=>({get:()=>{const r={};reads.push(r);return r;},put:(blob,id)=>writes.push({blob,id,tx})})};return tx;}};open.onsuccess();
  state.chatMessages[route.id]=[{id:'a',type:'voice',blobKey:'a'},{id:'b',type:'voice',blobKey:'b'}];
- return {x,route,state,reads,audio,revoked,writes,upload,events,documentEvents,soundUnlocks:()=>soundUnlocks,renders:()=>renders,reset(){state=Core.defaults();return state;},play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
+ return {x,route,state,reads,document,lifeContext,audio,revoked,writes,upload,events,documentEvents,soundUnlocks:()=>soundUnlocks,renders:()=>renders,reset(){state=Core.defaults();return state;},play(id){x.action('wx-voice',{dataset:{id,room:route.id}});},resolve(index,id){reads[index].result={id};reads[index].onsuccess();}};
 }
 const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
 test('locked keyboard focus skips audio setup; successful unlock enables the first call without another tap',()=>{
@@ -77,4 +77,8 @@ test('map requests are lazy, shared, retryable, and never repaint a different ap
  vm.runInNewContext(fs.readFileSync('dist/dali-experience.js','utf8'),{window:w,document});
  const x=w.DaliExperience.create({gallery:{},esc:String,icon:()=>'',btn:()=>'',shell:(title,body)=>body,getState:()=>Core.defaults(),getRoute:()=>route,render:()=>calls.push('render')});
  assert.equal(scripts.length,0);x.maps();x.maps();assert.equal(scripts.length,1);scripts[0].onerror();assert.equal(calls.length,1);assert.match(x.maps(),/没有加载成功/);x.action('dali-retry');assert.equal(scripts.length,2);route.app='home';w.DALI_MAP={};scripts[1].onload();assert.equal(calls.length,2);
+});
+
+test('incoming call eligibility defers while a composer, note editor, or overlay is active',()=>{
+ const h=audioHarness({sound:true});assert.equal(h.lifeContext.available(),true);h.document.activeElement={matches:()=>true};assert.equal(h.lifeContext.available(),false);h.document.activeElement={matches:()=>false};assert.equal(h.lifeContext.available(),true);h.document.querySelector=()=>({});assert.equal(h.lifeContext.available(),false);
 });

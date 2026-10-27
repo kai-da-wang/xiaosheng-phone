@@ -6,7 +6,7 @@ test('same messages produce three distinct personalities and no assumed romance'
   const replies=ids.map(id=>run(id,msg).text);assert.equal(new Set(replies).size,3,msg);
   replies.forEach(t=>assert.doesNotMatch(t,/我也爱你|我是本人|现实女友/));
  }
- assert.match(run('lead_monv','暗黑魔女').text,/黑白/);assert.match(run('lead_muma','狗尾巴草').text,/草|纪念/);assert.match(run('lead_muma','蓝色围巾').text,/围巾|草/);
+ assert.match(run('lead_monv','暗黑魔女').text,/黑白/);const grass=run('lead_muma','狗尾巴草');assert.equal(grass.intent,'onionAnchor');assert.match(grass.text,/纸包|书里|草|纪念/);assert.match(run('lead_muma','蓝色围巾').text,/围巾|草/);
 });
 test('volunteered facts correct and recall independently, without mining static/history content',()=>{
  for(const id of ids){let a=run(id,'我叫小凯，我喜欢吃草莓。');assert.equal(a.memory.facts.name,'小凯');assert.equal(a.memory.facts.favoriteFood,'草莓');

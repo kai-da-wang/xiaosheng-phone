@@ -6,7 +6,7 @@ const C=require('../dist/core.js');
 function setup(room='lead_muma'){
  const window={};for(const file of ['content.js','gallery-data.js','muma-chat.js','monv-chat.js','vivi-chat.js'])vm.runInNewContext(fs.readFileSync('dist/'+file,'utf8'),{window});
  const state=C.defaults(),route={app:'room',id:room},calls=[];
- const document={createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,getElementById:()=>null};
+ const document={addEventListener(){},createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,getElementById:()=>null};
  window.PhoneCore=C;window.PersonaChatRuntime={create:()=>({supports:()=>false,typingMarkup:()=>''})};
  window.WangChatRuntime={create:()=>({typingMarkup:()=>'',enqueue(){},enabled:()=>true,mode:()=> '情景对话'})};
  vm.runInNewContext(fs.readFileSync('dist/phone-experience.js','utf8'),{window,document,Promise,Intl,Date,Map,Math});
@@ -19,7 +19,7 @@ test('Muma scene contains the supplied line from Muma and all photo IDs resolve'
  const remembered=scene.messages.findIndex(m=>m.text?.includes('拿纸包好了'));
  const scarfPhoto=scene.messages.findIndex(m=>m.type==='photo'&&m.assetId==='muma-01');
  const farewell=scene.messages.findIndex(m=>m.text?.includes('围巾从脖子上解下来塞给我'));
- assert.ok(firstMeeting>=0&&firstMeeting<remembered&&remembered<scarfPhoto&&scarfPhoto<farewell);
+ assert.ok(firstMeeting>=0&&firstMeeting<scarfPhoto&&scarfPhoto<farewell&&farewell<remembered);
  assert.deepEqual(Array.from(scene.messages.filter(m=>m.type==='system'),m=>m.text),[
   '上午 09:18 · 初次相识','中午 12:37 · 一起走走','傍晚 18:56 · 城市亮灯',
   '晚上 20:14 · 告别以后','晚上 22:36 · 各自到家'

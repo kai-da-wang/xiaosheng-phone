@@ -25,7 +25,7 @@ window.PersonaChatRuntime={create(ctx){
   const inputs=ids.map(source=>history.find(m=>m.id===source).text);
   const output=E.createReply({roomId:id,message:inputs,memory:r,now:Date.now()});
   if(!enabled(id)||room(id).pending?.jobId!==jobId)return;
-  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',from:'other',text:output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
+  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',createdAt:Date.now(),from:'other',text:output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
   history.push(reply);S().personaV2.rooms[id]={...output.memory,pending:null,autoReply:!output.pause};
   if(!active(id))S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);
   save();showReply(id,reply);ctx.onIncoming?.(id,reply);

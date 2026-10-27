@@ -36,3 +36,14 @@
 .wx-composite-avatar>.wx-fan-avatar{font-size:12px}
 .wx-member-expand{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px 10px;border-top:.5px solid var(--detail-line);background:var(--detail-paper);color:#576b95;font-size:14px}
 .wx-member-expand .icon{width:15px;height:15px}
+
+/* Everyday navigation and records */
+.experience-tabs{display:flex;gap:3px;padding:3px;border-radius:10px;background:var(--line);margin:0 0 18px}
+.experience-tabs button{flex:1;padding:9px 6px;border-radius:8px;font-size:14px;color:var(--muted)}
+.experience-tabs button.active{background:var(--paper);color:var(--fg);box-shadow:0 1px 3px #0001}
+.address-search{margin:0 0 16px}.address-search input{width:100%;min-width:0}
+.address-contact .wx-avatar{width:42px;height:42px;flex-shrink:0}
+.address-contact{min-height:70px}.address-contact .row-label{min-width:0}
+.padded>.demo-calls{margin:24px 0}.file-empty{padding:22px 0;color:var(--muted);font-size:13px;line-height:1.7}
+.file-empty button{margin-top:16px}.memo-actions{display:flex;gap:4px}.memo-actions button{width:36px;height:44px;padding:5px}
+.wx-draft-label{color:#d45b50;font-weight:400}.phone.dark .wx-draft-label{color:#ff948b}

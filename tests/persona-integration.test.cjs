@@ -3,7 +3,7 @@ const C=require('../dist/core.js'),E=require('../dist/persona-dialogue.js');
 function setup(){
  const state=C.defaults(),route={app:'room',id:'lead_muma'},calls=[],tasks=[];const window={PhoneCore:C,PersonaDialogue:E};
  for(const f of ['content.js','gallery-data.js','muma-chat.js','monv-chat.js','vivi-chat.js'])vm.runInNewContext(fs.readFileSync('dist/'+f,'utf8'),{window});
- const document={createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
+ const document={addEventListener(){},createElement:()=>({addEventListener(){}}),body:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
  const sandbox={window,document,Promise,Intl,Date,Map,Set,Math,setTimeout(fn){tasks.push(fn);return tasks.length;},clearTimeout(n){tasks[n-1]=null;}};
  window.WangChatRuntime={create:()=>({typingMarkup:()=>'',enqueue(){calls.push('wang-enqueued')},enabled:()=>true,mode:()=> '情景对话'})};
  for(const f of ['wechat-details.js','persona-chat-runtime.js','phone-experience.js'])vm.runInNewContext(fs.readFileSync('dist/'+f,'utf8'),sandbox);
@@ -29,4 +29,14 @@ test('native history clearing hides preset stories, cancels queued replies, and 
 });
 test('muting a single chat suppresses its global unread badge while still receiving the reply',()=>{
  const h=setup();h.state.chatReadRooms=[...C.personaIds,'lead_wang_xiaomiao'];h.state.chatReadStories=['vivi-photos-20261025','muma-dogtail-20261025','monv-shaxian-20261025'];h.x.action('wx-detail-toggle',{dataset:{key:'muted'}});h.state.chatDrafts.lead_muma='在干嘛';h.x.send();h.route.app='wechat';h.tick();assert.equal(h.state.chatMessages.lead_muma.filter(x=>x.autoReply).length,1);assert.equal(h.x.unreadCount(),0);assert.equal(h.state.wechatPrefs.lead_muma.muted,true);
+});
+
+test('chat list keeps pinned rooms first, then recent messages, with escaped draft previews',()=>{
+ const h=setup();h.state.chatMessages.lead_monv=[{id:'text_1793052000000_a',type:'text',text:'旧消息',from:'self'}];h.state.chatMessages.lead_vivi=[{id:'new',createdAt:1793052100000,type:'text',text:'新消息',from:'self'}];h.state.chatDrafts.lead_vivi='<img src=x>';
+ const html=h.x.wechat(),order=id=>html.indexOf('data-id="'+id+'"');assert.ok(order('lead_wang_xiaomiao')<order('lead_vivi'));assert.ok(order('lead_vivi')<order('lead_monv'));assert.ok(order('lead_monv')<order('lead_muma'));assert.match(html,/草稿/);assert.match(html,/&lt;img src=x&gt;/);assert.doesNotMatch(html,/<img src=x>/);
+});
+test('Enter sends once while Shift+Enter and IME confirmation do not send',()=>{
+ const h=setup();h.state.chatDrafts.lead_muma='今天好呀';const event=extra=>({target:{id:'wx-message-input'},key:'Enter',preventDefault(){this.prevented=true;},...extra});
+ for(const extra of [{shiftKey:true},{isComposing:true},{keyCode:229}])assert.equal(h.x.keydown(event(extra)),false);
+ assert.equal(h.state.chatMessages.lead_muma,undefined);const enter=event();assert.equal(h.x.keydown(enter),true);assert.equal(enter.prevented,true);assert.equal(h.state.chatMessages.lead_muma.length,1);assert.ok(h.state.chatMessages.lead_muma[0].createdAt>0);h.state.chatDrafts.lead_muma='下一句';h.x.keydown(event({repeat:true}));assert.equal(h.state.chatMessages.lead_muma.length,1);
 });

@@ -40,7 +40,7 @@ window.WangChatRuntime={create(ctx){
    }catch{origin='local-fallback';}finally{clearTimeout(deadline);if(request===controller)request=null;}
   }
   if(!enabled()||S().wangPending?.jobId!==jobId)return;
-  const reply={id:'wang_'+Date.now()+'_'+serial++,type:'text',from:'other',text,time:time(),autoReply:true,replyTo:ids,replyOrigin:origin};
+  const reply={id:'wang_'+Date.now()+'_'+serial++,type:'text',createdAt:Date.now(),from:'other',text,time:time(),autoReply:true,replyTo:ids,replyOrigin:origin};
   S().chatMessages[wang].push(reply);S().wangMemory=local.memory;S().wangPending=null;S().wangLastMode=origin;
   if(local.pause)S().wangAutoReply=false;
   if(!activeRoom())S().chatReadRooms=S().chatReadRooms.filter(id=>id!==wang);

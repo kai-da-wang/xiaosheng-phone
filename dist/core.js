@@ -50,6 +50,7 @@
   function collect(state,id){const i=state.favorites.indexOf(id);if(i<0)state.favorites.push(id);else state.favorites.splice(i,1);return i<0;}
   function favoriteLeads(state,data){return data.people.filter(p=>p.scenes.some(s=>state.favorites.includes(s.id))).length;}
   function safeUrl(url){try{const u=new URL(url);return u.protocol==='https:'?u.href:null;}catch{return null;}}
-  const api={key,defaults,normalize,canQuote,collect,favoriteLeads,safeUrl,personaIds,personaRoom,normalizePersona};
+  function messageTimestamp(message){if(Number.isFinite(message?.createdAt)&&message.createdAt>0)return message.createdAt;return Number(String(message?.id||'').match(/(?:^|_)(\d{13})(?:_|$)/)?.[1])||0;}
+  const api={key,defaults,normalize,canQuote,collect,favoriteLeads,safeUrl,messageTimestamp,personaIds,personaRoom,normalizePersona};
   if(typeof module!=='undefined')module.exports=api;else root.PhoneCore=api;
 })(typeof window==='undefined'?globalThis:window);

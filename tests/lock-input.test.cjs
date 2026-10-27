@@ -3,7 +3,7 @@ const Core=require('../dist/core.js');
 
 // Exercise the actual app event handlers with no elapsed timers between input events.
 function harness(){
- const listeners=new Map(),windows=new Map();let ctx,renders=0,cycle=0,soundUnlocks=0;
+ const listeners=new Map(),windows=new Map();let ctx,renders=0,cycle=0,soundUnlocks=0;const saves=[],timers=new Map();let timerId=0;
  function element(dataset={}){
   const classes=new Set(),attrs=new Map(),events=new Map();
   return {dataset,style:{},events,isConnected:true,textContent:'',
@@ -22,17 +22,17 @@ function harness(){
  pager.scrollTo=options=>{pager.lastScroll=options;pager.scrollLeft=options.left;pager.events.get('scroll')?.();};
  screen.querySelector=s=>s==='.passcode'&&html.includes('realistic-passcode')?panel:s==='.home-pager'&&html.includes('home-pager')?pager:null;
  screen.querySelectorAll=()=>pageButtons;
- const x={beforeRender(){},afterRender(){},onNavigate(){},onUnlock(){assert.equal(ctx.getState().unlocked,true);assert.notEqual(ctx.getRoute().app,'pin');soundUnlocks++;},action:()=>false,stopAudio(){},unreadCount:()=>0,avatar:()=>''};
+ const x={beforeRender(){},afterRender(){},onNavigate(){},onUnlock(){assert.equal(ctx.getState().unlocked,true);assert.notEqual(ctx.getRoute().app,'pin');soundUnlocks++;},action:()=>false,input:()=>false,room:()=>'<h1>小王</h1>',stopAudio(){},unreadCount:()=>0,avatar:()=>''};
  const document={querySelector:s=>nodes[s]||null,querySelectorAll:()=>[],addEventListener(type,fn,capture){const list=listeners.get(type)||[];list.push({fn,capture:!!capture});listeners.set(type,list);}};
  const history={replaceState(value){this.state=value;},pushState(value){this.state=value;}};
- const window={PhoneCore:Core,PHONE_DATA:{people:[{id:'wang',name:'小王'}]},PHOTO_LIBRARY:{unlock:{pin:'0520'}},PhoneExperience:{create(c){ctx=c;return x;}},DaliExperience:{create:()=>({action:()=>false,afterRender(){},camera:()=>'<div class="camera-layout"></div>'})},addEventListener:(k,fn)=>windows.set(k,fn)};
- vm.runInNewContext(fs.readFileSync('dist/app.js','utf8'),{window,document,history,localStorage:{getItem:()=>null,setItem(){}},icon:()=>'',appIcon:()=>'',Intl,Date,Map,Math,setInterval(){},setTimeout:()=>1,clearTimeout(){}});
+ const window={PhoneCore:Core,PHONE_DATA:{people:[{id:'wang',name:'小王',alias:'测试别称',scenes:[]}],folderUnlockCount:3},PHOTO_LIBRARY:{unlock:{pin:'0520'},assets:[],albums:[]},PhoneExperience:{create(c){ctx=c;return x;}},DaliExperience:{create:()=>({action:()=>false,input:()=>false,note:()=>'',afterRender(){},camera:()=>'<div class="camera-layout"></div>'})},addEventListener:(k,fn)=>windows.set(k,fn)};
+ vm.runInNewContext(fs.readFileSync('dist/app.js','utf8'),{window,document,history,localStorage:{getItem:()=>null,setItem(key,value){saves.push(JSON.parse(value));}},icon:()=>'',appIcon:()=>'',Intl,Date,Map,Math,setInterval(){},setTimeout(fn){const id=++timerId;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);}});
  function event(target,extra={}){return {target,detail:1,pointerId:1,button:0,isPrimary:true,clientX:0,clientY:0,preventDefault(){this.defaultPrevented=true;},stopImmediatePropagation(){this.stopped=true;},...extra};}
  function dispatch(type,e){for(const l of listeners.get(type)||[])if(l.capture){l.fn(e);if(e.stopped)return;}if(type==='pointerdown'){screen.events.get(type)?.(e);nodes['#phone'].events.get(type)?.(e);}if(type==='pointerup'||type==='pointercancel')nodes['#phone'].events.get(type)?.(e);for(const l of listeners.get(type)||[])if(!l.capture){l.fn(e);if(e.stopped)return;}}
  function click(action,data={}){dispatch('click',event(element({action,...data}),{detail:0}));}
  function down(key,extra={}){const target=element({action:'pin-key',key});dispatch('pointerdown',event(target,extra));return target;}
  function tap(key){const target=down(key);dispatch('pointerup',event(target));dispatch('click',event(target));}
- return {ctx,click,down,tap,dispatch,event,element,screen,dots,error,progress,history,pager,pages,pageButtons,soundUnlocks:()=>soundUnlocks,renderCount:()=>renders,filled:()=>dots.filter(x=>x.classList.contains('filled')).length,
+ return {ctx,click,down,tap,dispatch,event,element,screen,nodes,windows,saves,tick(){for(const [id,fn] of [...timers]){timers.delete(id);fn();}},field(id,value){nodes['#'+id]=element();nodes['#'+id].value=value;return nodes['#'+id];},submit(form){dispatch('submit',event(element({form})));},dots,error,progress,history,pager,pages,pageButtons,soundUnlocks:()=>soundUnlocks,renderCount:()=>renders,filled:()=>dots.filter(x=>x.classList.contains('filled')).length,
   scrollHome(page){pager.scrollLeft=page*pager.clientWidth;pager.events.get('scroll')?.();},home(){nodes['#home-indicator'].events.get('click')();},
   key(key,repeat=false){dispatch('keydown',event(element(),{key,repeat}));},pop(app){windows.get('popstate')({state:{phone:true,route:{app}}});},
   swipe(cancel=false){const target=element();dispatch('pointerdown',event(target,{pointerId:++cycle,clientY:300}));if(cancel)dispatch('pointercancel',event(target,{pointerId:cycle}));dispatch('pointerup',event(target,{pointerId:cycle,clientY:100}));}};
@@ -81,9 +81,9 @@ test('native home swipes update page controls and inactive accessibility without
  assert.equal(h.pageButtons[1].getAttribute('aria-pressed'),'true');assert.equal(h.pages[0].hasAttribute('inert'),true);assert.equal(h.pages[1].hasAttribute('inert'),false);
  h.scrollHome(0);assert.equal(h.pageButtons[0].getAttribute('aria-pressed'),'true');assert.equal(h.renderCount(),count);
 });
-test('all fourteen apps show a test message and return to the second page with a separate file route',()=>{
+test('the remaining preview apps show a test message and return to the second page with a separate file route',()=>{
  const h=harness();h.click('unlock');h.scrollHome(1);
- for(const [app,name] of [['alipay','支付宝'],['music','音乐'],['file-manager','文件'],['douyin','抖音'],['contacts','通讯录'],['health','健康'],['qq','QQ'],['weibo','微博'],['xiaohongshu','小红书'],['bilibili','哔哩哔哩'],['taobao','淘宝'],['jd','京东'],['meituan','美团'],['amap','高德地图']]){
+ for(const [app,name] of [['alipay','支付宝'],['music','音乐'],['douyin','抖音'],['health','健康'],['qq','QQ'],['weibo','微博'],['xiaohongshu','小红书'],['bilibili','哔哩哔哩'],['taobao','淘宝'],['jd','京东'],['meituan','美团'],['amap','高德地图']]){
   h.click('app',{app});assert.equal(h.ctx.getRoute().app,app);assert.ok(h.screen.innerHTML.includes('<h1>'+name+'</h1>'));assert.match(h.screen.innerHTML,/app-test-card/);assert.match(h.screen.innerHTML,/测试消息/);assert.match(h.screen.innerHTML,/<time>刚刚<\/time>/);if(app==='contacts'){assert.match(h.screen.innerHTML,/最近通话/);assert.match(h.screen.innerHTML,/未接来电/);assert.match(h.screen.innerHTML,/剧情记录/);}
   h.click('back');assert.equal(h.ctx.getRoute().app,'home');assert.equal(h.pager.scrollLeft,h.pager.clientWidth);
  }
@@ -94,4 +94,30 @@ test('page dots, home indicator and arrows switch pages without locking or addin
  h.ctx.getState().settings.reduced=true;h.pager.events.get('keydown')(h.event(h.element(),{key:'ArrowRight'}));assert.equal(h.pager.scrollLeft,320);assert.equal(h.pager.lastScroll.behavior,'auto');
  h.click('back');assert.equal(h.ctx.getRoute().app,'home');assert.equal(h.pager.scrollLeft,0);
  h.scrollHome(1);h.click('reset-confirm');h.click('unlock');assert.equal(h.pager.scrollLeft,0);
+});
+
+test('contacts have searchable names, a chat return path, and separate real call history',()=>{
+ const h=harness();h.click('unlock');h.click('app',{app:'contacts'});assert.match(h.screen.innerHTML,/搜索通讯录/);assert.match(h.screen.innerHTML,/发微信消息/);assert.doesNotMatch(h.screen.innerHTML,/测试消息/);
+ h.nodes['#contact-list']=h.element();const input=h.field('contact-search','测试别称');input.id='contact-search';h.dispatch('input',h.event(input));assert.match(h.nodes['#contact-list'].innerHTML,/小王/);
+ input.value='没有这个人';h.dispatch('input',h.event(input));assert.match(h.nodes['#contact-list'].innerHTML,/没有找到联系人/);
+ h.click('room',{id:'wang'});assert.equal(h.ctx.getRoute().app,'room');h.click('back');assert.equal(h.ctx.getRoute().app,'contacts');
+ h.ctx.getState().callLog.push({id:'call',name:'小王',result:'answered',time:'12:00'});h.click('contacts-tab',{tab:'calls'});assert.match(h.screen.innerHTML,/本机通话/);assert.match(h.screen.innerHTML,/已接听/);assert.match(h.screen.innerHTML,/剧情记录/);
+});
+test('file browser links to actual content and nested back returns through the entry path',()=>{
+ const h=harness();h.click('unlock');h.ctx.getState().notes.push({id:'legacy'});h.click('app',{app:'file-manager'});assert.match(h.screen.innerHTML,/故事片段/);assert.match(h.screen.innerHTML,/0 张照片/);assert.doesNotMatch(h.screen.innerHTML,/学习资料|测试消息/);
+ h.click('browse',{app:'notes'});h.click('memo',{id:'shoot'});h.click('back');assert.equal(h.ctx.getRoute().app,'notes');h.click('back');assert.equal(h.ctx.getRoute().app,'file-manager');
+ h.click('browse',{app:'chapters'});assert.match(h.screen.innerHTML,/按人物翻阅/);h.click('back');assert.equal(h.ctx.getRoute().app,'file-manager');
+});
+test('notes can be edited in place; canceling deletion keeps content and confirming returns to its list',()=>{
+ const h=harness();h.click('unlock');h.click('app',{app:'notes'});h.click('add-note');h.field('note-title','一条记录');h.field('note-text','原文');h.submit('note');const id=h.ctx.getState().notes[0].id;
+ h.click('memo',{id});h.click('edit-note',{id});assert.match(h.nodes['#modal-root'].innerHTML,/原文/);h.field('note-title','改好');h.field('note-text','<script>文字</script>');h.submit('note');
+ assert.equal(h.ctx.getState().notes.length,1);assert.equal(h.ctx.getState().notes[0].id,id);assert.match(h.screen.innerHTML,/&lt;script&gt;/);
+ h.click('delete-note',{id});assert.equal(h.ctx.getState().notes.length,1);h.click('modal-close');assert.equal(h.ctx.getState().notes.length,1);h.click('delete-note-confirm',{id});assert.equal(h.ctx.getState().notes.length,1);
+ h.click('delete-note',{id});h.click('delete-note-confirm',{id});assert.equal(h.ctx.getState().notes.length,0);assert.equal(h.ctx.getRoute().app,'notes');
+});
+test('draft saving coalesces typing and flushes on navigation and page exit',()=>{
+ const h=harness();h.click('unlock');const before=h.saves.length;
+ for(const draft of ['h','he','hello']){h.ctx.getState().chatDrafts.wang=draft;h.ctx.saveDraft();}assert.equal(h.saves.length,before);h.tick();assert.equal(h.saves.length,before+1);assert.equal(h.saves.at(-1).chatDrafts.wang,'hello');
+ h.ctx.getState().chatDrafts.wang='离开前';h.ctx.saveDraft();h.click('app',{app:'contacts'});assert.equal(h.saves.at(-1).chatDrafts.wang,'离开前');
+ h.ctx.getState().chatDrafts.wang='刷新前';h.ctx.saveDraft();h.windows.get('pagehide')();assert.equal(h.saves.at(-1).chatDrafts.wang,'刷新前');
 });
