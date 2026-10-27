@@ -14,4 +14,8 @@ test('Wang respects a no-flirting boundary during later messages',()=>{let a=cre
 
 test('physical emergencies take priority even if a pause request appears in the same burst',()=>{const a=createReply('我胸痛，先安静');assert.equal(a.topic,'safety');assert.match(a.text,/急救|医院/);});
 
+test('requests to keep chatting do not pause, but actual pause and emergencies retain priority',()=>{for(const text of ['不要停止聊天','不用暂停聊天','别停止聊天','请不要停止回复我','我不想停止聊天','不要暂停跟我说话'])assert.notEqual(createReply(text).pause,true,text);for(const text of ['不要回复了','不用再回复我','先安静','我不想继续聊天'])assert.equal(createReply(text).pause,true,text);for(const text of ['不要停止聊天，但是先安静','不要停止聊天，但不要回复'])assert.equal(createReply(text).pause,true,text);assert.equal(createReply('不要停止聊天，我胸痛').topic,'safety');});
+
+test('asking to keep chatting gets an attentive response without overriding safety, pause or boundaries',()=>{for(const text of ['不要停止聊天','不用暂停聊天','别停止聊天','不要暂停跟我说话']){const a=createReply(text);assert.equal(a.topic,'continue',text);assert.match(a.text,/接着聊/,text)}assert.equal(createReply('不要停止聊天，但是先安静').topic,'pause');assert.equal(createReply('我胸痛，不要停止聊天').topic,'safety');assert.equal(createReply('不要停止聊天，但别撩我').topic,'boundary');});
+
 test('model context never replays conflicting facts from the same forget burst',()=>{const h=[{id:'a',type:'text',from:'self',text:'忘掉我的名字'},{id:'b',type:'text',from:'self',text:'我叫小明'},{id:'r',type:'text',from:'other',autoReply:true,replyTo:['a','b'],text:'已清除。'},{id:'c',type:'text',from:'self',text:'今天想聊天'}];const messages=modelHistory(h);assert.doesNotMatch(JSON.stringify(messages),/小明/);assert.ok(messages.some(m=>m.content==='今天想聊天'));});

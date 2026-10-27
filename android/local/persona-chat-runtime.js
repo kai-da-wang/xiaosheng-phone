@@ -1,4 +1,4 @@
-/* Independent offline queues. No message listener, model endpoint, or payment dependency. */
+/* Android-only persona queues and optional, user-configured model endpoint. */
 window.PersonaChatRuntime={create(ctx){
  'use strict';
  const {getState:S,getRoute,save,renderBubble,refreshList,esc}=ctx,E=window.PersonaDialogue,C=window.PhoneCore;
@@ -23,9 +23,24 @@ window.PersonaChatRuntime={create(ctx){
   const v=window.GIRLS_AI_API;if(typeof v!=='string'||!v.trim())return '';
   try{const u=new URL(v);return u.protocol==='https:'?(u.href.endsWith('/')?u.href.slice(0,-1):u.href):'';}catch{return '';}
  }
- async function cloudReply(id,history){
+ function contextStart(history,currentIds){
+  let cut=-1;const forgetIds=new Set();
+  for(let i=0;i<history.length;i++){
+   const m=history[i];
+   if(m.personaContextCut===true){cut=i;forgetIds.clear();}
+   if(m.from==='self'&&m.type==='text'&&E.isForgetRequest?.(m.text)){cut=i;forgetIds.add(m.id);}
+   if(m.autoReply&&Array.isArray(m.replyTo)&&m.replyTo.some(id=>forgetIds.has(id))){cut=i;for(const id of m.replyTo)forgetIds.delete(id);}
+  }
+  // Old saves can contain a cancelled forget burst with no reply.  In that
+  // case only the currently requested batch can be safely sent as context.
+  if(forgetIds.size){const current=history.findIndex(m=>currentIds.has(m.id));if(current>=0)cut=Math.max(cut,current-1);}
+  return cut+1;
+ }
+ async function cloudReply(id,history,ids){
   const endpoint=aiEndpoint();if(!endpoint)return null;
-  const recent=history.filter(m=>m.type==='text'&&(m.from==='self'||m.autoReply))
+  const currentIds=new Set(ids);
+  const recent=history.slice(contextStart(history,currentIds)).filter(m=>m.type==='text'&&(m.from==='self'||m.autoReply)&&
+    (room(id).memoryAllowed||m.from==='self'&&currentIds.has(m.id)))
    .slice(-12).map(m=>({role:m.from==='self'?'user':'assistant',content:String(m.text||'').slice(0,400)}));
   if(!recent.length||recent.at(-1).role!=='user')return null;
   const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10500);
@@ -47,10 +62,11 @@ window.PersonaChatRuntime={create(ctx){
   // Sensitive actions, explicit boundaries and pause are always answered locally.
   const localOnly=['safety','emergency','identity','privacy','pause','forget','boundary','money','insult'].includes(output.intent);
   const media=ids.some(source=>history.find(m=>m.id===source)?.type!=='text');
-  const remote=(media||localOnly||!aiEndpoint())?null:await cloudReply(id,history);
+  const remote=(media||localOnly||!aiEndpoint())?null:await cloudReply(id,history,ids);
   if(!enabled(id)||room(id).pending?.jobId!==jobId)return;
   const transfer=ctx.transferOffer?.(id,inputs,output);
-  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',createdAt:Date.now(),from:'other',text:transfer?.reply||remote||output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:remote?'deepseek-gateway':'local-persona',sceneMode:'fictional_fan_scene'};
+  const forgot=ids.some(source=>{const m=history.find(x=>x.id===source);return m?.type==='text'&&E.isForgetRequest?.(m.text)});
+  const reply={id:'persona_'+id+'_'+Date.now()+'_'+serial++,type:'text',createdAt:Date.now(),from:'other',text:transfer?.reply||remote||output.text,time:new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()),autoReply:true,replyTo:ids,replyOrigin:remote?'deepseek-gateway':'local-persona',sceneMode:'fictional_fan_scene',...(forgot?{personaContextCut:true}:{})};
   history.push(reply);S().personaV2.rooms[id]={...output.memory,pending:null,autoReply:!output.pause};
   if(!active(id)){S().chatReadRooms=S().chatReadRooms.filter(x=>x!==id);ctx.markUnread?.(id,reply);}
   save();showReply(id,reply);ctx.onIncoming?.(id,reply);ctx.sendTransfer?.(id,transfer);
@@ -64,7 +80,7 @@ window.PersonaChatRuntime={create(ctx){
  }
  function cancel(id){stop(id);room(id).pending=null;removeTyping(id);}
  function toggle(id){cancel(id);room(id).autoReply=!room(id).autoReply;save();return enabled(id);}
- function clearMemory(id){cancel(id);const old=room(id);S().personaV2.rooms[id]={...old,facts:C.personaRoom(id).facts,lastTopic:null,recentInputs:[],recentReplies:[],pending:null};save();}
+ function clearMemory(id){cancel(id);const history=S().chatMessages[id]||[];if(history.length)history[history.length-1].personaContextCut=true;const old=room(id);S().personaV2.rooms[id]={...old,facts:C.personaRoom(id).facts,lastTopic:null,recentInputs:[],recentReplies:[],pending:null};save();}
  function toggleMemory(id){const on=!room(id).memoryAllowed;clearMemory(id);room(id).memoryAllowed=on;save();return on;}
  function clearChat(id){clearMemory(id);S().chatMessages[id]=[];delete S().chatDrafts[id];if(S().chatUnreadIds)delete S().chatUnreadIds[id];save();refreshList();}
  function typingMarkup(id,avatar,name){return pending(id)?`<div class="wx-message incoming wx-typing-message" data-persona-room="${id}" role="status" aria-label="${esc(name)}正在输入">${avatar}<div class="wx-text-bubble wx-typing-dots"><i></i><i></i><i></i></div></div>`:'';}

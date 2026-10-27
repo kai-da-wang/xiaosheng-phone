@@ -29,7 +29,7 @@ window.WangChatRuntime={create(ctx){
   if(!ids.length){S().wangPending=null;save();removeTyping();return;}
   if(history.some(m=>m.autoReply&&ids.every(id=>m.replyTo?.includes(id)))){S().wangPending=null;save();removeTyping();return;}
   const inputs=history.filter(m=>ids.includes(m.id)).map(m=>({...m,text:messageText(m)}));
-  const critical=inputs.find(m=>/(?:自杀|自残|不想活|想死|结束生命|胸痛|呼吸困难|昏倒|吃了很多药)/.test(m.text))||inputs.find(m=>/(?:不要|别|停止|暂停).{0,4}(?:回复|说话|聊天)|先安静/.test(m.text))||inputs.find(m=>/(?:别撩|不要撩|不想谈恋爱|别叫我宝宝|不要叫我宝宝)/.test(m.text))||inputs.find(m=>m.type==='text'&&engine.forgetKeys(m.text).length);
+  const critical=inputs.find(m=>/(?:自杀|自残|不想活|想死|结束生命|胸痛|呼吸困难|昏倒|吃了很多药)/.test(m.text))||inputs.find(m=>m.type==='text'&&engine.isPauseRequest(m.text))||inputs.find(m=>/(?:别撩|不要撩|不想谈恋爱|别叫我宝宝|不要叫我宝宝)/.test(m.text))||inputs.find(m=>m.type==='text'&&engine.forgetKeys(m.text).length);
   const prompt=[...(critical?[critical.text.slice(0,300)]:[]),...inputs.slice(-3).map(m=>m.text.slice(-220))].join('。');
   const volunteered=inputs.filter(m=>m.type==='text').map(m=>m.text);
   const memory=engine.rememberExplicitFacts(volunteered,S().wangMemory||{});

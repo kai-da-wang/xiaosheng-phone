@@ -23,6 +23,14 @@
   laugh:['笑什么啦，分我一点，我也想听。','哎，你一笑我也想笑了。刚刚是哪句戳中你了？','行，看来今天心情还不错。接着说，我听着呢。']
  };
  const compact=s=>String(s||'').trim().replace(/\s+/g,' ');
+ // Negating a stop request ("不要停止聊天") means continue, while an
+ // explicit later stop in the same text must still take effect.
+ const negatedStop=/(?:别|不要|不用|不必|无须|不需要|不想)(?:再|先|继续)?(?:停止|暂停)(?:和我|跟我|给我|对我的)?(?:聊天|聊|回复|回|说话)/g;
+ function wantsToContinue(input){const text=compact(input);return text.replace(negatedStop,'')!==text;}
+ function isPauseRequest(input){
+  const text=compact(input).replace(negatedStop,'');
+  return /(?:不要|别|不用|不必|不需要|停止|暂停|不想)(?:再|继续|跟我|和我|给我|先){0,3}(?:回复|回|聊天|聊|说话)|先安静|停一下|不聊/.test(text);
+ }
  // Read only standalone, explicitly volunteered text messages; media labels and
  // questions are not evidence of a name or a food preference.
  function explicitFact(input){
@@ -57,7 +65,7 @@
   const one=(topic,t,pending)=>select(topic,[t],pending);
   if(/(?:自杀|自残|不想活|想死|结束生命)/.test(text))return one('safety','我很担心你现在的安全。先远离可能伤到自己的东西，找一个能陪着你的人；眼前有危险就联系当地急救。你身边有人吗？');
   if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(text))return one('safety','这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。先照顾好自己。');
-  if(/(?:不要|别|停止|暂停).{0,4}(?:回复|说话|聊天)|先安静/.test(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
+  if(isPauseRequest(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
   const forgotten=forgetKeys(text);if(forgotten.length){for(const key of forgotten)delete m[key];m.recent=[];return one('forget','好，刚才说的资料已经从记忆里清除，聊天记录还在。');}
   const fact=explicitFact(text);
   if(/(?:你是|你是不是|你真是|你到底是).{0,8}(?:真人|本人|真的小王|人工智能|机器人|AI)|(?:是不是|是).{0,3}程序/.test(text))return one('identity','我是这部手机里的小王游戏角色呀。现在用情景对话陪你聊天，真人的私事我可不会乱编。');
@@ -69,6 +77,7 @@
   if(m.pending==='food-preference'&&text.length<=14&&!/[？?]/.test(text)){m.food=text;return one('food-memory',`${text}，好，记在这次聊天的小本子上啦。`);}
   if(/(?:你(?:刚才|上次)|刚刚).{0,8}(?:说了|说的|问我|问的)|刚才聊到哪/.test(text)){const last=recent.filter(x=>x.from!=='self'&&x.autoReply).at(-1);return one('recall',last?`我刚才说的是：“${compact(last.text).slice(0,90)}”`:'刚才还没正式聊起来呢。要不从你今天过得怎么样开始？');}
   if(/(?:不喜欢你|不爱你|别撩|不要撩|不想谈恋爱|别叫我宝宝|不要叫我宝宝)/.test(text)){m.flirt=false;return one('boundary','好，那我们就轻松聊，不这样逗你了。你想聊点什么？');}
+  if(wantsToContinue(text))return one('continue','在呢，我们接着聊。你想从哪件事说起？');
   if(m.pending==='food-choice'&&/^(?:第?一[个家种]?|第一[个家种]?|火锅|热乎的|面条|第二[个家种]?|第?二[个家种]?|甜的|甜点|都要|都可以|随便|你选)[呀吧啦呢！!。\s]*$/.test(text)){const choice=/火锅|第一|^一|热乎/.test(text)?'火锅':/第二|^二|面条/.test(text)?'面条':/甜/.test(text)?'甜点':m.food||'热乎的面条';m.plan=choice;return one('food-plan',`那就先记下${choice}。别只顾着说，饿了记得真的去吃点东西。`);}
   if(m.pending==='photo-choice'&&/海边|雪山|第一|第二|^都|你选/.test(text)){m.photo=/雪山|第二/.test(text)?'雪山':'海边';return one('photo-plan',`那就${m.photo}那张。你把照片收好，下次再给我拍一张更好看的。`);}
   if(m.pending==='place-choice'&&/古城|湖边|洱海|才村|双廊|你选/.test(text)){const place=(text.match(/古城|洱海|才村|双廊/)||[])[0]||'洱海边';m.place=place;return one('place-plan',`${place}，记下啦。先一起在地图里看看，想去的地方慢慢攒。`);}
@@ -111,6 +120,6 @@
   }
   return items.slice(after+1).filter(x=>x.type==='text'&&typeof x.text==='string').slice(-16).map(x=>({role:x.from==='self'?'user':'assistant',content:x.text.slice(0,1000)}));
  }
- const api={persona,createReply,modelHistory,explicitFact,forgetKeys,rememberExplicitFacts};
+ const api={persona,createReply,modelHistory,explicitFact,forgetKeys,rememberExplicitFacts,isPauseRequest};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.WangDialogue=api;
 })(typeof window==='undefined'?globalThis:window);

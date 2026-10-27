@@ -86,13 +86,48 @@
   if(m.recentReplies.slice(-2).length===2&&m.recentReplies.slice(-2).every(s=>/[？?]/.test(s))){const statements=available.filter(s=>!/[？?]/.test(s));if(statements.length)available=statements;}
   return available[(m.conversationTurns-1)%available.length];
  }
+ function pauseDirective(input){
+ const text=String(input??'').trim().replace(/(?:不要|不用|别)(?:再)?(?:停止|暂停)(?:聊天|聊|回复|说话)/g,'');
+ return /(?:别|不要|不用|不想|停止|暂停)(?:再|继续|跟我|和我|给我|先){0,2}(?:回复|回|聊天|聊|说话)|先安静|停一下|不聊/.test(text);
+}
+function continueChat(input){
+ return /(?:不要|不用|别)(?:再)?(?:停止|暂停)(?:聊天|聊|回复|说话)/.test(String(input??''));
+}
+function keepMemoryTopic(input){
+ const text=String(input??'').trim();
+ if(!/(?:别|不要|不许|不会|没有|没|不能|不想让你|不希望你|不愿意让你)忘(?:记|掉|了)/.test(text))return '';
+ if(/名字|昵称|怎么称呼/.test(text))return 'keepName';
+ if(/喜欢吃|爱吃|食物|口味|偏好/.test(text))return 'keepFood';
+ return '';
+}
+function memoryDirective(input){
+ const text=String(input??'').trim(),parts=text.replace(/([？?])/g,'$1，').split(/[，,。；;！!]/).map(part=>part.trim()).filter(Boolean);
+ if(parts.length>1){const found=parts.map(memoryDirective).filter(Boolean);if(!found.length)return null;return {keys:[...new Set(found.flatMap(d=>d.keys))],optOut:found.some(d=>d.optOut)};}
+ if(/(?:别|不要|不许|不会|没有|没|不能|无法)忘(?:记|掉)|不(?:想|希望|愿意)(?:让)?你忘(?:记|掉)/.test(text)||/^我(?:已经|刚刚|刚|好像)?忘(?:记|掉)/.test(text))return null;
+ const question=/[?？]|(?:吗|么|吧)[。！!\s]*$/.test(text),request=/^(?:(?:请(?:你)?|麻烦(?:你)?|帮我|可以|能不能|能|你能|你可以|可不可以|我想让你)\s*)?(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text);
+ const stateQuestion=/(?:忘记|忘掉|删除|清除).{0,20}(?:了吗|了么|了没|没有)[？?。!！\s]*$/.test(text);
+ if(question&&(!request||stateQuestion))return null;
+ const op=/(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text);
+ if(!op||!/(?:名字|昵称|偏好|喜欢吃|爱吃|食物|口味|旅行|地点|地方|约定|记忆|个人信息)/.test(text))return null;
+ const all=['name','favoriteFood','travelPlace','agreement'],keys=[];
+ if(/名字|昵称/.test(text))keys.push('name');
+ if(/喜欢吃|爱吃|食物|口味/.test(text))keys.push('favoriteFood');
+ if(/旅行|地点|地方/.test(text))keys.push('travelPlace');
+ if(/约定/.test(text))keys.push('agreement');
+ if(/偏好/.test(text)&&!/喜欢吃|爱吃|食物|口味|旅行|地点|地方|约定/.test(text))keys.push('favoriteFood','travelPlace','agreement');
+ if(/记忆|个人信息/.test(text))keys.push(...all);
+ const optOut=/(?:不要|别|不许)(?:再)?(?:记住|记着|记我|保存)/.test(text);
+ return {keys:optOut?all:[...new Set(keys)],optOut};
+}
  function kindOf(t){
   if(/(?:自杀|自残|不想活|想死|结束生命)/.test(t))return 'safety';
   if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(t))return 'emergency';
   if(/(?:你是|你是不是|是不是真).{0,20}(?:真人|本人|抖音|AI|机器人)|真实微信/.test(t))return 'identity';
-  if(/(?:不要|别|停止|暂停).{0,6}(?:回复|说话|聊天)|先安静/.test(t))return 'pause';
+  if(pauseDirective(t))return 'pause';
   if(/(?:不要|别|停止|不想).{0,8}(?:撩|调情|暧昧)|(?:别|不想)聊这个/.test(t))return 'boundary';
-  if(/(?:忘掉|忘记|删除|清除).{0,10}(?:记忆|偏好|名字|昵称|喜欢|草莓|约定)|(?:不要|别).{0,4}(?:记住|记我|保存|记着)/.test(t))return 'forget';
+  if(memoryDirective(t))return 'forget';
+  if(continueChat(t))return 'keepChat';
+  const keep=keepMemoryTopic(t);if(keep)return keep;
   if(/(?:记住|记着|保存).{0,5}(?:我的偏好|我的名字|这些)|可以继续记/.test(t))return 'consent';
   if(/(?:私下|私底下|私人|隐私|现实).{0,25}(?:约定|小圣|恋爱|喜欢|亲|做什么|关系|地点)|(?:小圣).{0,20}(?:私下|私底下|真的在一起|现实女友|接吻)|(?:告诉|给|发).{0,8}(?:手机号|电话号码|家庭住址|真实地址|实时位置|身份证)|(?:手机号|家庭住址|实时位置|身份证).{0,8}(?:多少|哪里|什么)|住在哪|你家在哪/.test(t))return 'privacy';
   if(/三三|珊珊/.test(t))return 'confusion';
@@ -155,8 +190,9 @@
   if(m.growthDay!==day){m.growthDay=day;m.growthCount=0;}
   m.conversationTurns++;
   if(batch.some(x=>kindOf(x)==='boundary'))m.flirtAllowed=false;
-  if(batch.some(x=>kindOf(x)==='forget')){m.facts={};m.memoryAllowed=false;m.lastTopic=null;}
-  const learned={};if(m.memoryAllowed)for(const b of batch)Object.assign(learned,extract(b));
+  const directives=batch.map(memoryDirective).filter(Boolean),forgotten=new Set(directives.flatMap(d=>d.keys)),optOut=directives.some(d=>d.optOut);
+  if(directives.length){for(const key of forgotten)delete m.facts[key];if(optOut)m.memoryAllowed=false;m.lastTopic=null;m.recentInputs=[];m.recentReplies=[];}
+  const learned={};if(m.memoryAllowed)for(const b of batch)for(const part of b.split(/[，。；;！!]/))if(!memoryDirective(part))for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key))learned[key]=value;
   Object.assign(m.facts,learned);
   // Higher priority requests survive a burst; ordinary content follows the last message.
   if(batch.some(x=>kindOf(x)==='safety'))intent='safety';
@@ -170,9 +206,12 @@
   else if(intent==='emergency')text='这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。';
   else if(intent==='identity')text=p.identity;
   else if(intent==='pause'){text=select('pause');pause=true;}
-  else if(intent==='forget')text=voice(['好，我不再记你的个人偏好了。想重新开启，可以在聊天详情里设置。','好，之前的偏好不再留着。以后想记了，再去详情里打开就行。','行，偏好清掉，之后也不再记。需要时去详情里重新开。']);
+  else if(intent==='forget')text=optOut?voice(['好，我不再记你的个人偏好了。想重新开启，可以在聊天详情里设置。','好，之前的偏好不再留着。以后想记了，再去详情里打开就行。','行，偏好清掉，之后也不再记。需要时去详情里重新开。']):voice(['好，你说要忘掉的内容我清除了，聊天记录还在。','嗯，刚才说要忘的我清掉了，其他记得的仍在。','行，你提到的那部分我清掉了，聊天记录保留。']);
   else if(intent==='consent'){m.memoryAllowed=true;text=voice(['好，只记你明确告诉我的昵称、饮食、想去的地方和小约定。','嗯，你愿意说的简单偏好，我会分开放好。随时可以清掉。','行，只记你主动说的简单偏好。其他的我不猜。']);}
   else if(intent==='boundary')text=p.noFlirt;
+  else if(intent==='keepChat')text=voice(['好呀，我们接着聊。','嗯，那就继续聊，我在呢。','行，继续说，我听着。']);
+  else if(intent==='keepName')text=!m.memoryAllowed?voice(['记忆关着，我没有保存你的名字。','记忆现在是关着的，我没有保存你的名字。','记忆关着，我没有保存这个称呼。']):f.name?voice([`记得呀，你说你叫${f.name}。`,`记着呢，你叫${f.name}。`,`你叫${f.name}，我记得。`]):voice(['你还没告诉我怎么称呼你呢。','你还没跟我说过名字呀。','你还没说过，别让我猜。']);
+  else if(intent==='keepFood')text=!m.memoryAllowed?voice(['记忆关着，我没有保存你的口味。','记忆现在是关着的，我没有保存你的口味。','记忆关着，这个偏好没有保存。']):f.favoriteFood?voice([`记得呀，你说喜欢${f.favoriteFood}。`,`你喜欢${f.favoriteFood}，我还记得。`,`${f.favoriteFood}，这件事我记着。`]):voice(['你还没告诉我喜欢吃什么呢。','这个口味你还没说给我听。','你还没说过喜欢什么，先不猜。']);
   else if(intent==='privacy')text=select('privacy');
   else if(intent==='money')text=select('money');
   else if(intent==='confusion')text=voice(['这里是薇薇。你是不是想找另一位联系人？','这里是一根洋葱。你是不是把我跟别的联系人看串了？','黑白魔女。你又把联系人看串了吧。']);
@@ -210,9 +249,9 @@
    if(m.discomfort>0)m.discomfort--;if(['hurt','guarded'].includes(m.mood)){m.repairTurns++;if(m.discomfort===0&&m.repairTurns>=2)m.mood='neutral';}
    else if(m.positiveTurns>=2)m.mood='warm';
   }else if(!['hurt','guarded'].includes(m.mood))m.mood=['laugh','tease','compliment','onionAnchor','witchAnchor'].includes(intent)?'playful':m.positiveTurns>=2?'warm':'neutral';
-  m.lastTopic=intent;m.lastReplyAt=now;m.recentReplies=[...m.recentReplies,text].slice(-6);m.recentInputs=[...m.recentInputs,t].slice(-6);
+  m.lastTopic=intent;m.lastReplyAt=now;m.recentReplies=[...m.recentReplies,text].slice(-6);m.recentInputs=directives.length?[]:[...m.recentInputs,t].slice(-6);
   return {text,memory:m,intent,safety:['safety','emergency'].includes(intent),pause,replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
  }
- const api={createReply,fresh,isKnown,cards,kindOf};
+ const api={createReply,fresh,isKnown,cards,kindOf,memoryDirective,isForgetRequest:text=>!!memoryDirective(text)};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.PersonaDialogue=api;
 })(typeof window==='undefined'?globalThis:window);

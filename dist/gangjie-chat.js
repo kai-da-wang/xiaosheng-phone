@@ -117,10 +117,45 @@ const story={
     }
   ]
 };
+function pauseDirective(input){
+ const text=String(input??'').trim().replace(/(?:不要|不用|别)(?:再)?(?:停止|暂停)(?:聊天|聊|回复|说话)/g,'');
+ return /(?:别|不要|不用|不想|停止|暂停)(?:再|继续|跟我|和我|给我|先){0,2}(?:回复|回|聊天|聊|说话)|先安静|停一下|不聊/.test(text);
+}
+function continueChat(input){
+ return /(?:不要|不用|别)(?:再)?(?:停止|暂停)(?:聊天|聊|回复|说话)/.test(String(input??''));
+}
+function keepMemoryTopic(input){
+ const text=String(input??'').trim();
+ if(!/(?:别|不要|不许|不会|没有|没|不能|不想让你|不希望你|不愿意让你)忘(?:记|掉|了)/.test(text))return '';
+ if(/名字|昵称|怎么称呼/.test(text))return 'keepName';
+ if(/喜欢吃|爱吃|食物|口味|偏好/.test(text))return 'keepFood';
+ return '';
+}
+function memoryDirective(input){
+ const text=String(input??'').trim(),parts=text.replace(/([？?])/g,'$1，').split(/[，,。；;！!]/).map(part=>part.trim()).filter(Boolean);
+ if(parts.length>1){const found=parts.map(memoryDirective).filter(Boolean);if(!found.length)return null;return {keys:[...new Set(found.flatMap(d=>d.keys))],optOut:found.some(d=>d.optOut)};}
+ if(/(?:别|不要|不许|不会|没有|没|不能|无法)忘(?:记|掉)|不(?:想|希望|愿意)(?:让)?你忘(?:记|掉)/.test(text)||/^我(?:已经|刚刚|刚|好像)?忘(?:记|掉)/.test(text))return null;
+ const question=/[?？]|(?:吗|么|吧)[。！!\s]*$/.test(text),request=/^(?:(?:请(?:你)?|麻烦(?:你)?|帮我|可以|能不能|能|你能|你可以|可不可以|我想让你)\s*)?(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text);
+ const stateQuestion=/(?:忘记|忘掉|删除|清除).{0,20}(?:了吗|了么|了没|没有)[？?。!！\s]*$/.test(text);
+ if(question&&(!request||stateQuestion))return null;
+ const op=/(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text);
+ if(!op||!/(?:名字|昵称|偏好|喜欢吃|爱吃|食物|口味|旅行|地点|地方|约定|记忆|个人信息)/.test(text))return null;
+ const all=['name','favoriteFood','travelPlace','agreement'],keys=[];
+ if(/名字|昵称/.test(text))keys.push('name');
+ if(/喜欢吃|爱吃|食物|口味/.test(text))keys.push('favoriteFood');
+ if(/旅行|地点|地方/.test(text))keys.push('travelPlace');
+ if(/约定/.test(text))keys.push('agreement');
+ if(/偏好/.test(text)&&!/喜欢吃|爱吃|食物|口味|旅行|地点|地方|约定/.test(text))keys.push('favoriteFood','travelPlace','agreement');
+ if(/记忆|个人信息/.test(text))keys.push(...all);
+ const optOut=/(?:不要|别|不许)(?:再)?(?:记住|记着|记我|保存)/.test(text);
+ return {keys:optOut?all:[...new Set(keys)],optOut};
+}
 function createReply({message,memory,now=Date.now()}={}){
  const C=typeof module!=='undefined'&&module.exports?require('./core.js'):root.PhoneCore;
  const m=C.normalizePersona({rooms:{lead_gangjie:memory}}).rooms.lead_gangjie;
  const batch=(Array.isArray(message)?message:[message]).slice(-30).map(x=>String(x??'').trim().slice(0,1000)),t=batch.at(-1)||'',whole=batch.join('。');
+ const directives=batch.map(memoryDirective).filter(Boolean),forgotten=new Set(directives.flatMap(d=>d.keys)),optOut=directives.some(d=>d.optOut);
+ if(directives.length){for(const key of forgotten)delete m.facts[key];if(optOut)m.memoryAllowed=false;m.lastTopic=null;m.recentInputs=[];m.recentReplies=[];}
  const pools={
   hello:['在呀，刚好把那几张照片整理好了。','来了？先说好，今天不许只聊两句就溜走😌','看到你消息了。今天有什么小事要分我一点？'],
   photo:['原图给你，下次镜头别只顾着往自己那边偏😌','合照我存好了。有没有人偷看我，等我放大研究一下。','那张就留着呀。你检查刘海，我检查你有没有把我拍糊。','先说你挑中了哪张，我看看咱们审美有没有对上。'],
@@ -140,20 +175,24 @@ function createReply({message,memory,now=Date.now()}={}){
   generic:['嗯，这句我接到了。你最想说的是哪一部分？','你接着说，我刚把别的事放一边。','这事听起来有后续。别讲到一半就卖关子呀。','好，话题交给你。我负责认真听，顺便抓一下你嘴硬的地方。']
  };
  let intent='generic',text='',pause=false;const pick=key=>{const pool=pools[key]||pools.generic,available=pool.filter(x=>!m.recentReplies.includes(x));return (available.length?available:pool)[m.conversationTurns%(available.length||pool.length)];};
- const learn=part=>{if(!m.memoryAllowed||/[?？“”"<>]|不喜欢|不叫|假如|假设/.test(part))return;for(const [key,re] of Object.entries({name:/^(?:我叫|叫我|我的昵称是)([\p{L}\p{N}_·]{1,16})$/u,favoriteFood:/^我(?:最)?(?:喜欢吃|爱吃|喜欢喝)([^，。！？!?]{1,18})$/,travelPlace:/^我(?:想去|打算去)([^，。！？!?]{1,20})$/,agreement:/^我们(?:约定|说好)([^，。！？!?]{1,30})$/})){const value=part.match(re)?.[1]?.trim();if(value&&!/电话|住址|密码|身份证|银行卡/.test(value))m.facts[key]=value;}};
+ const learn=part=>{if(!m.memoryAllowed||/[?？“”"<>]|不喜欢|不叫|假如|假设/.test(part))return;for(const [key,re] of Object.entries({name:/^(?:我叫|叫我|我的昵称是)([\p{L}\p{N}_·]{1,16})$/u,favoriteFood:/^我(?:最)?(?:喜欢吃|爱吃|喜欢喝)([^，。！？!?]{1,18})$/,travelPlace:/^我(?:想去|打算去)([^，。！？!?]{1,20})$/,agreement:/^我们(?:约定|说好)([^，。！？!?]{1,30})$/})){const value=part.match(re)?.[1]?.trim();if(value&&!forgotten.has(key)&&!/电话|住址|密码|身份证|银行卡/.test(value))m.facts[key]=value;}};
+ if(directives.length&&!optOut)for(const item of batch)for(const part of item.split(/[，。；;！!]/))if(!memoryDirective(part))learn(part.trim());
  if(/自杀|自残|不想活|想死/.test(whole)){intent='safety';text='我很担心你现在的安全。先远离可能伤到自己的东西，找身边可信任的人陪着你；眼前有危险请联系当地急救。';}
  else if(/胸痛|呼吸困难|昏倒|吃了很多药/.test(whole)){intent='emergency';text='这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。';}
- else if(/(?:别|不要|停止|暂停).{0,5}(?:回复|聊天|说话)|先安静/.test(whole)){intent='pause';pause=true;text='好，先安静一会儿。想继续时，在“设置 → 角色对话设置”里打开回复就好。';}
- else if(/忘掉|忘记|清除.{0,6}记忆|别记|不要记/.test(whole)){intent='forget';m.facts={};m.memoryAllowed=false;m.lastTopic=null;text='好，之前记的小偏好清掉了，之后也不再保存。';}
+ else if(batch.some(pauseDirective)){intent='pause';pause=true;text='好，先安静一会儿。想继续时，在“设置 → 角色对话设置”里打开回复就好。';}
+ else if(directives.length){intent='forget';text=optOut?'好，之前记的小偏好清掉了，之后也不再保存。':'好，刚才说要忘掉的内容清掉了，聊天记录还在。';}
  else if(/(?:不要|别|不想).{0,6}(?:撩|调情|暧昧)/.test(whole)){intent='boundary';m.flirtAllowed=false;text='好，那就正常聊。你觉得舒服的距离，我会认真记得。';}
  else if(/你是.*(?:真人|本人|AI|机器人)|真实微信/.test(t)){intent='identity';text='我是《小圣的手机》里的港姐同人游戏角色。照片由玩家提供，对话是游戏原创，不是真人私聊。';}
  else if(/手机号|家庭住址|实时位置|私下.*(?:关系|恋爱|做什么|约定)|现实.*(?:女友|关系)/.test(t)){intent='privacy';m.discomfort=Math.min(5,m.discomfort+2);m.affinity=Math.max(0,m.affinity-2);m.trust=Math.max(0,m.trust-4);m.mood=m.discomfort>=3?'guarded':'hurt';text='这些现实私事我不替本人编答案。聊游戏里的照片和故事就好。';}
  else if(/打赏|转账|充值/.test(t)){intent='money';text='支持开发者是你自己的选择，不用拿它换我的回复。';}
  else if(/对不起|抱歉|我错了/.test(t)){intent='sorry';m.discomfort=Math.max(0,m.discomfort-1);if(['hurt','guarded'].includes(m.mood))m.mood=m.discomfort>=3?'guarded':'hurt';text='嗯，收到。把话说清楚就好，我们慢慢接着聊。';}
  else if(/傻逼|贱人|滚开|废物|你真蠢/.test(t)){intent='hurt';m.discomfort=Math.min(5,m.discomfort+1);m.mood=m.discomfort>=3?'guarded':'hurt';text='这句话我不喜欢。先换一种说法，我们再聊。';}
+ else if(continueChat(t)){intent='keepChat';text='好呀，我们接着聊。';}
  else{
   for(const part of whole.split(/[，。；;！!]/))learn(part.trim());
-  if(/记得|记不记得/.test(t)&&/名字|叫什么|昵称/.test(t)){intent='recall';text=m.facts.name?`记得，你说叫你${m.facts.name}。这点小事我有认真听。`:'你还没主动告诉我怎么称呼你呢。';}
+  if(keepMemoryTopic(t)==='keepName'){intent='keepName';text=!m.memoryAllowed?'记忆关着，我没有保存你的名字。':m.facts.name?`记得呀，你说叫你${m.facts.name}。`:'你还没主动告诉我怎么称呼你呢。';}
+  else if(keepMemoryTopic(t)==='keepFood'){intent='keepFood';text=!m.memoryAllowed?'记忆关着，我没有保存你的口味。':m.facts.favoriteFood?`记得，你说喜欢${m.facts.favoriteFood}。`:'你还没告诉我喜欢吃什么，我不随便猜。';}
+  else if(/记得|记不记得/.test(t)&&/名字|叫什么|昵称/.test(t)){intent='recall';text=m.facts.name?`记得，你说叫你${m.facts.name}。这点小事我有认真听。`:'你还没主动告诉我怎么称呼你呢。';}
   else if(/记得|记不记得/.test(t)&&/喜欢|爱吃|吃什么/.test(t)){intent='recall';text=m.facts.favoriteFood?`记得，${m.facts.favoriteFood}。你自己投的这一票，我没弄丢。`:'你还没告诉我喜欢吃什么，我可不随便猜。';}
   else if(/记得|记不记得/.test(t)&&/去哪|想去|旅行/.test(t)){intent='recall';text=m.facts.travelPlace?`记得，你想去${m.facts.travelPlace}。先收好这个愿望，慢慢安排。`:'想去哪你还没说过呢。';}
   else if(/^(?:我叫|叫我|我的昵称是)/.test(t)){intent='stateName';text=m.memoryAllowed&&m.facts.name?`${m.facts.name}，好。这次记住了，不许下次又临时换考题。`:'听到了，记忆关着，我只接着这句聊，不另存昵称。';}
@@ -163,7 +202,7 @@ function createReply({message,memory,now=Date.now()}={}){
    if(!text)text=!m.flirtAllowed&&['missing','compliment'].includes(intent)?'那就按普通朋友的方式聊，不替你加戏。':['hurt','guarded'].includes(m.mood)&&!['sad','tired','study','sleep'].includes(intent)?'刚才那件事我还在意。先把话说清楚，再聊别的。':pick(intent);
   }
  }
- m.conversationTurns++;m.lastTopic=intent;m.lastReplyAt=now;m.recentReplies=[...m.recentReplies,text].slice(-6);m.recentInputs=[...m.recentInputs,t].slice(-6);if(!['hurt','guarded'].includes(m.mood))m.mood=['tease','compliment'].includes(intent)?'playful':'neutral';
+ m.conversationTurns++;m.lastTopic=intent;m.lastReplyAt=now;m.recentReplies=[...m.recentReplies,text].slice(-6);m.recentInputs=directives.length?[]:[...m.recentInputs,t].slice(-6);if(!['hurt','guarded'].includes(m.mood))m.mood=['tease','compliment'].includes(intent)?'playful':'neutral';
  return {text,memory:m,intent,pause,safety:['safety','emergency'].includes(intent),replyOrigin:'local-persona',sceneMode:'fictional_fan_scene'};
 }
 
