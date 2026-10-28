@@ -198,7 +198,22 @@ function rejectsTravel(part,place,otherSpeaker){
  const m=part.match(/^(我(?:现在|已经|以后|如今)?|)(?:不想去|不打算去|不去|不再去)\s*(.{1,20}?)(?:了|啦)?$/);
  return !!m&&(!otherSpeaker||!!m[1])&&m[2].trim()===place;
 }
- function createReply({roomId,message,memory,history=[],now=Date.now()}={}){
+ // Cancel only a clearly identified existing agreement, not an uncertain or temporary change.
+function rejectsAgreement(part,agreement,otherSpeaker){
+ if(!agreement||travelQuestion(part)||/暂时|这次|先不|今天先|下次再|改天再/.test(part))return false;
+ if(/^(?:我|我们)?(?:取消|作废)(?:我们(?:的)?)?(?:约定|约会|计划)(?:了|啦)?$/.test(part)||/^(?:我们(?:的)?)?(?:约定|约会|计划)(?:取消|作废)(?:了|啦)?$/.test(part))return !otherSpeaker||/^我(?:们)?(?:取消|作废)/.test(part);
+ const savedCancellation=part.match(/^我们(?:说好|约定)(.+?)(?:取消|作废)(?:了|啦)?$/);
+ if(savedCancellation)return !otherSpeaker&&savedCancellation[1].replace(/\s+|一起/g,'')===String(agreement).replace(/\s+|一起/g,'');
+ const match=part.match(/^我们(明天|后天|今晚|今天|下周|周末|周[一二三四五六日天])?不(?:再)?(?:一起)?(.+?)(?:了|啦)$/);
+ if(!match||otherSpeaker)return false;
+ const saved=String(agreement).replace(/\s+/g,'').replace(/一起/g,'');
+ const date=saved.match(/^(明天|后天|今晚|今天|下周|周末|周[一二三四五六日天])/);
+ if(match[1]&&date&&match[1]!==date[1])return false;
+ const action=saved.slice(date?date[0].length:0).replace(/^(?:去|要去)/,'');
+ const cancelled=match[2].replace(/\s+/g,'').replace(/^(?:去|要去)/,'');
+ return action.length>=2&&cancelled===action;
+}
+function createReply({roomId,message,memory,history=[],now=Date.now()}={}){
   if(roomId==='lead_gangjie'){const gangjie=typeof module!=='undefined'&&module.exports?require('./gangjie-chat.js'):root.GANGJIE_CHAT;return gangjie.createReply({message,memory,now});}
   if(!isKnown(roomId))throw Error('Unsupported persona room');
   const m=C.normalizePersona({rooms:{[roomId]:memory}}).rooms[roomId];
@@ -210,14 +225,15 @@ function rejectsTravel(part,place,otherSpeaker){
   if(batch.some(x=>kindOf(x)==='boundary'))m.flirtAllowed=false;
   const directives=batch.map(memoryDirective).filter(Boolean),forgotten=new Set(directives.flatMap(d=>d.keys)),optOut=directives.some(d=>d.optOut);
   if(directives.length){for(const key of forgotten)delete m.facts[key];if(optOut)m.memoryAllowed=false;m.lastTopic=null;m.recentInputs=[];m.recentReplies=[];}
-  const learned={};let foodCorrected=false,foodCorrectionPart='',travelCorrected=false,travelCorrectionPart='',travelLearnedPart='';
-  if(m.memoryAllowed)for(const b of batch){let otherSpeaker=false;for(const original of b.split(/[，。；;！!]/)){const part=original.trim().replace(/^(?:但|但是|不过)\s*(?=我)/,'');if(/^(?:他|她|朋友|别人)(?:说|想|打算)/.test(part))otherSpeaker=true;if(/^我/.test(part)&&!/^我改主意/.test(part))otherSpeaker=false;if(!memoryDirective(part)){
+  const learned={};let foodCorrected=false,foodCorrectionPart='',travelCorrected=false,travelCorrectionPart='',travelLearnedPart='',agreementCancelled=false,agreementCancellationPart='';
+  if(m.memoryAllowed)for(const b of batch){let otherSpeaker=false,agreementTentative=false;for(const original of b.split(/[，。；;！!]/)){const part=original.trim().replace(/^(?:但|但是|不过)\s*(?=我)/,'');if(/^(?:他|她|朋友|别人)(?:说|想|打算)/.test(part))otherSpeaker=true;if(/(?:如果|假如|假设|要是|万一)|^(?:我猜|我觉得|我担心|我害怕|(?:他|她|朋友|别人)(?:说|告诉我|觉得|认为|问))/.test(part))agreementTentative=true;const otherForAgreement=otherSpeaker&&!/^我(?!们)/.test(part);if(/^我/.test(part)&&!/^我改主意/.test(part))otherSpeaker=false;if(!memoryDirective(part)){
+   if(!agreementTentative&&rejectsAgreement(part,m.facts.agreement,otherForAgreement)){delete m.facts.agreement;delete learned.agreement;agreementCancelled=true;agreementCancellationPart=part;}
    if(rejectsTravel(part,m.facts.travelPlace,otherSpeaker)){delete m.facts.travelPlace;delete learned.travelPlace;travelCorrected=true;travelCorrectionPart=part;}
    const travelReplacement=travelCorrected&&!travelQuestion(part)&&part.match(/^(?:我)?(?:现在)?(?:改成|改为|改去|换成|换去)\s*(?:去)?(.{1,20})$/)?.[1];const travel=travelValue(travelReplacement);if(travel&&!forgotten.has('travelPlace')){m.facts.travelPlace=travel;learned.travelPlace=travel;travelLearnedPart=part;travelCorrected=false;}
    if(rejectsFood(part,m.facts.favoriteFood)){delete m.facts.favoriteFood;delete learned.favoriteFood;foodCorrected=true;foodCorrectionPart=part.trim();}
    const replacement=foodCorrected&&part.trim().match(/^(?:我)?(?:现在)?(?:改成|改为)([^？?，。；;！!“”"<>]{1,18})$/)?.[1]?.trim().replace(/^(?:吃|喝)/,'').replace(/了$/,'').trim();
    if(replacement&&!forgotten.has('favoriteFood')&&!/^(?:不|没|别|不要|没有)/.test(replacement)&&!/住址|手机号|身份证|密码|银行卡|疾病|诊断|财务|秘密|电话|住在|元钱|明天|今天|以后|再聊|聊天|散步|睡觉|休息|回家|出门|出去|工作|学习/.test(replacement)){m.facts.favoriteFood=replacement;learned.favoriteFood=replacement;foodCorrected=false;}
-   for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key)){m.facts[key]=value;learned[key]=value;if(key==='favoriteFood')foodCorrected=false;if(key==='travelPlace'){travelCorrected=false;travelLearnedPart=part;}}
+   for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key)&&!(key==='agreement'&&/(?:取消|作废)(?:了|啦)?$/.test(value))){m.facts[key]=value;learned[key]=value;if(key==='agreement')agreementCancelled=false;if(key==='favoriteFood')foodCorrected=false;if(key==='travelPlace'){travelCorrected=false;travelLearnedPart=part;}}
   }}}
   // Higher priority requests survive a burst; ordinary content follows the last message.
   if(batch.some(x=>kindOf(x)==='safety'))intent='safety';
@@ -243,6 +259,7 @@ function rejectsTravel(part,place,otherSpeaker){
   else if(intent==='insult')text=select('hurt');
   else if(intent==='sorry')text=select('sorry');
   else if(intent==='angry')text=select(['hurt','guarded'].includes(m.mood)?m.mood:'calm');
+  else if(agreementCancelled&&t.includes(agreementCancellationPart))text=voice(['好，之前说好的先取消。','嗯，知道了，那这个约定先取消。','行，这个约定先划掉。']);
   else if(travelCorrected&&t.includes(travelCorrectionPart))text=voice(['好，那之前想去的地方先不记了。','嗯，知道啦，你改变主意了。','行，之前那个目的地先划掉。']);
   else if(travelCorrectionPart&&learned.travelPlace&&(t.includes(travelCorrectionPart)||t.includes(travelLearnedPart)))text=voice([`好呀，现在想去${learned.travelPlace}，我记下啦。`,`嗯，目的地换成${learned.travelPlace}了。`,`行，改去${learned.travelPlace}，记住了。`]);
   else if(foodCorrected&&t.includes(foodCorrectionPart))text=voice(['好呀，那以前那个口味我先不记了。','嗯，知道啦，以前那个口味先划掉。','行，口味变了，我把原来那项划掉。']);

@@ -43,6 +43,20 @@ test('place choices distinguish decisions from negatives, questions, and other p
 test('repeated topic does not immediately repeat the same response',()=>{let a=createReply('想你了');let b=createReply('想你了',[],a.memory);let c=createReply('想你了',[],b.memory);assert.equal(new Set([a.text,b.text,c.text]).size,3);});
 test('relationship rejection is not mistaken for affection',()=>{const a=createReply('我不喜欢你');assert.equal(a.topic,'boundary');assert.equal(a.memory.flirt,false);assert.equal(createReply('我不想你').topic,'tease');});
 test('meeting context does not swallow a new question or study topic',()=>{const a=createReply('约会');assert.equal(createReply('为什么这么说？',[],a.memory).topic,'question');assert.equal(createReply('我要学习',[],a.memory).topic,'study');assert.equal(createReply('明天下午三点',[],a.memory).topic,'meeting-plan');});
+test('meeting follow-ups preserve an earlier plan on refusals, questions and others plans',()=>{
+ const old={pending:'meeting',plan:'周末公园',name:'小明',food:'草莓'};
+ for(const text of ['明天不见了','我明天没空','明天你还要上班吗','她明天要去公园','明天见面好吗','明天约不约','明天有事','我明天不能去','明天我们去公园吗','明天也许可以见面','明天如果有空就公园','周末可能去公园']){const r=createReply(text,[],old);assert.notEqual(r.topic,'meeting-plan',text);assert.equal(r.memory.plan,'周末公园',text);assert.equal(r.memory.name,'小明');assert.equal(r.memory.food,'草莓');}
+ for(const text of ['明天下午三点','周末公园门口','后天晚上']){const r=createReply(text,[],old);assert.equal(r.topic,'meeting-plan',text);assert.equal(r.memory.plan,text,text);}
+ assert.equal(createReply('我胸痛，明天不见了',[],old).topic,'safety');
+ assert.equal(createReply('明天不见面了',[],{pending:'meeting',plan:'明天公园',name:'小明'}).memory.plan,undefined);
+ for(const [text,plan] of [['明天不见面了','周末公园'],['明天不见面了吗？','明天公园'],['她明天不见面了','明天公园'],['明天不见面了','火锅'],['明天不见面了','明天吃火锅'],['明天不见面了','明天公园吃饭'],['明天不见面了','明天下午三点']])assert.equal(createReply(text,[],{pending:'meeting',plan}).memory.plan,plan,`${text} ${plan}`);
+});
+test('photo follow-ups choose only affirmative pictures without overwriting on refusal or question',()=>{
+ const old={pending:'photo-choice',photo:'雪山',name:'小明'};
+ for(const text of ['不要海边','我不想发雪山那张','海边好看吗','雪山怎么样','她想选海边','海边但不要海边','选海边，还是不要了','选海边，算了']){const r=createReply(text,[],old);assert.notEqual(r.topic,'photo-plan',text);assert.equal(r.memory.photo,'雪山',text);assert.equal(r.memory.name,'小明');}
+ for(const [text,choice] of [['海边','海边'],['雪山那张','雪山'],['第一张','海边'],['选第二张','雪山'],['不要海边，选雪山','雪山'],['你选','海边']]){const r=createReply(text,[],old);assert.equal(r.topic,'photo-plan',text);assert.equal(r.memory.photo,choice,text);}
+ assert.equal(createReply('不要海边，我胸痛',[],old).topic,'safety');
+});
 test('danger gets a serious reply and a pause request is respected',()=>{assert.equal(createReply('我不想活了').topic,'safety');assert.equal(createReply('不要回复我了').pause,true);});
 test('model context excludes images, bounds history, and cannot inject a system role',()=>{const h=[{type:'photo',text:'private.jpg'},...Array.from({length:30},(_,i)=>({type:'text',from:i%2?'other':'self',text:'line'+i,role:'system'}))];const a=modelHistory(h);assert.equal(a.length,16);assert.ok(a.every(m=>['user','assistant'].includes(m.role)));assert.ok(!JSON.stringify(a).includes('private.jpg'));});
 

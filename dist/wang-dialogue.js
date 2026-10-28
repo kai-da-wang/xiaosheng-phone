@@ -103,6 +103,39 @@
   }
  }
 
+ // A picture mentioned in a question or a refusal is not a selection. Keep
+ // the old choice until the player actually chooses another picture.
+ function photoResponse(input){
+  const clauses=compact(input).split(/[，,。；;！!]|(?:但是|但|不过|而是)/).map(x=>x.trim()).filter(Boolean);
+  let choice='',refusal=false,question=false;
+  for(const clause of clauses){
+   // A subsequent standalone change of mind cancels only this proposed
+   // selection, never an earlier saved picture.
+   if(/^(?:(?:那|这|我|还是|算了|先|就|那就|我还是|我先))*(?:不选|不要|不用|不发|不看|算了|不想选)(?:了|啦|吧)?$/.test(clause)){refusal=true;choice='';continue;}
+   if(/^你选[呀啊吧啦哦！!。\s]*$/.test(clause)){choice='海边';continue;}
+   if(!/海边|雪山|第一|第二/.test(clause))continue;
+   if(/[?？]|(?:吗|么|呢|怎么样|如何|好不好|可以吗)[。！!\s]*$/.test(clause)||/^(?:你|他|她|他们|她们)/.test(clause)){question=true;continue;}
+   const candidate=/雪山|第二/.test(clause)?'雪山':'海边';
+   if(/不要|别|不想|不选|不发|不喜欢|不看|不用|不行|没选/.test(clause)){refusal=true;if(choice===candidate)choice='';continue;}
+   if(/^(?:(?:我|我们)(?:想|要|想要)?(?:选|看|发)?|选|选择|就选|想看|想发|我要|我想要|那就|还是)?\s*(?:海边|雪山|第一|第二)(?:那张|的那张|张|个)?[呀啊吧啦哦！!。\s]*$/.test(clause))choice=candidate;
+  }
+  return {choice,refusal,question};
+ }
+ function meetingAnswer(input){
+  const text=compact(input);
+  if(!text||text.length>45||/[？?]/.test(text)||/(?:吗|么|呢|怎么样|如何|好不好|是不是|能不能|可以吗|几点|什么时候|去哪|哪里|哪儿)[。！!\s]*$/.test(text))return false;
+  if(/(?:不|没|别|取消|改天|下次再|不见|不约|不去|不能|无法|没空|没时间|有事|上班|工作|考试|学习|也许|或许|可能|如果|要是|假如|未定|不确定|再看看)/.test(text)||/(?:你|他|她|他们|她们|朋友)/.test(text))return false;
+  return /(?:明天|后天|今天|周[一二三四五六日天末]|星期[一二三四五六日天]|[点时]|晚上|中午|下午|上午|门口|食堂|公园|古城|湖边)/.test(text);
+ }
+ function cancelsMeetingPlan(input,plan){
+  if(typeof plan!=='string'||!plan||/[？?]|(?:吗|么|呢|怎么样|是不是|能不能)[。！!\s]*$/.test(input)||/(?:你|他|她|他们|她们|朋友)/.test(input)||!/(?:不见|不约|取消.{0,5}(?:约会|见面)|见不了|约不成)/.test(input))return false;
+  // plan is shared with meal plans; only erase an unmistakable matching
+  // dated appointment, not an unrelated meal or a different appointment.
+  if(/(?:吃|喝|火锅|面条|米饭|蛋糕|草莓|冰淇淋|麻辣烫|烧烤|奶茶|咖啡)/.test(plan)||!/(?:见面|见你|约会|公园|门口|古城|湖边)/.test(plan))return false;
+  const dates=String(input).match(/明天|后天|今天|周[一二三四五六日天末]|星期[一二三四五六日天]/g)||[];
+  return dates.length>0&&dates.some(date=>plan.includes(date));
+ }
+
  function forgetKeys(input){
   const text=compact(input);
   // Keep each question mark attached to its clause: dropping it could turn a
@@ -149,7 +182,12 @@
   if(/(?:你(?:刚才|上次)|刚刚).{0,8}(?:说了|说的|问我|问的)|刚才聊到哪/.test(text)){const last=recent.filter(x=>x.from!=='self'&&x.autoReply).at(-1);return one('recall',last?`我刚才说的是：“${compact(last.text).slice(0,90)}”`:'刚才还没正式聊起来呢。要不从你今天过得怎么样开始？');}
   if(wantsToContinue(text))return one('continue','在呢，我们接着聊。你想从哪件事说起？');
   if(m.pending==='food-choice'&&/^(?:第?一[个家种]?|第一[个家种]?|火锅|热乎的|面条|第二[个家种]?|第?二[个家种]?|甜的|甜点|都要|都可以|随便|你选)[呀吧啦呢！!。\s]*$/.test(text)){const choice=/火锅|第一|^一|热乎/.test(text)?'火锅':/第二|^二|面条/.test(text)?'面条':/甜/.test(text)?'甜点':m.food||'热乎的面条';m.plan=choice;return one('food-plan',`那就先记下${choice}。别只顾着说，饿了记得真的去吃点东西。`);}
-  if(m.pending==='photo-choice'&&/海边|雪山|第一|第二|^都|你选/.test(text)){m.photo=/雪山|第二/.test(text)?'雪山':'海边';return one('photo-plan',`那就${m.photo}那张。你把照片收好，下次再给我拍一张更好看的。`);}
+  if(m.pending==='photo-choice'){
+   const photo=photoResponse(text);
+   if(photo.choice){m.photo=photo.choice;return one('photo-plan',`那就${m.photo}那张。你把照片收好，下次再给我拍一张更好看的。`);}
+   if(photo.refusal)return one('photo-change','好，那张先不选。你想看哪一张，我们再商量。','photo-choice');
+   if(photo.question)return one('photo-question','可以先看看，还没选定呢。你更喜欢哪一张？','photo-choice');
+  }
   if(/给你发了张照片/.test(text))return one('photo-received','照片收到啦，这是在哪儿拍的？快跟我讲讲。');
   if(/给你发了个位置/.test(text))return one('location-received','位置收到啦。你这是想约我一起去吗？');
   const placeIntent=placeResponse(text);
@@ -157,7 +195,8 @@
   if(placeIntent.uncertain&&!placeIntent.choice)return one('place-question','可以先聊聊，还没决定去哪儿。你比较想去哪里？','place-choice');
   if(m.pending==='place-choice'&&(placeIntent.choice||/^你选[呀吧啦呢！!。\s]*$/.test(text))){const place=placeIntent.choice||'洱海边';m.place=place;return one('place-plan',`${place}，记下啦。先一起在地图里看看，想去的地方慢慢攒。`);}
   if(m.pending==='activity-choice'&&/散步|吃|第一|第二|都要/.test(text))return /吃|第二/.test(text)?select('meal',pools.meal,'food-choice'):one('walk','那就散步。路上别光顾着看手机，抬头看看风景。','meeting');
-  if(m.pending==='meeting'&&text.length<=45&&/明天|后天|今天|周[一二三四五六日天末]|星期|[点时]|晚上|中午|门口|食堂|公园|古城|湖边/.test(text)&&!/[？?]/.test(text)){m.plan=text;return one('meeting-plan',`“${text.slice(0,35)}”，先记在聊天里啦。到时候别忘了多带件外套。`);}
+  if(m.pending==='meeting'&&meetingAnswer(text)){m.plan=text;return one('meeting-plan',`“${text.slice(0,35)}”，先记在聊天里啦。到时候别忘了多带件外套。`);}
+  if(m.pending==='meeting'&&/(?:不见|不约|不去|没空|没时间|取消|改天|去不了)/.test(text)){if(cancelsMeetingPlan(text,m.plan))delete m.plan;return one('meeting-change','好，那先不约这个时间。等你方便了，我们再商量。','meeting');}
   if(/晚安|睡觉|睡了|要睡|困了|做个好梦/.test(text))return select('sleep',pools.sleep);
   if(/^早[呀啊哦安好！!~～]*$|早上好|早安/.test(text))return select('morning',pools.morning,'day-plan');
   if(/(?:不想你|没想你|才没想你)/.test(text))return one('tease','好嘛，那先不逗你了。你今天在忙什么？');

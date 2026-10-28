@@ -43,3 +43,15 @@ test('a no-flirting request remains a boundary when another burst message suppli
 
 test('polite direct forgetting requests delete the requested fact without confusing status questions',()=>{for(const text of ['请忘掉我的名字吧','可以忘掉我的名字吗？','你能删除我的名字吗','请忘记我的名字好吗？','忘掉我的名字吧']){const s=state(),h=harness(s);s.wangMemory={name:'小陈',food:'面条'};send(s,h,'a',text);h.tick(3000);assert.equal(s.wangMemory.name,undefined,text);assert.equal(s.wangMemory.food,'面条',text);assert.match(s.chatMessages.wang.at(-1).text,/清除/,text)}for(const text of ['忘记我的名字了吗？','你忘掉我的名字了吗','不要忘记我的名字','别忘记我的偏好']){const s=state(),h=harness(s);s.wangMemory={name:'小陈',food:'面条'};send(s,h,'a',text);h.tick(3000);assert.equal(s.wangMemory.name,'小陈',text);assert.equal(s.wangMemory.food,'面条',text);}});
 test('forgetting one fact still allows a distinct fact voluntarily provided in the same burst',()=>{for(const [forget,given,deleted,kept] of [['忘掉我的偏好','我叫小明','food','name'],['忘掉我的名字','我喜欢吃草莓','name','food']]){const s=state(),h=harness(s);s.wangMemory={name:'小陈',food:'面条'};send(s,h,'a',given);send(s,h,'b',forget);h.tick(3000);assert.equal(s.wangMemory[deleted],undefined);assert.equal(s.wangMemory[kept],kept==='name'?'小明':'草莓');}});
+test('meeting and photo refusals survive a merged burst and restart without changing saved choices',()=>{
+ for(const [pending,key,old,inputs] of [
+  ['meeting','plan','周末公园',['明天不见了','我明天没空']],
+  ['photo-choice','photo','雪山',['不要海边','海边好看吗']]
+ ]){
+  const s=state(),h=harness(s);s.wangMemory={pending,[key]:old,name:'小明'};
+  inputs.forEach((text,i)=>send(s,h,'a'+i,text));h.tick(3000);
+  assert.equal(s.wangMemory[key],old);assert.equal(s.wangMemory.name,'小明');
+  const saved=JSON.parse(JSON.stringify(s)),h2=harness(saved);h2.tick(1000);assert.equal(saved.wangMemory[key],old);
+ }
+ for(const inputs of [['海边','还是不要了'],['选雪山','不过还是算了']]){const s=state(),h=harness(s);s.wangMemory={pending:'photo-choice',photo:'旧照片'};inputs.forEach((text,i)=>send(s,h,'p'+i,text));h.tick(3000);assert.equal(s.wangMemory.photo,'旧照片',inputs.join('；'));}
+});

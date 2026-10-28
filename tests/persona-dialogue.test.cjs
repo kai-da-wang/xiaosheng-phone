@@ -1,6 +1,23 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const E=require('../dist/persona-dialogue.js'),C=require('../dist/core.js');
 const ids=['lead_vivi','lead_muma','lead_monv'],run=(id,message,memory,extra={})=>E.createReply({roomId:id,message,memory,now:1792880000000,...extra});
+test('explicit cancellation of an agreement updates only that memory and survives reload',()=>{
+ for(const id of [...ids,'lead_gangjie']){
+  let a=run(id,'我叫小凯，我喜欢吃苹果，我们说好明天一起散步');
+  assert.equal(a.memory.facts.agreement,'明天一起散步',id);
+  for(const text of ['我们明天不散步了','我们明天不去散步了','我们约定取消了','取消我们的约定','我们说好明天一起散步取消了','因为下雨，我们明天不散步了']){
+   const r=run(id,text,a.memory);assert.equal(r.memory.facts.agreement,undefined,id+' '+text);assert.equal(r.memory.facts.name,'小凯',id);assert.equal(r.memory.facts.favoriteFood,'苹果',id);assert.match(r.text,/取消|划掉/,id);
+   const saved=C.normalize({version:1,personaV2:{rooms:{[id]:r.memory}},notes:[{id:'old',text:'保留'}]});assert.equal(saved.personaV2.rooms[id].facts.agreement,undefined,id);assert.equal(saved.notes[0].id,'old');
+  }
+  for(const text of ['我们明天不散步了吗','我们后天不散步了','我们明天不吃饭了','她说我们明天不散步了','她说，我们明天不散步了','她告诉我，我们明天不散步了','我猜，我们明天不散步了','如果下雨，我们明天不散步了','明天如果下雨，我们明天不散步了','明天要是下雨，我们明天不散步了','我们明天暂时不散步了','如果我们明天不散步了']){
+   const r=run(id,text,a.memory);assert.equal(r.memory.facts.agreement,'明天一起散步',id+' '+text);
+  }
+  const urgent=run(id,['我们明天不散步了','我胸痛'],a.memory);assert.equal(urgent.safety,true,id);assert.equal(urgent.memory.facts.agreement,undefined,id);assert.match(urgent.text,/急救|医院/,id);
+  const forgotten=run(id,['我们明天不散步了','请忘记我的名字'],a.memory);assert.equal(forgotten.memory.facts.agreement,undefined,id);assert.equal(forgotten.memory.facts.name,undefined,id);assert.equal(forgotten.memory.facts.favoriteFood,'苹果',id);
+  const newPlan=run(id,['我们明天不散步了','我们说好后天一起看电影'],a.memory);assert.equal(newPlan.memory.facts.agreement,'后天一起看电影',id);
+  const disabled={...a.memory,memoryAllowed:false};const result=run(id,'我们明天不散步了',disabled);assert.equal(result.memory.memoryAllowed,false,id);assert.equal(result.memory.facts.agreement,undefined,id);
+ }
+});
 test('same messages produce three distinct personalities and no assumed romance',()=>{
  for(const msg of ['你好','忙吗','你生气了吗','你是不是喜欢我','你和小圣私底下做什么了','别聊这个']){
   const replies=ids.map(id=>run(id,msg).text);assert.equal(new Set(replies).size,3,msg);
