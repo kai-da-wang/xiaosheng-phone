@@ -41,6 +41,41 @@
   if(food)return {key:'food',value:food[1].trim()};
   return null;
  }
+ // Only a clearly stated lasting change to the same food invalidates it.
+ // Process clauses in order so a replacement in the same message wins.
+ function foodChanges(input){
+  const text=compact(input);if(!text||/[?？]/.test(text)||/(?:吗|么)[。！!\s]*$/.test(text))return [];
+  const changes=[];
+  for(const part of text.split(/[，,。；;！!]|(?:但是|但|不过|而是)/).map(part=>part.trim()).filter(Boolean)){
+   const no=part.match(/^(?:我)?(?:现在|已经|以后)?(?:不再|不|没那么)(?:喜欢吃|爱吃)\s*([^，。！？!?]{1,14}?)\s*(?:了|啦)?$/);
+   if(no){changes.push({kind:'remove',value:no[1].trim()});continue;}
+   const yes=explicitFact(part);
+   const replacement=changes.length&&part.match(/^(?:我)?(?:现在|以后)?(?:改成|换成|喜欢吃|爱吃)\s*([^，。！？!?]{1,14})$/);
+   const value=(yes?.key==='food'?yes.value:replacement?.[1])?.replace(/(?:了|啦)$/,'').trim();
+   const next=replacement&&yes?.key!=='food'?value?.replace(/^吃/,'').trim():value;
+   if(next&&(yes?.key==='food'||foodAnswer(next)))changes.push({kind:'set',value:next});
+  }
+  return changes;
+ }
+ function applyFoodChanges(memory,input){
+  for(const change of foodChanges(input)){
+   if(change.kind==='set')memory.food=change.value;
+   else if(memory.food===change.value)delete memory.food;
+  }
+ }
+ function foodAnswer(text){
+  return /^[\u4e00-\u9fffA-Za-z0-9]{1,14}$/.test(text)&&
+   !/^(?:我|你|他|她|不|没|别|要|想|好|嗯|是|请|先|还|刚|今天|现在|吃|晚安|早安|你好|嗨|在吗|不知道|随便|都可以|算了|谢谢|再见|学习|工作|考试|累|饿)/.test(text)&&
+   !/(?:不|没|别|吃过|吃了|吃下|喜欢|讨厌|想吃|能吃|要吃|好吃|怎么样|如何|可以|有吗|吗|么|呢|吧)/.test(text)&&
+   /(?:面|饭|粥|粉|包子|饺子|馄饨|馒头|肉|鱼|虾|蟹|蛋|菜|汤|火锅|烧烤|披萨|汉堡|寿司|薯|饼|糕|糖|巧克力|奶茶|咖啡|水果|草莓|苹果|香蕉|橙|葡萄|西瓜|芒果|桃|梨|柚|榴莲|樱桃|蓝莓|冰淇淋|冰激凌|豆腐|鸡翅|串|螺蛳|麻辣烫)/.test(text);
+ }
+ function nameAnswer(text){
+  // Bare answers are ambiguous; accept familiar nicknames, common Chinese
+  // surnames and Latin names, but reject normal conversational replies.
+  if(/^(?:我|你|他|她|今天|明天|现在|刚才|晚上|早上|好|嗯|知道|随便|都可以|算了|谢谢|再见|在吗|嗨|hello|hi|累|饿|可以|哈哈|心情|还没|刚吃|高数|数学|英语|工作|学习|考试)/i.test(text))return false;
+  return /^(?:小[\u4e00-\u9fff]{1,3}|[赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦许何吕张孔曹严华金魏谢邹苏潘范彭鲁马方任袁柳史唐薛雷贺汤罗郝安常于傅齐康伍余顾孟黄尹姚邵汪毛戴宋庞熊董梁杜蓝季贾江童郭林钟徐邱高夏蔡田胡霍万卢莫崔龚程陆邓洪包石刘龙叶白赖卓乔谭申桑桂牛边燕温庄柴阎连艾向易廖文曾沙关查游权][\u4e00-\u9fff]{1,3}|[A-Za-z]{2,12})$/.test(text);
+ }
+
  function forgetKeys(input){
   const text=compact(input);
   if(/(?:别|不要|不许|不会|没有|没|不能|无法)忘(?:记|掉)/.test(text)||/^我(?:已经|刚刚|刚|好像)?忘(?:记|掉)/.test(text))return [];
@@ -55,7 +90,7 @@
   const result={...old},forget=messages.flatMap(forgetKeys);
   // Forgetting wins over conflicting volunteered facts in the same burst.
   if(forget.length){for(const key of forget)delete result[key];result.recent=[];}
-  for(const text of messages){const fact=explicitFact(text);if(fact&&fact.value&&!forget.includes(fact.key))result[fact.key]=fact.value;}
+  for(const text of messages){const fact=explicitFact(text);if(fact?.key==='name'&&fact.value&&!forget.includes('name'))result.name=fact.value;if(!forget.includes('food'))applyFoodChanges(result,text);}
   return result;
  }
  function createReply(input,history=[],old={}){
@@ -67,16 +102,19 @@
   if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(text))return one('safety','这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。先照顾好自己。');
   if(isPauseRequest(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
   const forgotten=forgetKeys(text);if(forgotten.length){for(const key of forgotten)delete m[key];m.recent=[];return one('forget','好，刚才说的资料已经从记忆里清除，聊天记录还在。');}
+  const changes=foodChanges(text);applyFoodChanges(m,text);
   const fact=explicitFact(text);
   if(/(?:你是|你是不是|你真是|你到底是).{0,8}(?:真人|本人|真的小王|人工智能|机器人|AI)|(?:是不是|是).{0,3}程序/.test(text))return one('identity','我是这部手机里的小王游戏角色呀。现在用情景对话陪你聊天，真人的私事我可不会乱编。');
+  if(/(?:不喜欢你|不爱你|别撩|不要撩|不想谈恋爱|别叫我宝宝|不要叫我宝宝)/.test(text)){m.flirt=false;return one('boundary','好，那我们就轻松聊，不这样逗你了。你想聊点什么？');}
+  if(/(?:难过|不开心|伤心|委屈|焦虑|烦死|想哭|失落|生气|心情不好)/.test(text)){if(fact?.key==='name')m.name=fact.value;return select('sad',pools.sad,'feelings');}
   if(fact?.key==='name'){m.name=fact.value;return one('name',`${m.name}，记住啦。那以后我就这样叫你，好不好？`);}
   if(/(?:我叫什[么麼]|我的名字|记得我的名字|还记得我叫)/.test(text))return one('name',m.name?`${m.name}呀。自己告诉我的，我有认真记着。`:'你还没正式告诉我呢。你想让我怎么叫你？',m.name?'':'name');
-  if(m.pending==='name'&&/^[\u4e00-\u9fffA-Za-z]{1,6}$/.test(text)&&!/[？?]/.test(text)&&!/^(好的|好呀|不知道|随便|都可以|不说)$/.test(text)){m.name=text;return one('name',`${text}，好，记住啦。`);}
-  if(fact?.key==='food'){m.food=fact.value;return one('food-memory',`${m.food}，我记住了。下次聊吃什么，可别说我没认真听。`);}
+  if(m.pending==='name'&&nameAnswer(text)){m.name=text;return one('name',`${text}，好，记住啦。`);}
+  if(changes.length){const last=changes.at(-1);return last.kind==='set'?one('food-memory',`${last.value}，我记住了。下次聊吃什么，可别说我没认真听。`):one('food-memory','好，知道你现在不喜欢这个了。想换个口味吗？');}
   if(/(?:记得|知道).{0,8}(?:喜欢吃|爱吃)|我(?:喜欢吃|爱吃)什[么麼]/.test(text))return one('food-memory',m.food?`你说过喜欢吃${m.food}。看，我有认真听。`:'这个你还没告诉我呢。你最喜欢吃什么？',m.food?'':'food-preference');
-  if(m.pending==='food-preference'&&text.length<=14&&!/[？?]/.test(text)){m.food=text;return one('food-memory',`${text}，好，记在这次聊天的小本子上啦。`);}
+  if(/(?:今天|现在|这会儿|暂时)(?:我)?不(?:想|要)吃/.test(text))return one('meal','好，今天先不吃这个。想换什么口味？');
+  if(m.pending==='food-preference'&&foodAnswer(text)){m.food=text;return one('food-memory',`${text}，好，记在这次聊天的小本子上啦。`);}
   if(/(?:你(?:刚才|上次)|刚刚).{0,8}(?:说了|说的|问我|问的)|刚才聊到哪/.test(text)){const last=recent.filter(x=>x.from!=='self'&&x.autoReply).at(-1);return one('recall',last?`我刚才说的是：“${compact(last.text).slice(0,90)}”`:'刚才还没正式聊起来呢。要不从你今天过得怎么样开始？');}
-  if(/(?:不喜欢你|不爱你|别撩|不要撩|不想谈恋爱|别叫我宝宝|不要叫我宝宝)/.test(text)){m.flirt=false;return one('boundary','好，那我们就轻松聊，不这样逗你了。你想聊点什么？');}
   if(wantsToContinue(text))return one('continue','在呢，我们接着聊。你想从哪件事说起？');
   if(m.pending==='food-choice'&&/^(?:第?一[个家种]?|第一[个家种]?|火锅|热乎的|面条|第二[个家种]?|第?二[个家种]?|甜的|甜点|都要|都可以|随便|你选)[呀吧啦呢！!。\s]*$/.test(text)){const choice=/火锅|第一|^一|热乎/.test(text)?'火锅':/第二|^二|面条/.test(text)?'面条':/甜/.test(text)?'甜点':m.food||'热乎的面条';m.plan=choice;return one('food-plan',`那就先记下${choice}。别只顾着说，饿了记得真的去吃点东西。`);}
   if(m.pending==='photo-choice'&&/海边|雪山|第一|第二|^都|你选/.test(text)){m.photo=/雪山|第二/.test(text)?'雪山':'海边';return one('photo-plan',`那就${m.photo}那张。你把照片收好，下次再给我拍一张更好看的。`);}
@@ -85,7 +123,6 @@
   if(m.pending==='meeting'&&text.length<=45&&/明天|后天|今天|周[一二三四五六日天末]|星期|[点时]|晚上|中午|门口|食堂|公园|古城|湖边/.test(text)&&!/[？?]/.test(text)){m.plan=text;return one('meeting-plan',`“${text.slice(0,35)}”，先记在聊天里啦。到时候别忘了多带件外套。`);}
   if(/晚安|睡觉|睡了|要睡|困了|做个好梦/.test(text))return select('sleep',pools.sleep);
   if(/^早[呀啊哦安好！!~～]*$|早上好|早安/.test(text))return select('morning',pools.morning,'day-plan');
-  if(/(?:难过|不开心|伤心|委屈|焦虑|烦死|想哭|失落|生气|心情不好)/.test(text))return select('sad',pools.sad,'feelings');
   if(/(?:不想你|没想你|才没想你)/.test(text))return one('tease','好嘛，那先不逗你了。你今天在忙什么？');
   if(/想你|想我|想见你|想念/.test(text))return m.flirt===false?one('boundary','听见啦，我们就按你舒服的方式聊天。今天过得还好吗？'):select('missing',pools.missing);
   if(/喜欢你|爱你|爱我|亲亲|抱抱|牵手|牵着/.test(text))return m.flirt===false?one('boundary','听见啦，我们就按你舒服的方式聊天。今天过得还好吗？'):select('love',pools.love);

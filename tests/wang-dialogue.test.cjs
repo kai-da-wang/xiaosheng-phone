@@ -2,7 +2,24 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createReply,modelHistory}=require('../dist/wang-dialogue.js');
 test('name is learned only from the player and can be recalled',()=>{let a=createReply('我叫小凯');let b=createReply('我叫什么',[],a.memory);assert.equal(a.memory.name,'小凯');assert.match(b.text,/小凯/);assert.match(createReply('我叫什么').text,/还没/);let c=createReply('今天有点累',[],b.memory);assert.equal(c.topic,'tired');assert.equal(c.memory.name,'小凯');});
+test('declining a name or changing topic is not treated as a name',()=>{for(const text of ['我不想说','不告诉你','今天好累','你好','不知道','不说','哈哈','可以','还没吃','刚吃过了','心情不好','高数','明天考试']){const r=createReply(text,[],{pending:'name'});assert.equal(r.memory.name,undefined,text);}assert.equal(createReply('小凯',[],{pending:'name'}).memory.name,'小凯');assert.equal(createReply('王晓明',[],{pending:'name'}).memory.name,'王晓明');});
 test('food preference survives an unrelated topic and is recalled',()=>{let a=createReply('我喜欢吃草莓');let b=createReply('今天好累',[],a.memory);let c=createReply('记得我喜欢吃什么吗',[],b.memory);assert.equal(c.memory.food,'草莓');assert.match(c.text,/草莓/);let d=createReply('想你了',[],c.memory);assert.equal(d.topic,'missing');assert.equal(d.memory.food,'草莓');});
+test('withdrawn food is not remembered, a replacement is retained, and other memories survive',()=>{
+ const old={food:'草莓',name:'小明',place:'洱海'};
+ for(const text of ['我现在不喜欢吃草莓了','我不再爱吃草莓']){const r=createReply(text,[],old);assert.equal(r.memory.food,undefined,text);assert.equal(r.memory.name,'小明');assert.equal(r.memory.place,'洱海');assert.doesNotMatch(createReply('记得我喜欢吃什么吗',[],r.memory).text,/草莓/);}
+ for(const text of ['我不喜欢吃草莓，我喜欢吃苹果','我不喜欢吃草莓了，改成苹果','我不喜欢吃草莓了但换成苹果','我不喜欢吃草莓了，改成吃苹果']){const replaced=createReply(text,[],old);assert.equal(replaced.memory.food,'苹果',text);assert.match(replaced.text,/苹果/);}
+ for(const text of ['我不喜欢吃草莓了，改成不吃','我不喜欢吃草莓了，改成明天再聊','我不喜欢吃草莓了，改成出去散步'])assert.equal(createReply(text,[],old).memory.food,undefined,text);
+ assert.equal(createReply('我喜欢吃不辣的火锅').memory.food,'不辣的火锅');
+ assert.equal(createReply('我不喜欢吃芒果',[],old).memory.food,'草莓');
+ assert.equal(createReply('我不喜欢吃草莓吗？',[],old).memory.food,'草莓');
+});
+test('temporary food choices and declined food answers do not become lasting preferences',()=>{
+ const old={food:'草莓',pending:'food-choice'};const today=createReply('我今天不想吃草莓',[],old);assert.equal(today.memory.food,'草莓');assert.doesNotMatch(today.text,/喜欢吃草莓|就草莓/);assert.notEqual(today.memory.plan,'草莓');
+ for(const input of ['我不想说','不知道','你好','我今天累了','不喜欢','哈哈','可以','还没吃','刚吃过了','心情不好','火锅不想吃','米饭吃不下','苹果不喜欢','面条没吃','火锅好吃吗','火锅怎么样','草莓可以吗','草莓呢','火锅有吗']){const r=createReply(input,[],{pending:'food-preference'});assert.equal(r.memory.food,undefined,input);}
+ assert.equal(createReply('我今天不想吃草莓，心情不好',[],old).topic,'sad');assert.equal(createReply('心情不好，不要撩我',[],old).topic,'boundary');
+ assert.equal(createReply('面条',[],{pending:'food-preference'}).memory.food,'面条');
+ assert.equal(createReply('我胸痛',[],{pending:'food-preference'}).topic,'safety');
+});
 test('follow-up food choice uses the preceding question',()=>{const a=createReply('饿了');const b=createReply('火锅',[],a.memory);assert.equal(b.topic,'food-plan');assert.equal(b.memory.plan,'火锅');});
 test('repeated topic does not immediately repeat the same response',()=>{let a=createReply('想你了');let b=createReply('想你了',[],a.memory);let c=createReply('想你了',[],b.memory);assert.equal(new Set([a.text,b.text,c.text]).size,3);});
 test('relationship rejection is not mistaken for affection',()=>{const a=createReply('我不喜欢你');assert.equal(a.topic,'boundary');assert.equal(a.memory.flirt,false);assert.equal(createReply('我不想你').topic,'tease');});

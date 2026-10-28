@@ -103,3 +103,24 @@ test('physical emergencies take priority over pausing in every persona',()=>{for
  test('asking characters not to forget receives a natural factual response without enabling memory',()=>{for(const id of [...ids,'lead_gangjie']){let a=run(id,'我叫小凯，我喜欢吃草莓');for(const [msg,expected] of [['不要忘记我的名字',/小凯/],['你不会忘记我的名字吧？',/小凯/],['别忘记我的口味',/草莓/],['我不想让你忘记我的名字',/小凯/]]){const b=run(id,msg,a.memory);assert.match(b.text,expected,id+' '+msg);assert.equal(b.memory.memoryAllowed,true,id+' '+msg)}for(const [msg,intent] of [['不要忘记我的名字','keepName'],['别忘记我的口味','keepFood']]){const missing=run(id,msg);assert.equal(missing.intent,intent,id);assert.match(missing.text,/还没/,id+' '+msg);const disabled=run(id,msg,{...E.fresh(id),memoryAllowed:false});assert.equal(disabled.memory.memoryAllowed,false,id+' '+msg);assert.match(disabled.text,/记忆关着|记忆现在是关着/,id+' '+msg);assert.deepEqual(disabled.memory.facts,{},id+' '+msg)}}});
 
  test('characters respond naturally to requests to keep chatting while genuine stops still win',()=>{for(const id of [...ids,'lead_gangjie']){for(const text of ['不要停止聊天','不用暂停聊天','别停止聊天']){const a=run(id,text);assert.equal(a.intent,'keepChat',id+' '+text);assert.equal(a.pause,false,id+' '+text);assert.match(a.text,/继续|接着/,id+' '+text)}for(const text of ['不要停止聊天，但先安静','不用暂停聊天，不过不要回复']){const a=run(id,text);assert.equal(a.intent,'pause',id+' '+text);assert.equal(a.pause,true,id+' '+text)}const urgent=run(id,['不要停止聊天','我胸痛']);assert.equal(urgent.safety,true,id)}});
+
+test('food preference corrections clear only matching long-term preferences, preserving other facts',()=>{
+ for(const id of [...ids,'lead_gangjie']){
+  let a=run(id,'我叫小凯，我喜欢吃草莓');assert.equal(a.memory.facts.favoriteFood,'草莓',id);
+  for(const phrase of ['我今天不想吃草莓','我不喜欢吃香蕉了','我现在不喜欢吃草莓了吗？','如果我不喜欢吃草莓了']){const b=run(id,phrase,a.memory);assert.equal(b.memory.facts.favoriteFood,'草莓',id+' '+phrase);}
+  let b=run(id,'我现在不喜欢吃草莓了',a.memory);assert.equal(b.memory.facts.favoriteFood,undefined,id);assert.equal(b.memory.facts.name,'小凯');assert.doesNotMatch(run(id,'你还记得我喜欢吃什么吗？',b.memory).text,/草莓/);
+  b=run(id,'我不喜欢吃草莓了，改成苹果',a.memory);assert.equal(b.memory.facts.favoriteFood,'苹果',id);assert.match(run(id,'你还记得我喜欢吃什么吗？',b.memory).text,/苹果/);
+  b=run(id,['我喜欢吃草莓','我不喜欢吃草莓了'],undefined);assert.equal(b.memory.facts.favoriteFood,undefined,id);
+  b=run(id,'别记住我的偏好',a.memory);b=run(id,'我不喜欢吃草莓了，改成苹果',b.memory);assert.equal(b.memory.memoryAllowed,false);assert.deepEqual(b.memory.facts,{});
+ }
+});
+
+test('food corrections handle safety priority and concise alternatives without remembering negations',()=>{
+ for(const id of [...ids,'lead_gangjie']){
+  const old=run(id,'我叫小凯，我喜欢吃草莓').memory;
+  let b=run(id,'我现在不喜欢吃草莓了，我胸痛',old);assert.equal(b.safety,true,id);assert.equal(b.memory.facts.favoriteFood,undefined,id);assert.equal(b.memory.facts.name,'小凯');
+  for(const [phrase,want] of [['我不喜欢吃草莓了，改成面条了','面条'],['我不喜欢吃草莓了，改成吃苹果','苹果'],['我不喜欢草莓，但我喜欢吃苹果','苹果'],['我不喜欢草莓，但是我喜欢吃苹果','苹果'],['我不喜欢草莓，不过我喜欢吃苹果','苹果']]){b=run(id,phrase,old);assert.equal(b.memory.facts.favoriteFood,want,id+' '+phrase);}
+  for(const phrase of ['我不喜欢吃草莓了，改成不吃','我不喜欢吃草莓了，改成明天再聊','我不喜欢吃草莓了，改成出去散步','我不喜欢吃草莓了，改成先睡觉']){b=run(id,phrase,old);assert.equal(b.memory.facts.favoriteFood,undefined,id+' '+phrase);}
+  b=run(id,'别记住我的偏好',old);b=run(id,'我不喜欢吃草莓了，改成苹果',b.memory);assert.equal(b.memory.memoryAllowed,false);assert.deepEqual(b.memory.facts,{});
+ }
+});

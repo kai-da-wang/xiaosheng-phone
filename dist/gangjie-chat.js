@@ -175,8 +175,16 @@ function createReply({message,memory,now=Date.now()}={}){
   generic:['嗯，这句我接到了。你最想说的是哪一部分？','你接着说，我刚把别的事放一边。','这事听起来有后续。别讲到一半就卖关子呀。','好，话题交给你。我负责认真听，顺便抓一下你嘴硬的地方。']
  };
  let intent='generic',text='',pause=false;const pick=key=>{const pool=pools[key]||pools.generic,available=pool.filter(x=>!m.recentReplies.includes(x));return (available.length?available:pool)[m.conversationTurns%(available.length||pool.length)];};
- const learn=part=>{if(!m.memoryAllowed||/[?？“”"<>]|不喜欢|不叫|假如|假设/.test(part))return;for(const [key,re] of Object.entries({name:/^(?:我叫|叫我|我的昵称是)([\p{L}\p{N}_·]{1,16})$/u,favoriteFood:/^我(?:最)?(?:喜欢吃|爱吃|喜欢喝)([^，。！？!?]{1,18})$/,travelPlace:/^我(?:想去|打算去)([^，。！？!?]{1,20})$/,agreement:/^我们(?:约定|说好)([^，。！？!?]{1,30})$/})){const value=part.match(re)?.[1]?.trim();if(value&&!forgotten.has(key)&&!/电话|住址|密码|身份证|银行卡/.test(value))m.facts[key]=value;}};
- if(directives.length&&!optOut)for(const item of batch)for(const part of item.split(/[，。；;！!]/))if(!memoryDirective(part))learn(part.trim());
+ let foodCorrected=false,foodCorrectionPart='';
+ const learn=part=>{if(!m.memoryAllowed||/[?？“”"<>]|假如|假设|如果/.test(part))return;
+  const rejected=!/今天|暂时/.test(part)&&part.match(/^我(?:现在|已经|如今)?(?:不再|不)(?:喜欢吃|喜欢喝|喜欢|爱吃|爱喝)\s*(.{1,18}?)(?:了)?$/)?.[1]?.trim();
+  if(rejected&&rejected===m.facts.favoriteFood){delete m.facts.favoriteFood;foodCorrected=true;foodCorrectionPart=part;return;}
+  const replacement=foodCorrected&&part.match(/^(?:我)?(?:现在)?(?:改成|改为)([^？?，。；;！!“”"<>]{1,18})$/)?.[1]?.trim().replace(/^(?:吃|喝)/,'').replace(/了$/,'').trim();
+  if(replacement&&!forgotten.has('favoriteFood')&&!/^(?:不|没|别|不要|没有)/.test(replacement)&&!/电话|住址|密码|身份证|银行卡|明天|今天|以后|再聊|聊天|散步|睡觉|休息|回家|出门|出去|工作|学习/.test(replacement)){m.facts.favoriteFood=replacement;foodCorrected=false;return;}
+  if(/不喜欢|不爱吃|不叫/.test(part))return;
+  part=part.replace(/^我现在(?:最)?喜欢吃/,'我喜欢吃');
+  for(const [key,re] of Object.entries({name:/^(?:我叫|叫我|我的昵称是)([\p{L}\p{N}_·]{1,16})$/u,favoriteFood:/^我(?:最)?(?:喜欢吃|爱吃|喜欢喝)([^，。！？!?]{1,18})$/,travelPlace:/^我(?:想去|打算去)([^，。！？!?]{1,20})$/,agreement:/^我们(?:约定|说好)([^，。！？!?]{1,30})$/})){const value=part.match(re)?.[1]?.trim();if(value&&!forgotten.has(key)&&!/电话|住址|密码|身份证|银行卡/.test(value)){m.facts[key]=value;if(key==='favoriteFood')foodCorrected=false;}}};
+ for(const item of batch)for(const original of item.split(/[，。；;！!]/)){const part=original.trim().replace(/^(?:但|但是|不过)\s*(?=我)/,'');if(!memoryDirective(part))learn(part);}
  if(/自杀|自残|不想活|想死/.test(whole)){intent='safety';text='我很担心你现在的安全。先远离可能伤到自己的东西，找身边可信任的人陪着你；眼前有危险请联系当地急救。';}
  else if(/胸痛|呼吸困难|昏倒|吃了很多药/.test(whole)){intent='emergency';text='这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。';}
  else if(batch.some(pauseDirective)){intent='pause';pause=true;text='好，先安静一会儿。想继续时，在“设置 → 角色对话设置”里打开回复就好。';}
@@ -189,8 +197,9 @@ function createReply({message,memory,now=Date.now()}={}){
  else if(/傻逼|贱人|滚开|废物|你真蠢/.test(t)){intent='hurt';m.discomfort=Math.min(5,m.discomfort+1);m.mood=m.discomfort>=3?'guarded':'hurt';text='这句话我不喜欢。先换一种说法，我们再聊。';}
  else if(continueChat(t)){intent='keepChat';text='好呀，我们接着聊。';}
  else{
-  for(const part of whole.split(/[，。；;！!]/))learn(part.trim());
-  if(keepMemoryTopic(t)==='keepName'){intent='keepName';text=!m.memoryAllowed?'记忆关着，我没有保存你的名字。':m.facts.name?`记得呀，你说叫你${m.facts.name}。`:'你还没主动告诉我怎么称呼你呢。';}
+  if(foodCorrected&&t.includes(foodCorrectionPart)){intent='foodCorrection';text='好，口味变了，之前那一票先划掉。';}
+  else if(foodCorrectionPart&&m.facts.favoriteFood&&t.includes(foodCorrectionPart)){intent='foodCorrection';text=`好，现在喜欢${m.facts.favoriteFood}，这一票我记下啦。`;}
+  else if(keepMemoryTopic(t)==='keepName'){intent='keepName';text=!m.memoryAllowed?'记忆关着，我没有保存你的名字。':m.facts.name?`记得呀，你说叫你${m.facts.name}。`:'你还没主动告诉我怎么称呼你呢。';}
   else if(keepMemoryTopic(t)==='keepFood'){intent='keepFood';text=!m.memoryAllowed?'记忆关着，我没有保存你的口味。':m.facts.favoriteFood?`记得，你说喜欢${m.facts.favoriteFood}。`:'你还没告诉我喜欢吃什么，我不随便猜。';}
   else if(/记得|记不记得/.test(t)&&/名字|叫什么|昵称/.test(t)){intent='recall';text=m.facts.name?`记得，你说叫你${m.facts.name}。这点小事我有认真听。`:'你还没主动告诉我怎么称呼你呢。';}
   else if(/记得|记不记得/.test(t)&&/喜欢|爱吃|吃什么/.test(t)){intent='recall';text=m.facts.favoriteFood?`记得，${m.facts.favoriteFood}。你自己投的这一票，我没弄丢。`:'你还没告诉我喜欢吃什么，我可不随便猜。';}

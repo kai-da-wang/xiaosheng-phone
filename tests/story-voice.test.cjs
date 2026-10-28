@@ -26,6 +26,12 @@ test('movement, cancellation and navigation cancel long press; desktop keyboard 
  h.fire('pointerdown');h.x.onNavigate();h.route.app='home';h.advance();assert.doesNotMatch(h.x.room(),/wx-voice-menu/);
  h.route.app='room';assert.equal(h.fire('contextmenu').prevented,true);assert.match(h.x.room(),/wx-voice-menu/);h.fire('keydown',{key:'Escape'});assert.doesNotMatch(h.x.room(),/wx-voice-menu/);h.fire('keydown',{key:'F10',shiftKey:true});assert.match(h.x.room(),/wx-voice-menu/);
 });
+test('Escape closes voice menu, restores the matching voice focus and prevents navigating back',()=>{
+ const h=harness(),focuses=[];
+ h.document.querySelectorAll=sel=>sel==='[data-action="wx-voice"]'?[{dataset:{room:'other',id:h.id},focus:()=>focuses.push('wrong')},{dataset:{room:h.route.id,id:h.id},focus:opts=>focuses.push(opts.preventScroll?'voice':'scroll')}]:[];
+ h.fire('contextmenu');const e=h.fire('keydown',{key:'Escape'});
+ assert.deepEqual(focuses,['voice']);assert.equal(e.prevented,true);assert.equal(e.stopped,true);assert.doesNotMatch(h.x.room(),/wx-voice-menu/);
+});
 test('transcript is escaped, and story voice selection applies to incoming and outgoing messages',()=>{
  const h=harness();h.w.MUMA_CHAT.messages.find(m=>m.id===h.id).text='<script>unsafe</script>';h.x.action('wx-voice-transcribe',{dataset:{member:h.id}});const html=h.x.room();assert.ok(html.includes('&lt;script&gt;unsafe&lt;/script&gt;'));assert.ok(!html.includes('<script>unsafe</script>'));assert.match(html,/wx-message outgoing/);assert.match(html,/wx-message incoming/);
  for(const [room,key] of [['lead_monv','MONV_CHAT'],['lead_vivi','VIVI_CHAT'],['lead_gangjie','GANGJIE_CHAT']]){h.route.id=room;const source=h.w[key].messages.find(m=>m.type==='text');assert.ok(source.text);assert.match(h.x.room(),/语音，长按或右键转文字/);}

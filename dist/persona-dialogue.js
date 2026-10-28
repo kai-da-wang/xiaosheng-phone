@@ -180,6 +180,12 @@ function memoryDirective(input){
   for(const [k,re] of Object.entries(rules)){const v=t.match(re)?.[1]?.trim();if(v&&!/住址|手机号|身份证|密码|银行卡|疾病|诊断|财务|秘密|电话|住在|元钱/.test(v))facts[k]=v;}
   return facts;
  }
+ // Only a direct, unambiguous correction of the currently remembered item clears it.
+ function rejectsFood(part,food){
+  if(!food||/[?？“”"<>]|假如|假设|如果|今天|暂时/.test(part))return false;
+  const m=part.trim().match(/^我(?:现在|已经|如今)?(?:不再|不)(?:喜欢吃|喜欢喝|喜欢|爱吃|爱喝)\s*(.{1,18}?)(?:了)?$/);
+  return !!m&&m[1].trim()===food;
+ }
  function createReply({roomId,message,memory,history=[],now=Date.now()}={}){
   if(roomId==='lead_gangjie'){const gangjie=typeof module!=='undefined'&&module.exports?require('./gangjie-chat.js'):root.GANGJIE_CHAT;return gangjie.createReply({message,memory,now});}
   if(!isKnown(roomId))throw Error('Unsupported persona room');
@@ -192,8 +198,13 @@ function memoryDirective(input){
   if(batch.some(x=>kindOf(x)==='boundary'))m.flirtAllowed=false;
   const directives=batch.map(memoryDirective).filter(Boolean),forgotten=new Set(directives.flatMap(d=>d.keys)),optOut=directives.some(d=>d.optOut);
   if(directives.length){for(const key of forgotten)delete m.facts[key];if(optOut)m.memoryAllowed=false;m.lastTopic=null;m.recentInputs=[];m.recentReplies=[];}
-  const learned={};if(m.memoryAllowed)for(const b of batch)for(const part of b.split(/[，。；;！!]/))if(!memoryDirective(part))for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key))learned[key]=value;
-  Object.assign(m.facts,learned);
+  const learned={};let foodCorrected=false,foodCorrectionPart='';
+  if(m.memoryAllowed)for(const b of batch)for(const original of b.split(/[，。；;！!]/)){const part=original.trim().replace(/^(?:但|但是|不过)\s*(?=我)/,'');if(!memoryDirective(part)){
+   if(rejectsFood(part,m.facts.favoriteFood)){delete m.facts.favoriteFood;delete learned.favoriteFood;foodCorrected=true;foodCorrectionPart=part.trim();}
+   const replacement=foodCorrected&&part.trim().match(/^(?:我)?(?:现在)?(?:改成|改为)([^？?，。；;！!“”"<>]{1,18})$/)?.[1]?.trim().replace(/^(?:吃|喝)/,'').replace(/了$/,'').trim();
+   if(replacement&&!forgotten.has('favoriteFood')&&!/^(?:不|没|别|不要|没有)/.test(replacement)&&!/住址|手机号|身份证|密码|银行卡|疾病|诊断|财务|秘密|电话|住在|元钱|明天|今天|以后|再聊|聊天|散步|睡觉|休息|回家|出门|出去|工作|学习/.test(replacement)){m.facts.favoriteFood=replacement;learned.favoriteFood=replacement;foodCorrected=false;}
+   for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key)){m.facts[key]=value;learned[key]=value;if(key==='favoriteFood')foodCorrected=false;}
+  }}
   // Higher priority requests survive a burst; ordinary content follows the last message.
   if(batch.some(x=>kindOf(x)==='safety'))intent='safety';
   else if(batch.some(x=>kindOf(x)==='emergency'))intent='emergency';
@@ -218,6 +229,8 @@ function memoryDirective(input){
   else if(intent==='insult')text=select('hurt');
   else if(intent==='sorry')text=select('sorry');
   else if(intent==='angry')text=select(['hurt','guarded'].includes(m.mood)?m.mood:'calm');
+  else if(foodCorrected&&t.includes(foodCorrectionPart))text=voice(['好呀，那以前那个口味我先不记了。','嗯，知道啦，以前那个口味先划掉。','行，口味变了，我把原来那项划掉。']);
+  else if(foodCorrectionPart&&learned.favoriteFood&&t.includes(foodCorrectionPart))text=voice([`好呀，现在喜欢${learned.favoriteFood}，我记下啦。`,`嗯，口味换成${learned.favoriteFood}了，我记着。`,`行，改成${learned.favoriteFood}，记住了。`]);
   else if(/^recall/.test(intent))text=select('generic',Voice.recall(roomId,intent,f));
   else if(Object.keys(learned).length&&/^state/.test(intent)){
    const [k,v]=Object.entries(learned).at(-1);text=select('generic',Voice.ack(roomId,k,v));

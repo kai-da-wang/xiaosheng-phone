@@ -21,6 +21,11 @@ test('negated stop in a burst does not turn off replies; a real pause still take
 test('negated stop on its own produces a natural continuation response',()=>{const s=state(),h=harness(s);send(s,h,'a','不要停止聊天');h.tick(2500);assert.equal(s.wangAutoReply,true);assert.match(s.chatMessages.wang.at(-1).text,/接着聊/);});
 
 test('rapid turns retain volunteered name and food independently and can recall both',()=>{const s=state(),h=harness(s);send(s,h,'a','你好');send(s,h,'b','我叫小明');send(s,h,'c','我喜欢吃草莓');h.tick(3000);assert.equal(s.wangMemory.name,'小明');assert.equal(s.wangMemory.food,'草莓');assert.match(s.chatMessages.wang.at(-1).text,/草莓/);send(s,h,'d','你记得我的名字吗');h.tick(3000);assert.match(s.chatMessages.wang.at(-1).text,/小明/);send(s,h,'e','记得我喜欢吃什么吗');h.tick(3000);assert.match(s.chatMessages.wang.at(-1).text,/草莓/);});
+test('food corrections in a burst and across refresh keep only the latest explicit preference',()=>{
+ const s=state(),h=harness(s);s.wangMemory={name:'小明'};send(s,h,'a','我喜欢吃草莓');send(s,h,'b','我现在不喜欢吃草莓了');h.tick(3000);assert.equal(s.wangMemory.food,undefined);assert.equal(s.wangMemory.name,'小明');
+ const restored=JSON.parse(JSON.stringify(s)),h2=harness(restored);send(restored,h2,'c','记得我喜欢吃什么吗');h2.tick(3000);assert.doesNotMatch(restored.chatMessages.wang.at(-1).text,/草莓/);
+ send(restored,h2,'d','我不喜欢吃草莓，我喜欢吃苹果');h2.tick(3000);assert.equal(restored.wangMemory.food,'苹果');assert.match(restored.chatMessages.wang.at(-1).text,/苹果/);
+});
 test('media labels and questions do not become volunteered facts',()=>{const s=state(),h=harness(s);send(s,h,'a','我叫什么？');const m={id:'loc',type:'location',from:'self',place:'我叫小明',address:'我喜欢吃草莓'};s.chatMessages.wang.push(m);h.runtime.enqueue(m);h.tick(3000);assert.equal(s.wangMemory.name,undefined);assert.equal(s.wangMemory.food,undefined);});
 test('burst facts survive a safety or pause response without overriding it',()=>{for(const critical of ['我胸痛','先安静']){const s=state(),h=harness(s);send(s,h,'a',critical);send(s,h,'b','我叫小明');h.tick(3000);assert.equal(s.wangMemory.name,'小明');assert.match(s.chatMessages.wang.at(-1).text,critical==='先安静'?/安静/:/急救|医院/);}});
 
