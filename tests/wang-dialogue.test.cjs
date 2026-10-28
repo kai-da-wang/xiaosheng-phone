@@ -21,6 +21,25 @@ test('temporary food choices and declined food answers do not become lasting pre
  assert.equal(createReply('我胸痛',[],{pending:'food-preference'}).topic,'safety');
 });
 test('follow-up food choice uses the preceding question',()=>{const a=createReply('饿了');const b=createReply('火锅',[],a.memory);assert.equal(b.topic,'food-plan');assert.equal(b.memory.plan,'火锅');});
+test('place choices distinguish decisions from negatives, questions, and other people',()=>{
+ const initial=createReply('想去大理');assert.equal(initial.memory.pending,'place-choice');
+ assert.doesNotMatch(initial.text,/记在想去|记下|记住/);assert.equal(initial.memory.place,undefined);
+ for(const input of ['我不想去洱海','双廊不去了','你说的是洱海吗','洱海怎么样','她想去双廊','不想去大理']){
+  const r=createReply(input,[],{...initial.memory,place:'古城',food:'草莓'});
+  assert.equal(r.memory.place,'古城',input);assert.equal(r.memory.food,'草莓',input);assert.doesNotMatch(r.text,/记下|记在想去/,input);
+ }
+ for(const input of ['洱海','我想去双廊','那就去古城'])assert.equal(createReply(input,[],initial.memory).topic,'place-plan',input);
+ const changed=createReply('不去洱海了，去双廊',[],{...initial.memory,place:'洱海',name:'小明'});assert.equal(changed.memory.place,'双廊');assert.equal(changed.memory.name,'小明');
+ assert.equal(createReply('去洱海，但是我不去洱海了',[],{...initial.memory,place:'洱海'}).memory.place,undefined);
+ assert.equal(createReply('先去古城，不去洱海了',[],{...initial.memory,place:'洱海'}).memory.place,'古城');
+ assert.match(createReply('先去古城，不去洱海了',[],{...initial.memory,place:'洱海'}).text,/古城/);
+ const unprompted=createReply('我不想去洱海了，去双廊',[],{place:'洱海'});assert.equal(unprompted.memory.place,'双廊');assert.match(unprompted.text,/双廊/);
+ assert.equal(createReply('我不想去洱海了，改成大理古城',[],{...initial.memory,place:'洱海'}).memory.place,'古城');
+ assert.equal(createReply('他想去洱海，不去双廊了',[],{...initial.memory,place:'双廊'}).memory.place,'双廊');
+ assert.equal(createReply('不想去洱海了',[],{...initial.memory,place:'洱海'}).memory.place,undefined);
+ assert.equal(createReply('今天不想去洱海',[],{...initial.memory,place:'洱海'}).memory.place,'洱海');
+ const safety=createReply('我胸痛，不想去洱海',[],{...initial.memory,place:'洱海'});assert.equal(safety.topic,'safety');assert.equal(safety.memory.place,undefined);
+});
 test('repeated topic does not immediately repeat the same response',()=>{let a=createReply('想你了');let b=createReply('想你了',[],a.memory);let c=createReply('想你了',[],b.memory);assert.equal(new Set([a.text,b.text,c.text]).size,3);});
 test('relationship rejection is not mistaken for affection',()=>{const a=createReply('我不喜欢你');assert.equal(a.topic,'boundary');assert.equal(a.memory.flirt,false);assert.equal(createReply('我不想你').topic,'tease');});
 test('meeting context does not swallow a new question or study topic',()=>{const a=createReply('约会');assert.equal(createReply('为什么这么说？',[],a.memory).topic,'question');assert.equal(createReply('我要学习',[],a.memory).topic,'study');assert.equal(createReply('明天下午三点',[],a.memory).topic,'meeting-plan');});
@@ -36,3 +55,9 @@ test('requests to keep chatting do not pause, but actual pause and emergencies r
 test('asking to keep chatting gets an attentive response without overriding safety, pause or boundaries',()=>{for(const text of ['不要停止聊天','不用暂停聊天','别停止聊天','不要暂停跟我说话']){const a=createReply(text);assert.equal(a.topic,'continue',text);assert.match(a.text,/接着聊/,text)}assert.equal(createReply('不要停止聊天，但是先安静').topic,'pause');assert.equal(createReply('我胸痛，不要停止聊天').topic,'safety');assert.equal(createReply('不要停止聊天，但别撩我').topic,'boundary');});
 
 test('model context never replays conflicting facts from the same forget burst',()=>{const h=[{id:'a',type:'text',from:'self',text:'忘掉我的名字'},{id:'b',type:'text',from:'self',text:'我叫小明'},{id:'r',type:'text',from:'other',autoReply:true,replyTo:['a','b'],text:'已清除。'},{id:'c',type:'text',from:'self',text:'今天想聊天'}];const messages=modelHistory(h);assert.doesNotMatch(JSON.stringify(messages),/小明/);assert.ok(messages.some(m=>m.content==='今天想聊天'));});
+
+test('questions and worries about forgetting do not erase saved facts in a multi-clause message',()=>{
+ const old={name:'小明',food:'草莓'};
+ for(const text of ['你要忘记我的名字？你好','我不想忘记我的名字','我害怕你忘记我的名字','她说要忘记我的名字'])assert.equal(createReply(text,[],old).memory.name,'小明',text);
+ for(const text of ['不要忘记我的名字，请忘记我的食物','我不想让你忘记名字，但是请忘记食物']){const r=createReply(text,[],old);assert.equal(r.memory.name,'小明',text);assert.equal(r.memory.food,undefined,text);}
+});

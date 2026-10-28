@@ -15,7 +15,7 @@
   sad:['我听着呢。是哪件事让你这么难受？慢慢说，不用一次讲完。','先不逗你了。你想让我陪你听一会儿，还是一起想办法？','嗯，今天确实不好受。先说最难受的那一点，我认真听。'],
   bored:['那陪我选一张照片？海边那张和雪山那张，你更喜欢哪张？','来，换我问你：明天有半天空闲，你最想做什么？','那玩个二选一，散步还是吃好吃的？先选，不许全都要。'],
   photo:['给我拍照可得认真一点。海边那张和雪山那张，你更喜欢哪张？','照片我都收好啦。你更想再看海边，还是雪山？','下次先别催我摆姿势，我还没笑好呢。你想去哪儿拍？'],
-  dali:['那就把大理记在想去的地方里。古城逛逛，还是去洱海边走走？','去大理的话，我想先在洱海边慢慢走。你选才村还是双廊？','大理这题我会选：风景慢慢看，合照认真拍。你想先去古城还是湖边？'],
+  dali:['大理好呀。古城逛逛，还是去洱海边走走？','去大理的话，我想先在洱海边慢慢走。你选才村还是双廊？','大理这题我会选：风景慢慢看，合照认真拍。你想先去古城还是湖边？'],
   meeting:['好呀。你想哪天、去哪儿？先说清楚，我才好记着。','见面可以，别只说一句就没下文。你想约在哪儿？','那你负责想地点，我负责提醒你别忘带外套。什么时候去？'],
   compliment:['行，今天这句夸得不错。奖励你下次继续夸。','你再这么说，我可就真信了。','嘴甜归嘴甜，下次拍照不许把我拍糊。'],
   apology:['听到啦。我们把刚才不舒服的地方说清楚，好不好？','先不跟你赌气。刚才那句你是怎么想的？','好，我听见了。下次别让我靠猜，你直接跟我说。'],
@@ -76,9 +76,40 @@
   return /^(?:小[\u4e00-\u9fff]{1,3}|[赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦许何吕张孔曹严华金魏谢邹苏潘范彭鲁马方任袁柳史唐薛雷贺汤罗郝安常于傅齐康伍余顾孟黄尹姚邵汪毛戴宋庞熊董梁杜蓝季贾江童郭林钟徐邱高夏蔡田胡霍万卢莫崔龚程陆邓洪包石刘龙叶白赖卓乔谭申桑桂牛边燕温庄柴阎连艾向易廖文曾沙关查游权][\u4e00-\u9fff]{1,3}|[A-Za-z]{2,12})$/.test(text);
  }
 
+ // A mentioned place is not a decision: reject questions, other people's
+ // plans and negations before considering an explicit choice.
+ function placeResponse(text){
+  const places='(?:大理)?古城|湖边|洱海|才村|双廊|大理|苍山';
+  const parts=text.split(/[，,。；;！!]|(?:但是|但|不过|而是)/).map(x=>x.trim()).filter(Boolean);
+  let rejected='',choice='',uncertain=false,temporary=false,otherSubject=false;const actions=[];
+  for(const part of parts){
+   if(/^(?:你|他|她|他们|她们)/.test(part))otherSubject=true;else if(/^(?:我|我们)/.test(part))otherSubject=false;
+   let place=part.match(new RegExp(places))?.[0];if(!place)continue;if(place==='大理古城')place='古城';
+   if(/[?？]|(?:吗|么|呢|怎么样|如何|是不是|能不能|可以吗)[。！!\s]*$/.test(part)||otherSubject){uncertain=true;continue;}
+   if(/(?:不想|不再|不打算|不准备|不要|别|不去|去不了|取消)|(?:不去|不想去|去不了|取消)(?:了|啦)?$/.test(part)){
+    rejected=place;temporary=/(?:今天|明天|这次|暂时|现在|这会儿)/.test(part);actions.push({kind:'reject',place,temporary});continue;
+   }
+   if(new RegExp('^(?:(?:我|我们)(?:想|要|决定|打算)?去|先去|去|选|选择|就去|改去|换成|改成|那就去|那就|还是)?\\s*('+places+')(?:边)?[呀啊吧啦哦！!。\\s]*$').test(part)){choice=place;actions.push({kind:'choice',place});}
+   else uncertain=true;
+  }
+  return {rejected,choice,uncertain,temporary,actions};
+ }
+ function applyPlaceChanges(memory,input,allowChoices){
+  const actions=placeResponse(input).actions;
+  const explicitChange=actions.some(item=>item.kind==='reject')&&actions.some(item=>item.kind==='choice');
+  for(const item of actions){
+   if(item.kind==='choice'&&(allowChoices||explicitChange))memory.place=item.place;
+   else if(item.kind==='reject'&&!item.temporary&&(memory.place===item.place||memory.place==='洱海边'&&item.place==='洱海'))delete memory.place;
+  }
+ }
+
  function forgetKeys(input){
   const text=compact(input);
-  if(/(?:别|不要|不许|不会|没有|没|不能|无法)忘(?:记|掉)/.test(text)||/^我(?:已经|刚刚|刚|好像)?忘(?:记|掉)/.test(text))return [];
+  // Keep each question mark attached to its clause: dropping it could turn a
+  // question into a deletion command when another sentence follows.
+  const clauses=(text.replace(/但是|但|不过/g,'，').match(/[^，,。；;！!？?]+[？?]?/g)||[]).map(x=>x.trim()).filter(Boolean);
+  if(clauses.length>1)return [...new Set(clauses.flatMap(forgetKeys))];
+  if(/(?:别|不要|不许|不会|没有|没|不能|无法|不想|不愿意)忘(?:记|掉)|不(?:想|希望|愿意)(?:让)?你忘(?:记|掉)|(?:害怕|担心|怕)(?:你)?忘(?:记|掉)/.test(text)||/^(?:她|他|他们|她们).{0,12}(?:忘记|忘掉|删除|清除)/.test(text)||/^我(?:已经|刚刚|刚|好像)?忘(?:记|掉)/.test(text))return [];
   const question=/[?？]|(?:吗|么|吧)[。！!\s]*$/.test(text),request=/^(?:(?:请(?:你)?|麻烦(?:你)?|帮我|可以|能不能|能|你能|你可以|可不可以|我想让你)\s*)?(?:忘记|忘掉|删除|清除|别记|不要记|不许记|别保存|不要保存)/.test(text);
   const stateQuestion=/(?:忘记|忘掉|删除|清除).{0,20}(?:了吗|了么|了没|没有)[？?。!！\s]*$/.test(text);
   if(question&&(!request||stateQuestion))return [];
@@ -90,7 +121,7 @@
   const result={...old},forget=messages.flatMap(forgetKeys);
   // Forgetting wins over conflicting volunteered facts in the same burst.
   if(forget.length){for(const key of forget)delete result[key];result.recent=[];}
-  for(const text of messages){const fact=explicitFact(text);if(fact?.key==='name'&&fact.value&&!forget.includes('name'))result.name=fact.value;if(!forget.includes('food'))applyFoodChanges(result,text);}
+  for(const text of messages){const fact=explicitFact(text);if(fact?.key==='name'&&fact.value&&!forget.includes('name'))result.name=fact.value;if(!forget.includes('food'))applyFoodChanges(result,text);if(!forget.includes('place'))applyPlaceChanges(result,text,result.pending==='place-choice');}
   return result;
  }
  function createReply(input,history=[],old={}){
@@ -98,6 +129,7 @@
   const recent=(Array.isArray(history)?history:[]).filter(x=>x.type==='text').slice(-20);
   const select=(topic,choices,pending='')=>{const unused=choices.filter(s=>!m.recent.includes(s)),list=unused.length?unused:choices;const reply=list[(m.turn-1)%list.length];m.topic=topic;m.pending=pending;m.recent=[...m.recent,reply].slice(-8);return {text:reply,memory:m,topic};};
   const one=(topic,t,pending)=>select(topic,[t],pending);
+  if(!forgetKeys(text).includes('place'))applyPlaceChanges(m,text,m.pending==='place-choice');
   if(/(?:自杀|自残|不想活|想死|结束生命)/.test(text))return one('safety','我很担心你现在的安全。先远离可能伤到自己的东西，找一个能陪着你的人；眼前有危险就联系当地急救。你身边有人吗？');
   if(/(?:胸痛|呼吸困难|昏倒|吃了很多药)/.test(text))return one('safety','这件事先别在聊天里耽误，尽快找身边的人陪着你，联系当地急救或去医院。先照顾好自己。');
   if(isPauseRequest(text))return {...one('pause','好，我先安静一会儿。想继续时，点聊天右上角，把自动回复打开就好。'),pause:true};
@@ -118,7 +150,12 @@
   if(wantsToContinue(text))return one('continue','在呢，我们接着聊。你想从哪件事说起？');
   if(m.pending==='food-choice'&&/^(?:第?一[个家种]?|第一[个家种]?|火锅|热乎的|面条|第二[个家种]?|第?二[个家种]?|甜的|甜点|都要|都可以|随便|你选)[呀吧啦呢！!。\s]*$/.test(text)){const choice=/火锅|第一|^一|热乎/.test(text)?'火锅':/第二|^二|面条/.test(text)?'面条':/甜/.test(text)?'甜点':m.food||'热乎的面条';m.plan=choice;return one('food-plan',`那就先记下${choice}。别只顾着说，饿了记得真的去吃点东西。`);}
   if(m.pending==='photo-choice'&&/海边|雪山|第一|第二|^都|你选/.test(text)){m.photo=/雪山|第二/.test(text)?'雪山':'海边';return one('photo-plan',`那就${m.photo}那张。你把照片收好，下次再给我拍一张更好看的。`);}
-  if(m.pending==='place-choice'&&/古城|湖边|洱海|才村|双廊|你选/.test(text)){const place=(text.match(/古城|洱海|才村|双廊/)||[])[0]||'洱海边';m.place=place;return one('place-plan',`${place}，记下啦。先一起在地图里看看，想去的地方慢慢攒。`);}
+  if(/给你发了张照片/.test(text))return one('photo-received','照片收到啦，这是在哪儿拍的？快跟我讲讲。');
+  if(/给你发了个位置/.test(text))return one('location-received','位置收到啦。你这是想约我一起去吗？');
+  const placeIntent=placeResponse(text);
+  if(placeIntent.rejected){const lastChoice=placeIntent.actions.filter(item=>item.kind==='choice').at(-1);if(lastChoice&&m.place===lastChoice.place)return one('place-plan',`${m.place}，记下啦。先一起在地图里看看，想去的地方慢慢攒。`);return one('place-change','好，那这个地方先不去了。想换哪里，我们再慢慢商量。','place-choice');}
+  if(placeIntent.uncertain&&!placeIntent.choice)return one('place-question','可以先聊聊，还没决定去哪儿。你比较想去哪里？','place-choice');
+  if(m.pending==='place-choice'&&(placeIntent.choice||/^你选[呀吧啦呢！!。\s]*$/.test(text))){const place=placeIntent.choice||'洱海边';m.place=place;return one('place-plan',`${place}，记下啦。先一起在地图里看看，想去的地方慢慢攒。`);}
   if(m.pending==='activity-choice'&&/散步|吃|第一|第二|都要/.test(text))return /吃|第二/.test(text)?select('meal',pools.meal,'food-choice'):one('walk','那就散步。路上别光顾着看手机，抬头看看风景。','meeting');
   if(m.pending==='meeting'&&text.length<=45&&/明天|后天|今天|周[一二三四五六日天末]|星期|[点时]|晚上|中午|门口|食堂|公园|古城|湖边/.test(text)&&!/[？?]/.test(text)){m.plan=text;return one('meeting-plan',`“${text.slice(0,35)}”，先记在聊天里啦。到时候别忘了多带件外套。`);}
   if(/晚安|睡觉|睡了|要睡|困了|做个好梦/.test(text))return select('sleep',pools.sleep);
@@ -126,8 +163,6 @@
   if(/(?:不想你|没想你|才没想你)/.test(text))return one('tease','好嘛，那先不逗你了。你今天在忙什么？');
   if(/想你|想我|想见你|想念/.test(text))return m.flirt===false?one('boundary','听见啦，我们就按你舒服的方式聊天。今天过得还好吗？'):select('missing',pools.missing);
   if(/喜欢你|爱你|爱我|亲亲|抱抱|牵手|牵着/.test(text))return m.flirt===false?one('boundary','听见啦，我们就按你舒服的方式聊天。今天过得还好吗？'):select('love',pools.love);
-  if(/给你发了张照片/.test(text))return one('photo-received','照片收到啦，这是在哪儿拍的？快跟我讲讲。');
-  if(/给你发了个位置/.test(text))return one('location-received','位置收到啦。你这是想约我一起去吗？');
   if(/大理|洱海|才村|双廊|苍山/.test(text))return select('dali',pools.dali,'place-choice');
   if(/(?:想吃|要吃|就吃|吃点)(火锅|面条|米饭|蛋糕|草莓|冰淇淋|麻辣烫|烧烤)/.test(text)){m.plan=RegExp.$1;return one('food-plan',`那就${m.plan}，先记下啦。饿了就去吃点，别光顾着跟我聊天。`);}
   if(/你.{0,5}吃(?:饭)?了(?:吗|没)|你吃过了吗/.test(text))return one('meal-care','有记得吃饭呀。你呢，今天别光顾着问我，也要吃饱。');

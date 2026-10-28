@@ -124,3 +124,36 @@ test('food corrections handle safety priority and concise alternatives without r
   b=run(id,'别记住我的偏好',old);b=run(id,'我不喜欢吃草莓了，改成苹果',b.memory);assert.equal(b.memory.memoryAllowed,false);assert.deepEqual(b.memory.facts,{});
  }
 });
+
+test('travel plans can be revoked or changed without losing other memories',()=>{
+ for(const id of [...ids,'lead_gangjie']){
+  const original=run(id,'我叫小凯，我喜欢吃草莓，我想去大理').memory;
+  assert.equal(original.facts.travelPlace,'大理',id);
+  for(const phrase of ['我不想去大理了','我改主意了，不去大理了','不想去大理了']){
+   const result=run(id,phrase,original);assert.equal(result.memory.facts.travelPlace,undefined,id+' '+phrase);assert.equal(result.memory.facts.favoriteFood,'草莓');assert.equal(result.memory.facts.name,'小凯');assert.doesNotMatch(run(id,'你还记得我想去哪里吗？',result.memory).text,/大理/);
+  }
+  for(const phrase of ['我今天不想去大理','我暂时不去大理了','我不想去丽江了','我不想去大理了吗？','如果我不去大理了','她说不去大理了','她说，不去大理了'])assert.equal(run(id,phrase,original).memory.facts.travelPlace,'大理',id+' '+phrase);
+  for(const phrase of ['我不想去大理了，改成丽江','我不想去大理了，改去丽江了','我不想去大理了，我想去丽江'])assert.equal(run(id,phrase,original).memory.facts.travelPlace,'丽江',id+' '+phrase);
+  for(const phrase of ['我不想去大理了，改成明天再聊','我不想去大理了，改成出去散步','我不想去大理了，改成不去了'])assert.equal(run(id,phrase,original).memory.facts.travelPlace,undefined,id+' '+phrase);
+  assert.equal(run(id,['我想去大理','我不想去大理了'],undefined).memory.facts.travelPlace,undefined,id);
+  assert.equal(run(id,['我想去大理','我不想去大理了','我想去丽江'],undefined).memory.facts.travelPlace,'丽江',id);
+  const emergency=run(id,'我不想去大理了，我胸痛',original);assert.equal(emergency.safety,true,id);assert.equal(emergency.memory.facts.travelPlace,undefined,id);
+  const disabled=run(id,'别记住我的偏好',original);const after=run(id,'我不想去大理了，改成丽江',disabled.memory);assert.equal(after.memory.memoryAllowed,false,id);assert.equal(after.memory.facts.travelPlace,undefined,id);
+  const forgotten=run(id,['忘记我想去的地方','我想去丽江'],original);assert.equal(forgotten.memory.facts.travelPlace,undefined,id);
+ }
+});
+
+test('questions without punctuation do not teach names, food or travel',()=>{
+ for(const id of [...ids,'lead_gangjie'])for(const q of ['我叫什么名字呢','我喜欢吃苹果吗','我想去大理吗','我想去大理怎么样']){
+  const result=run(id,q);assert.equal(result.memory.facts.name,undefined,id+' '+q);assert.equal(result.memory.facts.favoriteFood,undefined,id+' '+q);assert.equal(result.memory.facts.travelPlace,undefined,id+' '+q);
+ }
+});
+
+test('travel plan replacements are acknowledged consistently in one message and in bursts',()=>{
+ for(const id of [...ids,'lead_gangjie']){
+  const old=run(id,'我想去大理').memory;
+  const changed=run(id,'我不想去大理了，我想去丽江',old);assert.equal(changed.memory.facts.travelPlace,'丽江',id);assert.match(changed.text,/丽江/,id);assert.doesNotMatch(changed.text,/不记|划掉/,id);
+  for(const batch of [['我不想去大理了','我想去丽江'],['我不想去大理了','改成丽江']]){const burst=run(id,batch,old);assert.equal(burst.memory.facts.travelPlace,'丽江',id);assert.match(burst.text,/丽江/,id);}
+  const urgent=run(id,['我不想去大理了','改成丽江','我胸痛'],old);assert.equal(urgent.safety,true,id);assert.match(urgent.text,/急救|医院/,id);
+ }
+});

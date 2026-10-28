@@ -175,9 +175,9 @@ function memoryDirective(input){
   if(/[，。；;！!]/.test(t))return Object.assign({},...t.split(/[，。；;！!]/).filter(Boolean).map(extract));
   t=t.replace(/^(?:请)?记住[，：:]?/, '').replace(/我现在(?:最)?喜欢吃/, '我喜欢吃');
   // Only explicit low-sensitivity volunteered facts; questions, quotations, negation and third persons do not teach facts.
-  if(/[?？“”"<>]|假如|假设|如果我|他说|她说|不是|不叫|不喜欢|不爱吃/.test(t))return {};
+  if(travelQuestion(t)||/他说|她说|不是|不叫|不喜欢|不爱吃/.test(t))return {};
   const facts={},rules={name:/(?:^|[，。；;！!])(?:我叫|叫我|我的昵称是|我的名字是)\s*([\p{L}\p{N}_·]{1,16})(?=$|[，。；;！!])/u,favoriteFood:/(?:^|[，。；;！!])我(?:最)?(?:喜欢吃|爱吃|喜欢喝)\s*([^，。；;！!?？]{1,18})(?=$|[，。；;！!])/,travelPlace:/(?:^|[，。；;！!])我(?:想去|打算去)\s*([^，。；;！!?？]{1,20})(?=$|[，。；;！!])/,agreement:/(?:^|[，。；;！!])我(?:们)?(?:约定|说好)\s*([^，。；;！!?？]{1,30})(?=$|[，。；;！!])/};
-  for(const [k,re] of Object.entries(rules)){const v=t.match(re)?.[1]?.trim();if(v&&!/住址|手机号|身份证|密码|银行卡|疾病|诊断|财务|秘密|电话|住在|元钱/.test(v))facts[k]=v;}
+  for(const [k,re] of Object.entries(rules)){let v=t.match(re)?.[1]?.trim();if(k==='travelPlace')v=travelValue(v);if(v&&!/住址|手机号|身份证|密码|银行卡|疾病|诊断|财务|秘密|电话|住在|元钱/.test(v))facts[k]=v;}
   return facts;
  }
  // Only a direct, unambiguous correction of the currently remembered item clears it.
@@ -186,6 +186,18 @@ function memoryDirective(input){
   const m=part.trim().match(/^我(?:现在|已经|如今)?(?:不再|不)(?:喜欢吃|喜欢喝|喜欢|爱吃|爱喝)\s*(.{1,18}?)(?:了)?$/);
   return !!m&&m[1].trim()===food;
  }
+// Treat destination changes conservatively: retain only a clear, self-stated plan.
+function travelQuestion(part){return /[?？“”"<>]|假如|假设|如果/.test(part)||/(?:吗|么|嘛|呢|怎么样|好不好|行不行|可以吗|去不去)\s*$/.test(part);}
+function travelValue(value){
+ const v=String(value||'').trim().replace(/(?:了|啦)$/,'').trim();
+ if(!v||v.length>20||/^(?:不|没|别|不要|没有|先|再)/.test(v)||/电话|住址|密码|身份证|银行卡|明天|今天|以后|再聊|聊天|散步|睡觉|休息|回家|出门|出去|工作|学习|吃饭/.test(v))return '';
+ return v;
+}
+function rejectsTravel(part,place,otherSpeaker){
+ if(!place||travelQuestion(part)||/今天|暂时|这次|现在先|眼下|近期/.test(part))return false;
+ const m=part.match(/^(我(?:现在|已经|以后|如今)?|)(?:不想去|不打算去|不去|不再去)\s*(.{1,20}?)(?:了|啦)?$/);
+ return !!m&&(!otherSpeaker||!!m[1])&&m[2].trim()===place;
+}
  function createReply({roomId,message,memory,history=[],now=Date.now()}={}){
   if(roomId==='lead_gangjie'){const gangjie=typeof module!=='undefined'&&module.exports?require('./gangjie-chat.js'):root.GANGJIE_CHAT;return gangjie.createReply({message,memory,now});}
   if(!isKnown(roomId))throw Error('Unsupported persona room');
@@ -198,13 +210,15 @@ function memoryDirective(input){
   if(batch.some(x=>kindOf(x)==='boundary'))m.flirtAllowed=false;
   const directives=batch.map(memoryDirective).filter(Boolean),forgotten=new Set(directives.flatMap(d=>d.keys)),optOut=directives.some(d=>d.optOut);
   if(directives.length){for(const key of forgotten)delete m.facts[key];if(optOut)m.memoryAllowed=false;m.lastTopic=null;m.recentInputs=[];m.recentReplies=[];}
-  const learned={};let foodCorrected=false,foodCorrectionPart='';
-  if(m.memoryAllowed)for(const b of batch)for(const original of b.split(/[，。；;！!]/)){const part=original.trim().replace(/^(?:但|但是|不过)\s*(?=我)/,'');if(!memoryDirective(part)){
+  const learned={};let foodCorrected=false,foodCorrectionPart='',travelCorrected=false,travelCorrectionPart='',travelLearnedPart='';
+  if(m.memoryAllowed)for(const b of batch){let otherSpeaker=false;for(const original of b.split(/[，。；;！!]/)){const part=original.trim().replace(/^(?:但|但是|不过)\s*(?=我)/,'');if(/^(?:他|她|朋友|别人)(?:说|想|打算)/.test(part))otherSpeaker=true;if(/^我/.test(part)&&!/^我改主意/.test(part))otherSpeaker=false;if(!memoryDirective(part)){
+   if(rejectsTravel(part,m.facts.travelPlace,otherSpeaker)){delete m.facts.travelPlace;delete learned.travelPlace;travelCorrected=true;travelCorrectionPart=part;}
+   const travelReplacement=travelCorrected&&!travelQuestion(part)&&part.match(/^(?:我)?(?:现在)?(?:改成|改为|改去|换成|换去)\s*(?:去)?(.{1,20})$/)?.[1];const travel=travelValue(travelReplacement);if(travel&&!forgotten.has('travelPlace')){m.facts.travelPlace=travel;learned.travelPlace=travel;travelLearnedPart=part;travelCorrected=false;}
    if(rejectsFood(part,m.facts.favoriteFood)){delete m.facts.favoriteFood;delete learned.favoriteFood;foodCorrected=true;foodCorrectionPart=part.trim();}
    const replacement=foodCorrected&&part.trim().match(/^(?:我)?(?:现在)?(?:改成|改为)([^？?，。；;！!“”"<>]{1,18})$/)?.[1]?.trim().replace(/^(?:吃|喝)/,'').replace(/了$/,'').trim();
    if(replacement&&!forgotten.has('favoriteFood')&&!/^(?:不|没|别|不要|没有)/.test(replacement)&&!/住址|手机号|身份证|密码|银行卡|疾病|诊断|财务|秘密|电话|住在|元钱|明天|今天|以后|再聊|聊天|散步|睡觉|休息|回家|出门|出去|工作|学习/.test(replacement)){m.facts.favoriteFood=replacement;learned.favoriteFood=replacement;foodCorrected=false;}
-   for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key)){m.facts[key]=value;learned[key]=value;if(key==='favoriteFood')foodCorrected=false;}
-  }}
+   for(const [key,value] of Object.entries(extract(part)))if(!forgotten.has(key)){m.facts[key]=value;learned[key]=value;if(key==='favoriteFood')foodCorrected=false;if(key==='travelPlace'){travelCorrected=false;travelLearnedPart=part;}}
+  }}}
   // Higher priority requests survive a burst; ordinary content follows the last message.
   if(batch.some(x=>kindOf(x)==='safety'))intent='safety';
   else if(batch.some(x=>kindOf(x)==='emergency'))intent='emergency';
@@ -229,6 +243,8 @@ function memoryDirective(input){
   else if(intent==='insult')text=select('hurt');
   else if(intent==='sorry')text=select('sorry');
   else if(intent==='angry')text=select(['hurt','guarded'].includes(m.mood)?m.mood:'calm');
+  else if(travelCorrected&&t.includes(travelCorrectionPart))text=voice(['好，那之前想去的地方先不记了。','嗯，知道啦，你改变主意了。','行，之前那个目的地先划掉。']);
+  else if(travelCorrectionPart&&learned.travelPlace&&(t.includes(travelCorrectionPart)||t.includes(travelLearnedPart)))text=voice([`好呀，现在想去${learned.travelPlace}，我记下啦。`,`嗯，目的地换成${learned.travelPlace}了。`,`行，改去${learned.travelPlace}，记住了。`]);
   else if(foodCorrected&&t.includes(foodCorrectionPart))text=voice(['好呀，那以前那个口味我先不记了。','嗯，知道啦，以前那个口味先划掉。','行，口味变了，我把原来那项划掉。']);
   else if(foodCorrectionPart&&learned.favoriteFood&&t.includes(foodCorrectionPart))text=voice([`好呀，现在喜欢${learned.favoriteFood}，我记下啦。`,`嗯，口味换成${learned.favoriteFood}了，我记着。`,`行，改成${learned.favoriteFood}，记住了。`]);
   else if(/^recall/.test(intent))text=select('generic',Voice.recall(roomId,intent,f));
