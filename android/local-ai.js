@@ -27,42 +27,25 @@
    }
    return apiFetch(url,options);
  };
- // Keep all AI controls inside the simulated phone's Settings app.
- // Never mount a floating control over the lock screen, games or conversations.
- function mountSettingsRow(){
-  const screen=document.getElementById('screen');
-  const neighbor=screen?.querySelector('button[data-action="wx-settings"]');
-  if(!neighbor||screen.querySelector('#local-ai-settings'))return;
-  const button=document.createElement('button');
-  button.id='local-ai-settings';
-  button.type='button';
-  button.className='list-row';
-  button.setAttribute('aria-label','本机 AI 实验室：设置 DeepSeek 和阿里云百炼');
-  const label=document.createElement('span');
-  label.className='row-label';
-  label.textContent='AI 实验室';
-  const hint=document.createElement('small');
-  hint.textContent=window.AndroidAI.hasAnyKey()?'本机 AI 已配置 · DeepSeek / 阿里云':'DeepSeek 聊天与阿里云语音 · 仅此设备';
-  label.appendChild(hint);
-  const chevron=document.createElement('span');
-  chevron.setAttribute('aria-hidden','true');
-  chevron.textContent='›';
-  chevron.style.cssText='margin-left:auto;color:#a0a5a9;font-size:23px;line-height:1';
-  button.append(label,chevron);
-  button.addEventListener('click',event=>{
-   event.preventDefault();
-   event.stopPropagation();
-   window.AndroidAI.openSettings();
-  });
-  neighbor.insertAdjacentElement('afterend',button);
- }
+ // Keep the credential editor out of the visible phone UI. This gesture exists
+ // only in the APK, not in the public GitHub Pages build.
+ // In Settings, tap the large page heading seven times within 4.5 seconds.
  function init(){
-  const screen=document.getElementById('screen');
-  if(!screen)return;
-  mountSettingsRow();
-  // The simulator recreates the Settings DOM whenever a screen changes.
-  const observer=new MutationObserver(()=>mountSettingsRow());
-  observer.observe(screen,{childList:true,subtree:true});
+   const screen=document.getElementById('screen');
+   if(!screen)return;
+   let taps=0,firstTap=0;
+   screen.addEventListener('click',event=>{
+     const heading=event.target.closest?.('h2.large-title');
+     const isSettingsHeading=heading?.textContent.trim()==='设置' &&
+       !!screen.querySelector('button[data-action="wx-settings"]');
+     if(!isSettingsHeading){taps=0;firstTap=0;return;}
+     const now=Date.now();
+     if(!firstTap||now-firstTap>4500){taps=0;firstTap=now;}
+     if(++taps===7){
+       taps=0;firstTap=0;
+       window.AndroidAI.openSettings();
+     }
+   },true);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
  else init();
