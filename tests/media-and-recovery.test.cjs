@@ -103,3 +103,8 @@ test('unavailable or closed browser audio storage shows a helpful message instea
 });
 
 test('Safari recent entries lead to valid apps, with readable names and no duplicate detail pages',()=>{const h=audioHarness();h.state.opened=['contacts','room','chat-info','chat-search','album','photos','file-manager','chapters'];const html=h.x.safari();assert.match(html,/>文件</);assert.match(html,/>故事片段</);assert.match(html,/>微信</);assert.equal((html.match(/data-app="wechat"/g)||[]).length,2);assert.doesNotMatch(html,/data-app="chat-info"|data-app="chat-search"|data-app="album"/);});
+
+test('playing real audio removes its visible unread indicator in the voice wrapper',async()=>{
+ const h=audioHarness();let removed=0;const b={classList:{add(){}},closest:sel=>sel==='.wx-voice-wrap'?{querySelector:()=>({remove(){removed++;}})}:null};h.document.querySelector=sel=>sel.includes('wx-voice')?b:null;
+ h.play('a');await flush();h.resolve(0,'a');await flush();assert.equal(removed,1);assert.ok(h.state.playedVoiceIds.includes('a'));
+});
